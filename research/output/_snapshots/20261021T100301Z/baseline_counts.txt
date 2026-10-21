@@ -1,0 +1,15 @@
+records|8117
+records_stale|0
+design_systems|510
+systems_verified|6
+components|3038
+tokens|1708
+guidelines|1997
+sources|20
+discovered_urls|1284
+raw_documents|1276
+review_open|125
+review_total|125
+system_field_conflict|open|84
+same_source_component_duplicate|open|1
+possible_duplicate_system|open|40

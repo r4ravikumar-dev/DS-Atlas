@@ -1,0 +1,43 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env: { POSTGRES_PASSWORD: ci, POSTGRES_DB: dsrp_test }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-retries 10
+    defaults: { run: { working-directory: backend } }
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://postgres:ci@localhost:5432/dsrp_test
+      DATABASE_URL: postgresql+psycopg://postgres:ci@localhost:5432/dsrp_test
+      SECRET_KEY: ci-secret-key-ci-secret-key-ci-secret-key-0000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements-dev.txt
+      - name: Migrations apply and roll back cleanly
+        run: alembic upgrade head && ALLOW_DESTRUCTIVE_DOWNGRADE=1 alembic downgrade base && alembic upgrade head
+      - name: Tests (incl. OpenAPI contract test)
+        run: pytest -q
+      - name: Committed OpenAPI spec is current
+        run: python scripts/manage.py openapi /tmp/openapi.json && diff <(python -m json.tool openapi.json) <(python -m json.tool /tmp/openapi.json)
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: API types match the backend contract
+        run: npm run api:check
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+        env: { BACKEND_URL: "http://api.invalid" }

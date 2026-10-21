@@ -1,0 +1,515 @@
+{
+  "generated_at": "2026-10-21T09:52:32+00:00",
+  "schema_version": "1.0.0",
+  "summary": {
+    "seed_urls_attempted": 20,
+    "seed_urls_successfully_inspected": 19,
+    "seed_urls_unavailable_or_failed": [
+      "S19"
+    ],
+    "urls_requested": 1421,
+    "urls_discovered_in_records_not_fetched": 4916,
+    "urls_discovered_total": 6337,
+    "pages_fetched_ok": 1413,
+    "pages_parsed": 1259,
+    "records_total": 8117,
+    "canonical_systems": 510,
+    "systems_in_2plus_sources": 136,
+    "component_records": 3038,
+    "component_records_with_api": 396,
+    "token_records": 1708,
+    "pattern_and_guideline_records": 1794,
+    "review_queue_items": 125,
+    "validation_issues": 0
+  },
+  "manifest_outcomes": {
+    "fetched": 1413,
+    "http_error": 24,
+    "cache_hit": 2201
+  },
+  "pages_skipped": 0,
+  "blocked_pages": 0,
+  "failed_requests": 24,
+  "failed_examples": [
+    {
+      "url": "https://github.com/ardeshireshghi/design-system-checklist",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://api.github.com/repos/ardeshireshghi/design-system-checklist",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://www.designtokens.org/tr/",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/radix/form.md",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/r/styles/new-york-v4/code-block.json",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/r/styles/new-york-v4/questionnaire.json",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/r/styles/new-york-v4/toast.json",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/r/styles/new-york-v4/trace.json",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/radix/form.md",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/r/styles/new-york-v4/code-block.json",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/r/styles/new-york-v4/questionnaire.json",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/r/styles/new-york-v4/toast.json",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/r/styles/new-york-v4/trace.json",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/radix/form.md",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/r/styles/new-york-v4/code-block.json",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://www.designtokens.org/tr/",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/r/styles/new-york-v4/questionnaire.json",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/r/styles/new-york-v4/toast.json",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/r/styles/new-york-v4/trace.json",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/docs/components/radix/form.md",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/r/styles/new-york-v4/code-block.json",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/r/styles/new-york-v4/questionnaire.json",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/r/styles/new-york-v4/toast.json",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    },
+    {
+      "url": "https://ui.shadcn.com/r/styles/new-york-v4/trace.json",
+      "outcome": "http_error",
+      "status": 404,
+      "error": null
+    }
+  ],
+  "records_by_type": {
+    "system": 783,
+    "component": 3038,
+    "guideline": 1739,
+    "pattern": 55,
+    "resource": 413,
+    "repository": 6,
+    "tool": 172,
+    "specification": 203,
+    "token": 1708
+  },
+  "records_by_source": {
+    "S01": 3682,
+    "S02": 103,
+    "S03": 208,
+    "S04": 103,
+    "S05": 1,
+    "S06": 152,
+    "S07": 110,
+    "S08": 91,
+    "S09": 167,
+    "S10": 204,
+    "S11": 213,
+    "S12": 36,
+    "S13": 80,
+    "S14": 104,
+    "S15": 753,
+    "S16": 959,
+    "S17": 75,
+    "S18": 46,
+    "S19": 233,
+    "S20": 797
+  },
+  "category_counts": {
+    "C01 Design-System Strategy": 55,
+    "C02 Foundations": 1114,
+    "C03 Design Tokens": 1969,
+    "C05 Component Catalog": 3261,
+    "C06 Patterns and Product Workflows": 43,
+    "C07 Accessibility and Inclusive Design": 28,
+    "C08 Documentation and Governance": 187,
+    "C09 Engineering and Tooling": 324,
+    "C10 Theming and Brand Systems": 58,
+    "C12 Research and Comparative Analysis": 882,
+    "C13 AI-Ready Design-System Knowledge": 196
+  },
+  "duplicate_records_grouped": 907,
+  "review_queue_by_type": {
+    "system_field_conflict": 84,
+    "possible_duplicate_system": 40,
+    "same_source_component_duplicate": 1
+  },
+  "coverage_by_source": {
+    "S01": {
+      "name": "Design Systems Surf",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 180,
+      "pages_ok": 180,
+      "items_found": 155,
+      "records_emitted": 3682,
+      "error_count": 0,
+      "limitations": [
+        "Surf 'Pro' content and signed-in features were not accessed. Component-to-system links are index-level; linked official pages were not inspected by this adapter."
+      ]
+    },
+    "S02": {
+      "name": "Adele by UXPin",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 1,
+      "pages_ok": 1,
+      "items_found": 103,
+      "records_emitted": 103,
+      "error_count": 0,
+      "limitations": [
+        "Per-system Adele detail pages were not crawled; the main table carries the same attribute set. Values are Adele's own audit claims and dates are not shown per cell."
+      ]
+    },
+    "S03": {
+      "name": "Design Systems Repo",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 6,
+      "pages_ok": 6,
+      "items_found": 208,
+      "records_emitted": 208,
+      "error_count": 0,
+      "limitations": []
+    },
+    "S04": {
+      "name": "Storybook Showcase",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 104,
+      "pages_ok": 104,
+      "items_found": 103,
+      "records_emitted": 103,
+      "error_count": 0,
+      "limitations": [
+        "Catalog enumerated from the showcase page data (103 projects). Individual Storybook instances (stories, props, variants) were not crawled; doing so requires per-instance inspection."
+      ]
+    },
+    "S05": {
+      "name": "Design Systems Directory",
+      "crawl_status": "inspected_partial",
+      "http_status": 200,
+      "pages_attempted": 1,
+      "pages_ok": 1,
+      "items_found": 1,
+      "records_emitted": 1,
+      "error_count": 0,
+      "limitations": [
+        "The site is a Google Programmable Search Engine front-end; its indexed catalogue is not exposed as enumerable pages or data. Results were not scraped (querying Google's CSE programmatically is out of scope). Only site metadata and the claimed count were recorded."
+      ]
+    },
+    "S06": {
+      "name": "Awesome Design Systems (alexpate)",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 5,
+      "pages_ok": 5,
+      "items_found": 151,
+      "records_emitted": 152,
+      "error_count": 0,
+      "limitations": []
+    },
+    "S07": {
+      "name": "Awesome Design Systems (klaufel)",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 5,
+      "pages_ok": 5,
+      "items_found": 109,
+      "records_emitted": 110,
+      "error_count": 0,
+      "limitations": []
+    },
+    "S08": {
+      "name": "Design Systems (saadeghi)",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 5,
+      "pages_ok": 5,
+      "items_found": 90,
+      "records_emitted": 91,
+      "error_count": 0,
+      "limitations": []
+    },
+    "S09": {
+      "name": "Style Dictionary",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 18,
+      "pages_ok": 18,
+      "items_found": 167,
+      "records_emitted": 167,
+      "error_count": 0,
+      "limitations": [
+        "Examples directory READMEs were not decomposed; repository code was not executed."
+      ]
+    },
+    "S10": {
+      "name": "Design Tokens Community Group",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 32,
+      "pages_ok": 31,
+      "items_found": 204,
+      "records_emitted": 204,
+      "error_count": 0,
+      "limitations": [
+        "Meeting notes, issues and discussions were not mined. Maturity is reported from the published TR pages as found; repository Markdown may describe unreleased changes."
+      ]
+    },
+    "S11": {
+      "name": "shadcn/ui",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 163,
+      "pages_ok": 158,
+      "items_found": 65,
+      "records_emitted": 213,
+      "error_count": 5,
+      "limitations": []
+    },
+    "S12": {
+      "name": "Radix UI Primitives",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 39,
+      "pages_ok": 39,
+      "items_found": 35,
+      "records_emitted": 36,
+      "error_count": 0,
+      "limitations": [
+        "Radix docs are read from the official website repository MDX; rendered pages were not scraped. JSX descriptions are flattened to text."
+      ]
+    },
+    "S13": {
+      "name": "Base UI",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 81,
+      "pages_ok": 81,
+      "items_found": 37,
+      "records_emitted": 80,
+      "error_count": 0,
+      "limitations": []
+    },
+    "S14": {
+      "name": "React Aria",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 106,
+      "pages_ok": 106,
+      "items_found": 60,
+      "records_emitted": 104,
+      "error_count": 0,
+      "limitations": []
+    },
+    "S15": {
+      "name": "Mantine",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 272,
+      "pages_ok": 272,
+      "items_found": 180,
+      "records_emitted": 753,
+      "error_count": 0,
+      "limitations": []
+    },
+    "S16": {
+      "name": "Ant Design",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 141,
+      "pages_ok": 141,
+      "items_found": 72,
+      "records_emitted": 959,
+      "error_count": 0,
+      "limitations": []
+    },
+    "S17": {
+      "name": "The Design System Guide: Resources",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 1,
+      "pages_ok": 1,
+      "items_found": 75,
+      "records_emitted": 75,
+      "error_count": 0,
+      "limitations": [
+        "Descriptions are taken from the card text around each link; some source entries have no URL or a mismatched URL (recorded as published)."
+      ]
+    },
+    "S18": {
+      "name": "DesignSystems.com",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 45,
+      "pages_ok": 45,
+      "items_found": 46,
+      "records_emitted": 46,
+      "error_count": 0,
+      "limitations": [
+        "Article bodies were fetched to verify title/description; full guidance text was not decomposed into individual guideline records (copyrighted editorial content summarised by metadata only)."
+      ]
+    },
+    "S19": {
+      "name": "Design System Checklist",
+      "crawl_status": "unavailable_seed__substitute_extracted",
+      "http_status": 404,
+      "pages_attempted": 14,
+      "pages_ok": 8,
+      "items_found": 232,
+      "records_emitted": 233,
+      "error_count": 1,
+      "limitations": [
+        "Seed repository 404. Items were extracted from the discovered repository ardakaracizmeli/design-system-checklist (English translation files), which is the source linked by designsystemchecklist.com."
+      ]
+    },
+    "S20": {
+      "name": "Design Systems One",
+      "crawl_status": "inspected",
+      "http_status": 200,
+      "pages_attempted": 52,
+      "pages_ok": 52,
+      "items_found": 125,
+      "records_emitted": 797,
+      "error_count": 0,
+      "limitations": []
+    }
+  },
+  "validation": {
+    "issue_count": 0,
+    "dangling_relationships": 0,
+    "by_type": {}
+  },
+  "last_execution": "2026-10-21T09:52:32+00:00",
+  "export_validation": {
+    "checks": {
+      "design_systems_master.jsonl parses (8627 rows)": true,
+      "design_systems_master.jsonl row count == 8627": true,
+      "design_systems_master.jsonl unique record_ids": true,
+      "components.jsonl parses (3038 rows)": true,
+      "components.jsonl row count == 3038": true,
+      "components.jsonl unique record_ids": true,
+      "design_tokens.jsonl parses (1708 rows)": true,
+      "design_tokens.jsonl row count == 1708": true,
+      "design_tokens.jsonl unique record_ids": true,
+      "patterns_guidelines.jsonl parses (1794 rows)": true,
+      "patterns_guidelines.jsonl row count == 1794": true,
+      "patterns_guidelines.jsonl unique record_ids": true,
+      "retrieval_chunks.jsonl parses (9903 rows)": true,
+      "retrieval_chunks.jsonl row count == 9903": true,
+      "retrieval_chunks.jsonl unique record_ids": true,
+      "design_systems.json parses": true,
+      "sources.json parses": true,
+      "crawl_report.json parses": true,
+      "review_queue.json parses": true,
+      "design_systems.json entity count matches": true,
+      "sources.csv consistent column count": true,
+      "design_systems.csv consistent column count": true,
+      "components.csv consistent column count": true,
+      "components.csv rows == components.jsonl": true,
+      "sqlite records == master": true,
+      "sqlite components == components.jsonl": true,
+      "sqlite tokens == design_tokens.jsonl": true,
+      "sqlite systems == design_systems.json": true,
+      "xlsx components sheet rows == components": true,
+      "xlsx tokens sheet rows == tokens": true
+    },
+    "checks_failed": [],
+    "all_passed": true
+  }
+}

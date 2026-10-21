@@ -1,0 +1,88 @@
+@use 'mixins' as *;
+
+.hero {
+  padding: calc(var(--header-h) + clamp(48px, 10vw, 120px)) 0 clamp(40px, 6vw, 72px);
+  border-bottom: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: -10%;
+    top: -30%;
+    width: 60vw;
+    height: 60vw;
+    max-width: 900px;
+    max-height: 900px;
+    background: radial-gradient(circle, color-mix(in oklab, var(--accent) 10%, transparent), transparent 65%);
+    pointer-events: none;
+  }
+}
+
+.eyebrow {
+  @include mono-label;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  margin-bottom: 28px;
+
+  span {
+    color: var(--accent-ink);
+    background: var(--accent);
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+}
+
+.title {
+  font-size: clamp(2.6rem, 7.4vw, 7rem);
+  max-width: 14ch;
+
+  :global(.serif) {
+    color: var(--accent-text);
+  }
+  :global(.split-line) {
+    padding-bottom: 0.08em;
+  }
+}
+
+.row {
+  margin-top: clamp(28px, 4vw, 48px);
+  display: grid;
+  gap: 32px;
+
+  @include up(md) {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+}
+
+.intro {
+  max-width: 56ch;
+  color: var(--muted);
+  font-size: clamp(1rem, 1.3vw, 1.15rem);
+}
+
+.stats {
+  display: flex;
+  gap: clamp(20px, 3vw, 44px);
+  margin: 0;
+
+  div {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  dt {
+    @include mono-label;
+    color: var(--muted);
+  }
+  dd {
+    margin: 0;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    font-weight: 500;
+  }
+}

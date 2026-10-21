@@ -1,0 +1,72 @@
+@use 'sass:map';
+
+$breakpoints: (
+  sm: 640px,
+  md: 900px,
+  lg: 1200px,
+  xl: 1500px,
+);
+
+@mixin up($bp) {
+  @media (min-width: map.get($breakpoints, $bp)) {
+    @content;
+  }
+}
+
+@mixin down($bp) {
+  @media (max-width: (map.get($breakpoints, $bp) - 1px)) {
+    @content;
+  }
+}
+
+@mixin container {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+@mixin mono-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@mixin focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+}
+
+@mixin reset-button {
+  appearance: none;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* Spotlight that follows the pointer, driven by --mx/--my set in JS */
+@mixin spotlight($size: 360px, $alpha: 0.12) {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-out);
+    background: radial-gradient(
+      #{$size} circle at var(--mx, 50%) var(--my, 50%),
+      color-mix(in oklab, var(--accent) #{$alpha * 100%}, transparent),
+      transparent 70%
+    );
+  }
+  &:hover::before {
+    opacity: 1;
+  }
+}

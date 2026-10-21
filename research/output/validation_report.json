@@ -1,0 +1,44 @@
+{
+  "record_validation": {
+    "issue_count": 0,
+    "issues": [],
+    "dangling_relationships": 0,
+    "by_type": {}
+  },
+  "export_validation": {
+    "checks": {
+      "design_systems_master.jsonl parses (8627 rows)": true,
+      "design_systems_master.jsonl row count == 8627": true,
+      "design_systems_master.jsonl unique record_ids": true,
+      "components.jsonl parses (3038 rows)": true,
+      "components.jsonl row count == 3038": true,
+      "components.jsonl unique record_ids": true,
+      "design_tokens.jsonl parses (1708 rows)": true,
+      "design_tokens.jsonl row count == 1708": true,
+      "design_tokens.jsonl unique record_ids": true,
+      "patterns_guidelines.jsonl parses (1794 rows)": true,
+      "patterns_guidelines.jsonl row count == 1794": true,
+      "patterns_guidelines.jsonl unique record_ids": true,
+      "retrieval_chunks.jsonl parses (9903 rows)": true,
+      "retrieval_chunks.jsonl row count == 9903": true,
+      "retrieval_chunks.jsonl unique record_ids": true,
+      "design_systems.json parses": true,
+      "sources.json parses": true,
+      "crawl_report.json parses": true,
+      "review_queue.json parses": true,
+      "design_systems.json entity count matches": true,
+      "sources.csv consistent column count": true,
+      "design_systems.csv consistent column count": true,
+      "components.csv consistent column count": true,
+      "components.csv rows == components.jsonl": true,
+      "sqlite records == master": true,
+      "sqlite components == components.jsonl": true,
+      "sqlite tokens == design_tokens.jsonl": true,
+      "sqlite systems == design_systems.json": true,
+      "xlsx components sheet rows == components": true,
+      "xlsx tokens sheet rows == tokens": true
+    },
+    "checks_failed": [],
+    "all_passed": true
+  }
+}

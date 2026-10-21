@@ -1,0 +1,1728 @@
+[
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:brand-aalto-fi",
+  "details": {
+   "documentation_url": [
+    "S01: https://brand.aalto.fi/en/ds",
+    "S06: https://brand.aalto.fi/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:cloudscape-design",
+  "details": {
+   "organization": {
+    "Amazon": 1,
+    "AWS": 1,
+    "Amazon Web Services": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:ant-design",
+  "details": {
+   "documentation_url": [
+    "S01: https://ant.design/",
+    "S02: https://ant.design",
+    "S03: https://ant.design/",
+    "S06: https://ant.design",
+    "S08: https://ant.design/docs/spec/introduce",
+    "S20: https://ant.design/"
+   ],
+   "organization": {
+    "Ant Group": 2,
+    "Ant Financial": 2
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:developer-apple-com",
+  "details": {
+   "documentation_url": [
+    "S01: https://developer.apple.com/design/",
+    "S03: https://developer.apple.com/ios/human-interface-guidelines/overview/themes/",
+    "S06: https://developer.apple.com/design/",
+    "S08: https://developer.apple.com/design/human-interface-guidelines/",
+    "S20: https://developer.apple.com/design/human-interface-guidelines/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:atlassian-design",
+  "details": {
+   "organization": {
+    "Atlassian": 3,
+    "atlassian": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:bbc-co-uk",
+  "details": {
+   "documentation_url": [
+    "S01: https://www.bbc.co.uk/gel",
+    "S02: http://www.bbc.co.uk/gel",
+    "S03: http://www.bbc.co.uk/gel/",
+    "S06: https://www.bbc.co.uk/gel"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:designsystem-dk",
+  "details": {
+   "organization": {
+    "Denmark": 1,
+    "Digitaliseringsstyrelsen & Erhvervsstyrelsen": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:playbook-ebay-com",
+  "details": {
+   "documentation_url": [
+    "S01: https://playbook.ebay.com/",
+    "S20: https://playbook.ebay.com/design-system"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:primer-style",
+  "details": {
+   "organization": {
+    "GitHub": 4,
+    "github": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:design-gitlab-com",
+  "details": {
+   "organization": {
+    "GitLab": 4,
+    "Gitlab": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:m3-material-io",
+  "details": {
+   "documentation_url": [
+    "S01: https://m3.material.io/",
+    "S03: https://material.io/",
+    "S06: https://material.io/guidelines/#introduction-goals",
+    "S07: https://material.io/design",
+    "S08: https://material.io/",
+    "S20: https://m3.material.io/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:design-system-service-gov-uk",
+  "details": {
+   "documentation_url": [
+    "S01: https://design-system.service.gov.uk/",
+    "S02: https://design-system.service.gov.uk/",
+    "S03: https://design-system.service.gov.uk/",
+    "S06: https://www.gov.uk/design-system",
+    "S20: https://design-system.service.gov.uk/"
+   ],
+   "organization": {
+    "GOV.UK": 3,
+    "UK Government": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:carbondesignsystem-com",
+  "details": {
+   "documentation_url": [
+    "S01: https://carbondesignsystem.com/",
+    "S02: http://carbondesignsystem.com/",
+    "S03: https://www.carbondesignsystem.com/",
+    "S06: https://www.carbondesignsystem.com/",
+    "S07: https://www.carbondesignsystem.com/",
+    "S08: https://www.carbondesignsystem.com/",
+    "S20: https://www.carbondesignsystem.com/"
+   ],
+   "organization": {
+    "IBM": 4,
+    "Carbon Design System": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:sage-kajabi-com",
+  "details": {
+   "documentation_url": [
+    "S01: https://sage.kajabi.com/pages/index",
+    "S02: https://sage.kajabi.com",
+    "S06: https://sage.kajabi.com"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:orbit-kiwi",
+  "details": {
+   "organization": {
+    "Kiwicom": 1,
+    "Kiwi.com": 1,
+    "kiwicom": 1,
+    "Kiwi": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:duetds-com",
+  "details": {
+   "organization": {
+    "LocalTapiola": 2,
+    "LocalTapiola Services Ltd": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:fluent2-microsoft-design",
+  "details": {
+   "documentation_url": [
+    "S01: https://fluent2.microsoft.design/",
+    "S02: https://developer.microsoft.com/en-us/fabric",
+    "S03: https://developer.microsoft.com/en-us/fabric",
+    "S06: https://developer.microsoft.com/en-us/fluentui#/",
+    "S06: https://www.microsoft.com/design/fluent/",
+    "S08: https://www.microsoft.com/design/fluent/",
+    "S20: https://fluent2.microsoft.design/"
+   ],
+   "organization": {
+    "Microsoft": 5,
+    "microsoft": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:style-monday-com",
+  "details": {
+   "organization": {
+    "Monday.com": 1,
+    "Monday": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:mongodb-design",
+  "details": {
+   "documentation_url": [
+    "S01: https://www.mongodb.design/",
+    "S02: http://mongodb.design/#/ui-design-system/welcome",
+    "S03: http://mongodb.design/#/ui-design-system/welcome",
+    "S06: http://mongodb.design",
+    "S08: http://mongodb.design/",
+    "S20: https://www.mongodb.design/"
+   ],
+   "organization": {
+    "MongoDB": 4,
+    "mongoDB": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:protocol-mozilla-org",
+  "details": {
+   "organization": {
+    "Mozilla": 2,
+    "mozilla": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:designsystem-ny-gov",
+  "details": {
+   "documentation_url": [
+    "S01: https://designsystem.ny.gov/",
+    "S06: https://designsystem.ny.gov/components/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:blueprintjs-com",
+  "details": {
+   "documentation_url": [
+    "S01: https://blueprintjs.com/docs/",
+    "S06: https://blueprintjs.com/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:design-system-pluralsight-com",
+  "details": {
+   "documentation_url": [
+    "S01: https://design-system.pluralsight.com/",
+    "S02: http://design-system.pluralsight.com/",
+    "S03: https://design-system.pluralsight.com/",
+    "S06: https://design-system.pluralsight.com/"
+   ],
+   "organization": {
+    "Pluralsight": 2,
+    "pluralsight": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:designsystem-porsche-com",
+  "details": {
+   "documentation_url": [
+    "S01: https://designsystem.porsche.com/v3/",
+    "S06: https://designsystem.porsche.com"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:patternfly-org",
+  "details": {
+   "documentation_url": [
+    "S01: https://www.patternfly.org/",
+    "S02: https://www.patternfly.org/",
+    "S03: https://www.patternfly.org/v4/",
+    "S20: https://www.patternfly.org/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:cedar-rei-com",
+  "details": {
+   "documentation_url": [
+    "S01: https://cedar.rei.com/",
+    "S02: http://rei.github.io/rei-cedar/",
+    "S03: https://rei.github.io/rei-cedar-docs/",
+    "S06: https://rei.github.io/rei-cedar-docs/",
+    "S08: https://cedar.rei.com"
+   ],
+   "organization": {
+    "Rei": 1,
+    "rei": 1,
+    "REI": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:lightningdesignsystem-com",
+  "details": {
+   "documentation_url": [
+    "S01: https://www.lightningdesignsystem.com/",
+    "S02: https://www.lightningdesignsystem.com/",
+    "S03: https://www.lightningdesignsystem.com/",
+    "S06: https://www.lightningdesignsystem.com",
+    "S08: https://lightningdesignsystem.com/",
+    "S20: https://www.lightningdesignsystem.com/"
+   ],
+   "organization": {
+    "Salesforce": 4,
+    "salesforce": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:evergreen-segment-com",
+  "details": {
+   "documentation_url": [
+    "S01: https://evergreen.segment.com/",
+    "S03: https://evergreen.segment.com/",
+    "S06: https://evergreen.surge.sh",
+    "S08: https://evergreen.segment.com/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:polaris-shopify-com",
+  "details": {
+   "organization": {
+    "Shopify": 3,
+    "shopify": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:tailwindcss-com",
+  "details": {
+   "documentation_url": [
+    "S01: https://tailwindcss.com/",
+    "S20: https://tailwindcss.com/plus"
+   ],
+   "organization": {
+    "Tailwind": 1,
+    "Tailwind Labs": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:paste-twilio-design",
+  "details": {
+   "organization": {
+    "Twilio": 3,
+    "twilio": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:designsystem-digital-gov",
+  "details": {
+   "organization": {
+    "U.S. Web": 1,
+    "18F": 1,
+    "U.S. Government": 2
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:vercel-com",
+  "details": {
+   "documentation_url": [
+    "S01: https://vercel.com/design/introduction",
+    "S06: https://vercel.com/geist",
+    "S08: https://vercel.com/design",
+    "S20: https://vercel.com/geist"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:canvas-workday-com",
+  "details": {
+   "documentation_url": [
+    "S01: https://canvas.workday.com/",
+    "S02: https://design.workday.com/",
+    "S03: https://design.workday.com/",
+    "S06: https://design.workday.com/",
+    "S08: https://design.workday.com/",
+    "S20: https://canvas.workday.com/"
+   ],
+   "organization": {
+    "Workday": 4,
+    "workday": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:pricelinelabs-github-iodesign-system",
+  "details": {
+   "organization": {
+    "priceline": 1,
+    "Priceline": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:design-firefox-com",
+  "details": {
+   "documentation_url": [
+    "S02: http://design.firefox.com/",
+    "S03: https://design.firefox.com/photon/",
+    "S07: https://design.firefox.com/photon"
+   ],
+   "organization": {
+    "mozilla firefox": 1,
+    "Firefox": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:bloom-appearhere-co-uk",
+  "details": {
+   "documentation_url": [
+    "S02: http://bloom.appearhere.co.uk/",
+    "S06: https://bloom.appearhere.co.uk/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:style-helpscout-com",
+  "details": {
+   "documentation_url": [
+    "S02: http://style.helpscout.com/",
+    "S03: http://style.helpscout.com/",
+    "S08: https://style.helpscout.com/visual-elements/"
+   ],
+   "organization": {
+    "help scout": 1,
+    "Help Scout": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:design-trello-com",
+  "details": {
+   "organization": {
+    "trello": 1,
+    "Trello": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:design-mixpanel-com",
+  "details": {
+   "organization": {
+    "mixpanel": 1,
+    "Mixpanel Design System": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:solid-buzzfeed-com",
+  "details": {
+   "documentation_url": [
+    "S02: http://solid.buzzfeed.com/",
+    "S03: https://solid.buzzfeed.com/",
+    "S06: https://solid.buzzfeed.com/"
+   ],
+   "organization": {
+    "buzzfeed": 1,
+    "BuzzFeed": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:futurelearn-com",
+  "details": {
+   "organization": {
+    "future learn": 1,
+    "FutureLearn": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:grommet-io",
+  "details": {
+   "documentation_url": [
+    "S02: http://grommet.io/",
+    "S03: http://grommet.io/",
+    "S06: https://grommet.github.io"
+   ],
+   "organization": {
+    "HP enterprise": 1,
+    "Hewlett Packard": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:rizzo-lonelyplanet-com",
+  "details": {
+   "documentation_url": [
+    "S02: http://rizzo.lonelyplanet.com/styleguide/design-elements/colours",
+    "S03: http://rizzo.lonelyplanet.com/",
+    "S08: https://rizzo.lonelyplanet.com/styleguide/design-elements/colours"
+   ],
+   "organization": {
+    "lonely planet": 1,
+    "Lonely Planet": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:designsystem-morningstar-com",
+  "details": {
+   "organization": {
+    "morningstar": 1,
+    "Morningstar": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:audi-com",
+  "details": {
+   "documentation_url": [
+    "S02: http://www.audi.com/ci/en/guides/user-interface/introduction.html",
+    "S03: http://www.audi.com/ci/en/guides/user-interface/introduction.html",
+    "S08: https://www.audi.com/ci/en/intro/brand-appearance.html",
+    "S20: https://www.audi.com/ci/"
+   ],
+   "organization": {
+    "audi": 1,
+    "Audi": 2
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:seek-oss-github-ioseek-style-guide",
+  "details": {
+   "documentation_url": [
+    "S02: https://seek-oss.github.io/seek-style-guide/",
+    "S03: http://seek-oss.github.io/seek-style-guide/"
+   ],
+   "organization": {
+    "seek": 1,
+    "Seek": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:backpack-github-io",
+  "details": {
+   "organization": {
+    "skyscanner": 1,
+    "Skyscanner": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:predix-ui-com",
+  "details": {
+   "organization": {
+    "GE Digital": 1,
+    "General Electric": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:lexicondesign-io",
+  "details": {
+   "organization": {
+    "liferay": 1,
+    "Liferay": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:styleguide-pivotal-io",
+  "details": {
+   "documentation_url": [
+    "S02: https://styleguide.pivotal.io/",
+    "S06: https://pivotal-cf.github.io/pivotal-ui/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:stackoverflow-design",
+  "details": {
+   "documentation_url": [
+    "S02: https://stackoverflow.design/",
+    "S03: https://stackoverflow.design/",
+    "S06: https://stackoverflow.design/",
+    "S08: https://stackoverflow.design/product/guidelines/using-stacks/"
+   ],
+   "organization": {
+    "stack overflow": 1,
+    "Stack Overflow": 2
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:jetbrains-org",
+  "details": {
+   "documentation_url": [
+    "S02: http://www.jetbrains.org/ring-ui/index.html",
+    "S06: https://jetbrains.github.io/ring-ui"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:canvas-hubspot-com",
+  "details": {
+   "organization": {
+    "hubspot": 1,
+    "Hubspot": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:meetup-github-ioswarm-design-system",
+  "details": {
+   "organization": {
+    "meetup": 1,
+    "Meetup": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:mesosphere-github-iocnvs",
+  "details": {
+   "documentation_url": [
+    "S02: http://mesosphere.github.io/cnvs/",
+    "S08: https://mesosphere.github.io/cnvs/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:ux-opower-com",
+  "details": {
+   "organization": {
+    "opower": 1,
+    "OPower": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:mapbox-com",
+  "details": {
+   "organization": {
+    "mapbox": 1,
+    "Mapbox": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:feelix-myob-com",
+  "details": {
+   "documentation_url": [
+    "S02: http://feelix.myob.com/",
+    "S03: http://feelix.myob.com/",
+    "S08: https://feelix.myob.com/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:uniform-hudl-com",
+  "details": {
+   "organization": {
+    "hudl": 1,
+    "Hudl": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:designsystem-quickbooks-com",
+  "details": {
+   "organization": {
+    "intuit": 1,
+    "QuickBooks": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:pinterest-github-iogestalt",
+  "details": {
+   "documentation_url": [
+    "S02: https://pinterest.github.io/gestalt/#/",
+    "S06: https://pinterest.github.io/gestalt/#/",
+    "S20: https://gestalt.pinterest.systems/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:design-alfabank-ru",
+  "details": {
+   "documentation_url": [
+    "S02: https://design.alfabank.ru/",
+    "S03: http://design.alfabank.ru/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:designsystem-gov-au",
+  "details": {
+   "organization": {
+    "Digital Transformation Agency": 1,
+    "Australian Government": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:styleguide-vtex-com",
+  "details": {
+   "documentation_url": [
+    "S02: http://styleguide.vtex.com",
+    "S03: https://styleguide.vtex.com/",
+    "S06: https://styleguide.vtex.com/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:bold-bridge-ufsc-br",
+  "details": {
+   "documentation_url": [
+    "S02: https://bold.bridge.ufsc.br/",
+    "S06: https://bold.bridge.ufsc.tech/",
+    "S08: https://bold.bridge.ufsc.br/en/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:vanillaframework-io",
+  "details": {
+   "organization": {
+    "canonical": 1,
+    "Ubuntu": 1,
+    "Canonical Web Team": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:anvil-servicetitan-com",
+  "details": {
+   "documentation_url": [
+    "S02: http://anvil.servicetitan.com",
+    "S03: http://anvil.servicetitan.com",
+    "S08: https://anvil.servicetitan.com/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:engie-design",
+  "details": {
+   "documentation_url": [
+    "S02: https://www.engie.design/",
+    "S06: https://www.engie.design",
+    "S08: https://www.engie.design/fluid-design-system/"
+   ],
+   "organization": {
+    "ENGIE": 1,
+    "ENGIE.design": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:luna-sainsburys-co-uk",
+  "details": {
+   "documentation_url": [
+    "S02: https://luna.sainsburys.co.uk/",
+    "S03: https://luna.sainsburys.co.uk/guidelines"
+   ],
+   "organization": {
+    "sainsbury's": 1,
+    "Sainsbury’s": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:design-fusionfabric-cloud",
+  "details": {
+   "organization": {
+    "finastra": 1,
+    "Finastra": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:designers-italia-it",
+  "details": {
+   "documentation_url": [
+    "S03: https://designers.italia.it/",
+    "S06: https://designers.italia.it/design-system/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:pulse-heartbeat-ua",
+  "details": {
+   "organization": {
+    "Heartbeat": 1,
+    "Heartbeat Agency": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:etrade-design",
+  "details": {
+   "documentation_url": [
+    "S03: http://etrade.design/",
+    "S08: https://etrade.design/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:experience-sap-com",
+  "details": {
+   "documentation_url": [
+    "S03: https://experience.sap.com/fiori-design-web/",
+    "S06: https://experience.sap.com/fiori-design/",
+    "S08: https://experience.sap.com/fiori-design-web/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:fishtank-bna-com",
+  "details": {
+   "organization": {
+    "Bloomberg BNA": 1,
+    "Bloomberg": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:ibm-com",
+  "details": {
+   "documentation_url": [
+    "S03: https://www.ibm.com/design/language/",
+    "S06: https://www.ibm.com/design/language/",
+    "S06: https://www.ibm.com/standards/web/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:ux-mailchimp-com",
+  "details": {
+   "documentation_url": [
+    "S03: http://ux.mailchimp.com/patterns",
+    "S08: https://ux.mailchimp.com/patterns/buttons"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:design-bulb-co-uk",
+  "details": {
+   "documentation_url": [
+    "S03: http://design.bulb.co.uk/",
+    "S08: https://design.bulb.co.uk/getting-started/introduction"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:chakra-ui-com",
+  "details": {
+   "organization": {
+    "Chakra": 1,
+    "Chakra Systems": 1
+   }
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:skyscanner-design",
+  "details": {
+   "documentation_url": [
+    "S06: https://skyscanner.design/",
+    "S20: https://www.skyscanner.design/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:mui-com",
+  "details": {
+   "documentation_url": [
+    "S06: https://mui.com/material-ui/",
+    "S20: https://mui.com/"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:service-manual-nhs-uk",
+  "details": {
+   "documentation_url": [
+    "S06: https://service-manual.nhs.uk/",
+    "S20: https://service-manual.nhs.uk/design-system"
+   ]
+  }
+ },
+ {
+  "type": "system_field_conflict",
+  "entity": "dsys:welcome-ui-com",
+  "details": {
+   "documentation_url": [
+    "S06: http://www.welcome-ui.com/",
+    "S08: http://welcome-ui.com/"
+   ]
+  }
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Adobe",
+  "entities": [
+   {
+    "system_id": "dsys:spectrum-adobe-com",
+    "name": "Spectrum",
+    "site": "spectrum.adobe.com"
+   },
+   {
+    "system_id": "dsys:adobe-spectrum-web-components",
+    "name": "Spectrum Web Components",
+    "site": null
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Audi",
+  "entities": [
+   {
+    "system_id": "dsys:styleguide-audi-com",
+    "name": "Design System",
+    "site": "styleguide.audi.com"
+   },
+   {
+    "system_id": "dsys:audi-com",
+    "name": "Audi UI",
+    "site": "audi.com"
+   },
+   {
+    "system_id": "dsys:audi-ui-react",
+    "name": "UI React",
+    "site": null
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "BBC",
+  "entities": [
+   {
+    "system_id": "dsys:bbc-co-uk",
+    "name": "Design System",
+    "site": "bbc.co.uk"
+   },
+   {
+    "system_id": "dsys:bbc-psammead",
+    "name": "Psammead",
+    "site": null
+   },
+   {
+    "system_id": "dsys:bbc-github-iogel",
+    "name": "BBC GEL",
+    "site": "bbc.github.io/gel"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Brainly",
+  "entities": [
+   {
+    "system_id": "dsys:design-brainly-com",
+    "name": "Pencil",
+    "site": "design.brainly.com"
+   },
+   {
+    "system_id": "dsys:styleguide-brainly-com",
+    "name": "Brainly Style Guide",
+    "site": "styleguide.brainly.com"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "CBRE Build",
+  "entities": [
+   {
+    "system_id": "dsys:cbre-build-blocks",
+    "name": "Blocks",
+    "site": null
+   },
+   {
+    "system_id": "dsys:blocks-cbrebuild-com",
+    "name": "Blocks Design System",
+    "site": "blocks.cbrebuild.com"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Elastic",
+  "entities": [
+   {
+    "system_id": "dsys:elastic-github-ioeui",
+    "name": "Design System",
+    "site": "elastic.github.io/eui"
+   },
+   {
+    "system_id": "dsys:elastic-elastic-charts",
+    "name": "Elastic Charts",
+    "site": null
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "GitHub",
+  "entities": [
+   {
+    "system_id": "dsys:primer-style",
+    "name": "Primer",
+    "site": "primer.style"
+   },
+   {
+    "system_id": "dsys:styleguide-github-comprimer",
+    "name": "Primer",
+    "site": "styleguide.github.com/primer"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "GitLab",
+  "entities": [
+   {
+    "system_id": "dsys:design-gitlab-com",
+    "name": "Pajamas",
+    "site": "design.gitlab.com"
+   },
+   {
+    "system_id": "dsys:gitlab-gitlab-ui",
+    "name": "GitLab UI",
+    "site": null
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "IBM",
+  "entities": [
+   {
+    "system_id": "dsys:carbondesignsystem-com",
+    "name": "Carbon",
+    "site": "carbondesignsystem.com"
+   },
+   {
+    "system_id": "dsys:ibm-com",
+    "name": "IBM Design Language",
+    "site": "ibm.com"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Mailchimp",
+  "entities": [
+   {
+    "system_id": "dsys:mailchimp-design-system",
+    "name": "Design System",
+    "site": null
+   },
+   {
+    "system_id": "dsys:ux-mailchimp-com",
+    "name": "MailChimp Pattern Library",
+    "site": "ux.mailchimp.com"
+   },
+   {
+    "system_id": "dsys:mailchimp-com",
+    "name": "Mailchimp Design System",
+    "site": "mailchimp.com"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Microsoft",
+  "entities": [
+   {
+    "system_id": "dsys:fluent2-microsoft-design",
+    "name": "Fluent UI",
+    "site": "fluent2.microsoft.design"
+   },
+   {
+    "system_id": "dsys:microsoft-vscode-webview-ui-toolkit",
+    "name": "VSCode Webview UI Toolkit",
+    "site": null
+   },
+   {
+    "system_id": "dsys:fast-design",
+    "name": "Fast",
+    "site": "fast.design"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Mixpanel",
+  "entities": [
+   {
+    "system_id": "dsys:mixpanel-design-system",
+    "name": "Design System",
+    "site": null
+   },
+   {
+    "system_id": "dsys:design-mixpanel-com",
+    "name": "Mixpanel DS",
+    "site": "design.mixpanel.com"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Morningstar",
+  "entities": [
+   {
+    "system_id": "dsys:design-morningstar-com",
+    "name": "Design System",
+    "site": "design.morningstar.com"
+   },
+   {
+    "system_id": "dsys:designsystem-morningstar-com",
+    "name": "morningstar design system",
+    "site": "designsystem.morningstar.com"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Pinterest",
+  "entities": [
+   {
+    "system_id": "dsys:pinterest-gestalt",
+    "name": "Gestalt",
+    "site": null
+   },
+   {
+    "system_id": "dsys:pinterest-github-iogestalt",
+    "name": "Gestalt",
+    "site": "pinterest.github.io/gestalt"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Salesforce",
+  "entities": [
+   {
+    "system_id": "dsys:lightningdesignsystem-com",
+    "name": "Lightning Design System",
+    "site": "lightningdesignsystem.com"
+   },
+   {
+    "system_id": "dsys:salesforce-lightning-design-system-for-react",
+    "name": "Lightning Design System for React",
+    "site": null
+   },
+   {
+    "system_id": "dsys:salesforce-newport-design-system",
+    "name": "Newport Design System",
+    "site": null
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "SAP",
+  "entities": [
+   {
+    "system_id": "dsys:sap-com",
+    "name": "Fiori",
+    "site": "sap.com"
+   },
+   {
+    "system_id": "dsys:experience-sap-com",
+    "name": "SAP Fiori",
+    "site": "experience.sap.com"
+   },
+   {
+    "system_id": "dsys:sap-github-iofundamental",
+    "name": "Fiori Fundamentals",
+    "site": "sap.github.io/fundamental"
+   },
+   {
+    "system_id": "dsys:sap-fundamental-styles",
+    "name": "fundamental-styles",
+    "site": null
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Seek",
+  "entities": [
+   {
+    "system_id": "dsys:seek-oss-github-iobraid-design-system",
+    "name": "Braid",
+    "site": "seek-oss.github.io/braid-design-system"
+   },
+   {
+    "system_id": "dsys:seek-oss-github-ioseek-style-guide",
+    "name": "style guide",
+    "site": "seek-oss.github.io/seek-style-guide"
+   },
+   {
+    "system_id": "dsys:github-comseek-ossbraid-design-system",
+    "name": "Braid Design System",
+    "site": "github.com/seek-oss/braid-design-system"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "ServiceNow",
+  "entities": [
+   {
+    "system_id": "dsys:horizon-servicenow-com",
+    "name": "Horizon",
+    "site": "horizon.servicenow.com"
+   },
+   {
+    "system_id": "dsys:styleguide-servicenow-com",
+    "name": "ServiceNow Design System",
+    "site": "styleguide.servicenow.com"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Shopify",
+  "entities": [
+   {
+    "system_id": "dsys:polaris-shopify-com",
+    "name": "Polaris",
+    "site": "polaris.shopify.com"
+   },
+   {
+    "system_id": "dsys:shopify-polaris-viz",
+    "name": "Polaris Viz",
+    "site": null
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Sprout Social",
+  "entities": [
+   {
+    "system_id": "dsys:seeds-sproutsocial-com",
+    "name": "Seeds",
+    "site": "seeds.sproutsocial.com"
+   },
+   {
+    "system_id": "dsys:sproutsocial-com",
+    "name": "Seeds",
+    "site": "sproutsocial.com"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Uber",
+  "entities": [
+   {
+    "system_id": "dsys:base-uber-com",
+    "name": "Base",
+    "site": "base.uber.com"
+   },
+   {
+    "system_id": "dsys:baseweb-design",
+    "name": "Uber's Base Web",
+    "site": "baseweb.design"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Vercel",
+  "entities": [
+   {
+    "system_id": "dsys:vercel-com",
+    "name": "Geist",
+    "site": "vercel.com"
+   },
+   {
+    "system_id": "dsys:vercel-co",
+    "name": "Vercel",
+    "site": "vercel.co"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "dropbox",
+  "entities": [
+   {
+    "system_id": "dsys:dropbox-github-ioscooter",
+    "name": "scooter",
+    "site": "dropbox.github.io/scooter"
+   },
+   {
+    "system_id": "dsys:dropbox-design",
+    "name": "Dropbox Design",
+    "site": "dropbox.design"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "auth0",
+  "entities": [
+   {
+    "system_id": "dsys:styleguide-auth0-com",
+    "name": "styleguide",
+    "site": "styleguide.auth0.com"
+   },
+   {
+    "system_id": "dsys:auth0-cosmos-now-sh",
+    "name": "cosmos",
+    "site": "auth0-cosmos.now.sh"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "CA Technologies",
+  "entities": [
+   {
+    "system_id": "dsys:mineral-ui-netlify-app",
+    "name": "Mineral UI",
+    "site": "mineral-ui.netlify.app"
+   },
+   {
+    "system_id": "dsys:mineral-ui-com",
+    "name": "Mineral UI",
+    "site": "mineral-ui.com"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "heroku",
+  "entities": [
+   {
+    "system_id": "dsys:purple3-herokuapp-com",
+    "name": "purple3",
+    "site": "purple3.herokuapp.com"
+   },
+   {
+    "system_id": "dsys:design-herokai-com",
+    "name": "Heroku Purple3",
+    "site": "design.herokai.com"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "lonely planet",
+  "entities": [
+   {
+    "system_id": "dsys:rizzo-lonelyplanet-com",
+    "name": "rizzo",
+    "site": "rizzo.lonelyplanet.com"
+   },
+   {
+    "system_id": "dsys:lonely-planet-backpack-ui",
+    "name": "Backpack UI",
+    "site": null
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "cloudflare",
+  "entities": [
+   {
+    "system_id": "dsys:cloudflare-github-iocf-ui",
+    "name": "cf-ui",
+    "site": "cloudflare.github.io/cf-ui"
+   },
+   {
+    "system_id": "dsys:kumo-ui-com",
+    "name": "Kumo",
+    "site": "kumo-ui.com"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "skyscanner",
+  "entities": [
+   {
+    "system_id": "dsys:backpack-github-io",
+    "name": "backpack",
+    "site": "backpack.github.io"
+   },
+   {
+    "system_id": "dsys:skyscanner-design",
+    "name": "Backpack",
+    "site": "skyscanner.design"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "liferay",
+  "entities": [
+   {
+    "system_id": "dsys:lexicondesign-io",
+    "name": "Lexicon",
+    "site": "lexicondesign.io"
+   },
+   {
+    "system_id": "dsys:liferay-design",
+    "name": "Lexicon",
+    "site": "liferay.design"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "intuit",
+  "entities": [
+   {
+    "system_id": "dsys:intuit-harmony",
+    "name": "harmony",
+    "site": null
+   },
+   {
+    "system_id": "dsys:designsystem-quickbooks-com",
+    "name": "QuickBooks Design System",
+    "site": "designsystem.quickbooks.com"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Wonderbly",
+  "entities": [
+   {
+    "system_id": "dsys:design-system-lostmy-name",
+    "name": "Wonderbly Design System",
+    "site": "design-system.lostmy.name"
+   },
+   {
+    "system_id": "dsys:design-system-wonderbly-com",
+    "name": "Wonderbly Design System",
+    "site": "design-system.wonderbly.com"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "VMware",
+  "entities": [
+   {
+    "system_id": "dsys:vmware-github-ioclarity",
+    "name": "Clarity Design System",
+    "site": "vmware.github.io/clarity"
+   },
+   {
+    "system_id": "dsys:clarity-design",
+    "name": "Clarity Design System",
+    "site": "clarity.design"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "VTEX",
+  "entities": [
+   {
+    "system_id": "dsys:styleguide-vtex-com",
+    "name": "Styleguide",
+    "site": "styleguide.vtex.com"
+   },
+   {
+    "system_id": "dsys:shoreline-vtex-com",
+    "name": "Shoreline",
+    "site": "shoreline.vtex.com"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "finastra",
+  "entities": [
+   {
+    "system_id": "dsys:design-fusionfabric-cloud",
+    "name": "Finastra Design System",
+    "site": "design.fusionfabric.cloud"
+   },
+   {
+    "system_id": "dsys:finastra-finastra-design-system",
+    "name": "Finastra Design System",
+    "site": null
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Oracle",
+  "entities": [
+   {
+    "system_id": "dsys:oracle-com",
+    "name": "Alta",
+    "site": "oracle.com"
+   },
+   {
+    "system_id": "dsys:docs-oracle-com",
+    "name": "Redwood",
+    "site": "docs.oracle.com"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "React95",
+  "entities": [
+   {
+    "system_id": "dsys:react95-github-ioreact95",
+    "name": "React95",
+    "site": "react95.github.io/react95"
+   },
+   {
+    "system_id": "dsys:react95-react95",
+    "name": "React95",
+    "site": null
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "AirBnb",
+  "entities": [
+   {
+    "system_id": "dsys:airbnb-react-dates",
+    "name": "React-Dates",
+    "site": null
+   },
+   {
+    "system_id": "dsys:medium-comairbnb-design",
+    "name": "Airbnb DLS",
+    "site": "medium.com/airbnb-design"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Reaviz",
+  "entities": [
+   {
+    "system_id": "dsys:reaviz-reaviz-chart-library",
+    "name": "Reaviz chart library",
+    "site": null
+   },
+   {
+    "system_id": "dsys:reaviz-reaflow-diagrams",
+    "name": "Reaflow diagrams",
+    "site": null
+   },
+   {
+    "system_id": "dsys:reaviz-reagraph",
+    "name": "Reagraph",
+    "site": null
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "possible_duplicate_system",
+  "organization": "Codecademy",
+  "entities": [
+   {
+    "system_id": "dsys:codecademy-gamut",
+    "name": "Gamut",
+    "site": null
+   },
+   {
+    "system_id": "dsys:gamut-codecademy-com",
+    "name": "Gamut Design System",
+    "site": "gamut.codecademy.com"
+   }
+  ],
+  "reason": "Same organisation name with different documentation hosts; may be distinct systems or moved docs."
+ },
+ {
+  "type": "same_source_component_duplicate",
+  "group": "dcmp:dsysmantine-dev:codehighlight",
+  "records": [
+   "cmp:s15:code-highlight-code-highlight",
+   "cmp:s15:x-code-highlight"
+  ]
+ }
+]

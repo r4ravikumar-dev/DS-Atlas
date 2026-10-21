@@ -1,0 +1,139 @@
+@use 'mixins' as *;
+
+.section {
+  position: relative;
+  padding: clamp(72px, 10vw, 120px) 0 0;
+  overflow: hidden;
+
+  @include up(md) {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-top: calc(var(--header-h) + 32px);
+  }
+}
+
+.head {
+  h2 {
+    font-size: clamp(2.2rem, 5vw, 4.6rem);
+    margin-top: 12px;
+  }
+  :global(.mono) {
+    color: var(--muted);
+  }
+  :global(.serif) {
+    color: var(--accent-text);
+  }
+}
+
+.bar {
+  @include container;
+  margin-top: 28px;
+  display: none;
+
+  @include up(md) {
+    display: block;
+  }
+
+  span {
+    display: block;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    box-shadow: 0 0 0 1px var(--line);
+  }
+}
+
+.track {
+  display: grid;
+  gap: 16px;
+  padding: 40px var(--gutter);
+
+  @include up(md) {
+    display: flex;
+    flex: 1;
+    gap: 24px;
+    width: max-content;
+    padding-block: 40px 56px;
+    align-items: stretch;
+  }
+}
+
+.panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: linear-gradient(160deg, color-mix(in oklab, var(--c) 10%, var(--surface)), var(--surface) 55%);
+  padding: clamp(24px, 3vw, 44px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 420px;
+
+  @include up(md) {
+    width: min(64vw, 820px);
+    min-height: 0;
+  }
+}
+
+.num {
+  position: absolute;
+  top: -0.12em;
+  right: 0.05em;
+  font-size: clamp(9rem, 22vw, 20rem);
+  line-height: 1;
+  letter-spacing: -0.08em;
+  font-weight: 500;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in oklab, var(--c) 55%, transparent);
+  pointer-events: none;
+}
+
+.body {
+  position: relative;
+  max-width: 520px;
+
+  h3 {
+    font-size: clamp(1.7rem, 3vw, 2.6rem);
+  }
+  p {
+    color: var(--muted);
+    margin-top: 14px;
+  }
+  ul {
+    list-style: none;
+    margin: 20px 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  li {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--c) 40%, var(--line));
+    color: var(--text);
+  }
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+  font-weight: 500;
+  color: var(--c);
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 2px;
+
+  svg {
+    transition: transform 0.3s var(--ease-out);
+  }
+  &:hover svg {
+    transform: translate(3px, -3px);
+  }
+}

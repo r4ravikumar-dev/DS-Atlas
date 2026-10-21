@@ -1,0 +1,12 @@
+[project]
+name = "dsrp-backend"
+version = "0.1.0"
+description = "Design Systems Research Platform — backend API, workers and scraping engine"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+asyncio_mode = "auto"
