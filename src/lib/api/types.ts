@@ -46,7 +46,6 @@ export type ReviewItem = S['ReviewItemOut']
 export type AuditEvent = S['AuditEventOut']
 export type Config = S['ConfigOut']
 export type ConfigUpdate = S['ConfigUpdate']
-export type UserCreate = S['UserCreate']
 export type UserUpdate = S['UserUpdate']
 export type VerificationStatus = System['verification_status']
 

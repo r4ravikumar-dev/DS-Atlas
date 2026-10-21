@@ -6991,25 +6991,39 @@
             "description": "Unprocessable Entity"
           }
         }
-      },
-      "post": {
+      }
+    },
+    "/api/v1/admin/users/{user_id}": {
+      "patch": {
         "tags": [
           "administration"
         ],
-        "summary": "Create User",
-        "operationId": "create_user_api_v1_admin_users_post",
+        "summary": "Update User",
+        "operationId": "update_user_api_v1_admin_users__user_id__patch",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UserCreate"
+                "$ref": "#/components/schemas/UserUpdate"
               }
             }
           }
         },
         "responses": {
-          "201": {
+          "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
@@ -7062,13 +7076,13 @@
         }
       }
     },
-    "/api/v1/admin/users/{user_id}": {
-      "patch": {
+    "/api/v1/admin/users/{user_id}/revoke-sessions": {
+      "post": {
         "tags": [
           "administration"
         ],
-        "summary": "Update User",
-        "operationId": "update_user_api_v1_admin_users__user_id__patch",
+        "summary": "Sign a user out of every session",
+        "operationId": "revoke_sessions_api_v1_admin_users__user_id__revoke_sessions_post",
         "parameters": [
           {
             "name": "user_id",
@@ -7081,16 +7095,6 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserUpdate"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -7098,6 +7102,79 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Item_UserOut_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/users/{user_id}/password-reset": {
+      "post": {
+        "tags": [
+          "administration"
+        ],
+        "summary": "Email the user a single-use password-reset link",
+        "operationId": "password_reset_api_v1_admin_users__user_id__password_reset_post",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item_InvitationOut_"
                 }
               }
             }
@@ -13243,43 +13320,6 @@
           "source_version"
         ],
         "title": "TokenOut"
-      },
-      "UserCreate": {
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email",
-            "title": "Email"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 200,
-            "title": "Name",
-            "default": ""
-          },
-          "password": {
-            "type": "string",
-            "maxLength": 500,
-            "minLength": 12,
-            "title": "Password"
-          },
-          "role": {
-            "type": "string",
-            "enum": [
-              "admin",
-              "researcher",
-              "viewer"
-            ],
-            "title": "Role",
-            "default": "viewer"
-          }
-        },
-        "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
-        "title": "UserCreate"
       },
       "UserOut": {
         "properties": {

@@ -31,10 +31,12 @@ def verify_password(password: str, hashed: str) -> bool:
         return False
 
 
-def create_session_token(user_id: str, role: str) -> str:
+def create_session_token(user_id: str, role: str, session_version: int = 1) -> str:
+    """`sv` must equal users.session_version at request time; bumping the column revokes every outstanding session."""
     s = get_settings()
     now = datetime.now(timezone.utc)
-    payload: dict[str, Any] = {"sub": user_id, "role": role, "iat": now, "exp": now + timedelta(minutes=s.session_ttl_minutes), "typ": "session"}
+    payload: dict[str, Any] = {"sub": user_id, "role": role, "sv": session_version, "iat": now,
+                               "exp": now + timedelta(minutes=s.session_ttl_minutes), "typ": "session"}
     return jwt.encode(payload, s.secret_key, algorithm="HS256")
 
 

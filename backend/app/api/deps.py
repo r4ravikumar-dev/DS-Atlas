@@ -47,8 +47,8 @@ def get_principal(request: Request, db: Session = Depends(get_db)) -> Principal:
         user = db.get(User, uuid.UUID(data["sub"]))
     except (ValueError, KeyError):
         user = None
-    if not user or not user.is_active:
-        return Principal(None, False)
+    if not user or not user.is_active or data.get("sv") != user.session_version:
+        return Principal(None, False)  # unknown, deactivated, or revoked session (role changes also bump the version)
     # CSRF: cookie-authenticated unsafe requests must echo the CSRF cookie in a header
     if via_cookie and request.method not in SAFE_METHODS:
         c, h = request.cookies.get(CSRF_COOKIE), request.headers.get(CSRF_HEADER)

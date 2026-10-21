@@ -7,11 +7,10 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ....core.exceptions import Conflict, NotFound
-from ....core.security import hash_password
 from ....database.session import get_db
 from ....models import AuditEvent, DuplicateGroup, Job, User
 from ....repositories import paginate
-from ....schemas import (AuditEventOut, ConfigOut, ConfigUpdate, InvitationCreate, InvitationOut, Item, Page, ReviewItemOut, ReviewResolve, UserCreate, UserOut, UserUpdate)
+from ....schemas import (AuditEventOut, ConfigOut, ConfigUpdate, InvitationCreate, InvitationOut, Item, Page, ReviewItemOut, ReviewResolve, UserOut, UserUpdate)
 from ....services import invitations as invsvc, settings_service
 from ....services.audit import audit
 from ...deps import PageParams, Principal, page_params, require
@@ -55,18 +54,6 @@ def users(pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
     return page_out([r[0] for r in rows], total, pp.page, pp.page_size)
 
 
-@router.post("/admin/users", response_model=Item[UserOut], status_code=status.HTTP_201_CREATED)
-def create_user(body: UserCreate, p: Principal = Depends(require("admin:users")), db: Session = Depends(get_db)):
-    if db.scalar(select(User).where(func.lower(User.email) == body.email.lower())):
-        raise Conflict("A user with this email already exists.")
-    u = User(email=body.email.lower(), name=body.name, password_hash=hash_password(body.password), role=body.role)
-    db.add(u)
-    db.flush()
-    audit(db, p.id, "user.create", "user", u.id, role=u.role)
-    db.commit()
-    return {"data": u}
-
-
 @router.patch("/admin/users/{user_id}", response_model=Item[UserOut])
 def update_user(user_id: uuid.UUID, body: UserUpdate, p: Principal = Depends(require("admin:users")), db: Session = Depends(get_db)):
     u = db.get(User, user_id)
@@ -75,11 +62,35 @@ def update_user(user_id: uuid.UUID, body: UserUpdate, p: Principal = Depends(req
     ch = body.model_dump(exclude_none=True)
     if u.id == p.id and (ch.get("role", "admin") != "admin" or ch.get("is_active") is False):
         raise Conflict("You cannot demote or deactivate your own account.")
+    privilege_change = ("role" in ch and ch["role"] != u.role) or ch.get("is_active") is False
     for k, v in ch.items():
         setattr(u, k, v)
-    audit(db, p.id, "user.update", "user", u.id, changes=ch)
+    if privilege_change:
+        u.session_version += 1  # existing sessions must re-authenticate under the new role / are cut off
+    audit(db, p.id, "user.update", "user", u.id, changes=ch, sessions_revoked=privilege_change)
     db.commit()
     return {"data": u}
+
+
+@router.post("/admin/users/{user_id}/revoke-sessions", response_model=Item[UserOut], summary="Sign a user out of every session")
+def revoke_sessions(user_id: uuid.UUID, p: Principal = Depends(require("admin:users")), db: Session = Depends(get_db)):
+    u = db.get(User, user_id)
+    if not u:
+        raise NotFound("User not found.")
+    u.session_version += 1
+    audit(db, p.id, "user.revoke_sessions", "user", u.id)
+    db.commit()
+    return {"data": u}
+
+
+@router.post("/admin/users/{user_id}/password-reset", response_model=Item[InvitationOut], summary="Email the user a single-use password-reset link")
+def password_reset(user_id: uuid.UUID, p: Principal = Depends(require("admin:users")), db: Session = Depends(get_db)):
+    u = db.get(User, user_id)
+    if not u or not u.is_active:
+        raise NotFound("Active user not found.")
+    inv = invsvc.create(db, email=u.email, role=u.role, invited_by=p.id, ttl_hours=2, kind="reset")
+    db.commit()
+    return {"data": invsvc.to_out(inv)}
 
 
 @router.get("/admin/audit-events", response_model=Page[AuditEventOut], dependencies=[Depends(require("admin:audit"))])

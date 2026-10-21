@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { ApiError } from '@/lib/api/client'
 import { can, useMe } from '@/features/auth/api'
-import { useAudit, useConfig, useJobHealth, useUpdateConfig, useUpdateUser, useUsers } from '@/features/administration/api'
+import { useAudit, useConfig, useJobHealth, useUpdateConfig, useUpdateUser, useUserAction, useUsers } from '@/features/administration/api'
 import { useCreateInvitation, useInvitations, useResendInvitation, useRevokeInvitation } from '@/features/invitations/api'
 import { Button, ErrorState, Field, fmtDate, KV, PageHeader, Pagination, Panel, Select, Skeleton, Tabs, Tag } from '@/components/ui'
 import { DataTable } from '@/components/ui/DataTable'
@@ -31,6 +31,7 @@ export default function AdminPage() {
 function Users({ myId, onGoToInvites }: { myId: string; onGoToInvites: () => void }) {
   const users = useUsers()
   const update = useUpdateUser()
+  const action = useUserAction()
   return (
     <div className={s.grid21}>
       <Panel title="Users">
@@ -42,9 +43,16 @@ function Users({ myId, onGoToInvites }: { myId: string; onGoToInvites: () => voi
                 <Select label={`Role for ${u.email}`} value={u.role} onChange={(role) => update.mutate({ id: u.id, body: { role: role as never } })} options={['viewer', 'researcher', 'admin'].map((x) => ({ value: x, label: x }))} />) },
               { key: 'a', header: 'Active', cell: (u) => u.id === myId ? 'yes' : <Button size="sm" variant="ghost" onClick={() => update.mutate({ id: u.id, body: { is_active: !u.is_active } })}>{u.is_active ? 'Deactivate' : 'Activate'}</Button> },
               { key: 'l', header: 'Last sign-in', cell: (u) => fmtDate(u.last_login_at), hideBelow: 'md' },
+              { key: 's', header: 'Sessions', cell: (u) => u.id === myId ? '—' : (
+                <span style={{ display: 'flex', gap: 6 }}>
+                  <Button size="sm" variant="ghost" onClick={() => action.mutate({ id: u.id, action: 'revoke-sessions' })}>Sign out everywhere</Button>
+                  {u.is_active && <Button size="sm" variant="ghost" onClick={() => action.mutate({ id: u.id, action: 'password-reset' })}>Send reset link</Button>}
+                </span>) },
             ]} />
         )}
         {update.error && <div className={s.pad}><ErrorState error={update.error} /></div>}
+        {action.error && <div className={s.pad}><ErrorState error={action.error} /></div>}
+        {action.isSuccess && <p className={s.pad} role="status">Done. Role changes and deactivation also sign the user out of every session.</p>}
       </Panel>
       <Panel title="Add user">
         <div className={s.pad} style={{ display: 'grid', gap: 12 }}>

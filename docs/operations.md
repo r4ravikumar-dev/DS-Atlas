@@ -10,7 +10,7 @@ uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requi
 cp .env.example .env                              # set DATABASE_URL, SECRET_KEY, ADMIN_EMAIL, ADMIN_PASSWORD
 .venv/bin/alembic upgrade head                    # migrations
 .venv/bin/python scripts/manage.py seed           # register the 20 seed sources (idempotent)
-.venv/bin/python scripts/manage.py create-admin   # admin from ADMIN_EMAIL / ADMIN_PASSWORD
+.venv/bin/python scripts/manage.py bootstrap-admin   # one-shot first admin from ADMIN_EMAIL / ADMIN_PASSWORD (refuses once an admin exists)
 
 # 2. Run the API and a worker (two terminals)
 .venv/bin/uvicorn app.main:app --port 8000 --reload --reload-dir app

@@ -21,7 +21,7 @@ uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requi
 .venv/bin/python scripts/devdb.py start            # embedded dev PostgreSQL (or point DATABASE_URL at your own)
 cp .env.example .env                                # fill DATABASE_URL, SECRET_KEY, ADMIN_EMAIL, ADMIN_PASSWORD
 .venv/bin/alembic upgrade head
-.venv/bin/python scripts/manage.py seed && .venv/bin/python scripts/manage.py create-admin
+.venv/bin/python scripts/manage.py seed && .venv/bin/python scripts/manage.py bootstrap-admin
 .venv/bin/uvicorn app.main:app --port 8000           # terminal 1
 .venv/bin/python -m app.workers.main                 # terminal 2
 
