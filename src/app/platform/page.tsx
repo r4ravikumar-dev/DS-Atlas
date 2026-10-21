@@ -29,6 +29,9 @@ export default function DashboardPage() {
           <Stat label="Discovered URLs" value={n(d?.urls_discovered)} hint={d && `${d.pages_processed.toLocaleString()} processed successfully`} />
           <Stat label="Design systems" value={n(d?.design_systems)} href="/platform/systems" hint={d && `${d.systems_multi_source} corroborated by ≥2 sources`} />
           <Stat label="Component records" value={n(d?.components)} href="/platform/components" hint={d && `${d.components_with_api} with structured APIs`} />
+          <Stat label="Storybook projects" value={n(d?.storybook_projects)} href="/platform/storybook" hint="showcase component libraries" />
+          <Stat label="Storybook stories" value={n(d?.storybook_stories)} href="/platform/storybook?tab=stories" hint={d && `${n(d.storybook_variants)} variants extracted`} />
+          <Stat label="Verified attributes" value={n(d?.attribute_evidence)} href="/platform/systems" hint="official docs verification" />
           <Stat label="Design tokens" value={n(d?.tokens)} href="/platform/tokens" />
           <Stat label="Guidelines & specs" value={n(d?.guidelines)} href="/platform/guidelines" hint={d && `${d.patterns} patterns`} />
           <Stat label="Review queue" value={n(d?.review_open)} tone={d && d.review_open > 0 ? 'warn' : 'good'} href="/platform/review" hint="duplicates & conflicts" />

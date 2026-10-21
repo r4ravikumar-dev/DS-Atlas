@@ -7,7 +7,11 @@ from typing import Any
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
-from ..models import (Component, DesignSystem, DesignToken, DiscoveredUrl, DuplicateGroup, Guideline, Job, Record, Source)
+from ..models import (
+    AttributeEvidence, Component, DesignSystem, DesignToken, DiscoveredUrl,
+    DuplicateGroup, Guideline, Job, Record, Source, StorybookProject,
+    StorybookStory, StorybookVariant
+)
 from ..scrapers.dskb.sources import TAXONOMY
 
 OK_STATUSES = ("inspected", "inspected_partial", "unavailable_seed__substitute_extracted")
@@ -34,6 +38,10 @@ def summary(db: Session) -> dict[str, Any]:
         "tokens": c(select(func.count()).select_from(DesignToken)),
         "guidelines": c(select(func.count()).select_from(Guideline).where(Guideline.record_type.in_(("guideline", "specification")))),
         "patterns": c(select(func.count()).select_from(Guideline).where(Guideline.record_type == "pattern")),
+        "storybook_projects": c(select(func.count()).select_from(StorybookProject)),
+        "storybook_stories": c(select(func.count()).select_from(StorybookStory)),
+        "storybook_variants": c(select(func.count()).select_from(StorybookVariant)),
+        "attribute_evidence": c(select(func.count()).select_from(AttributeEvidence)),
         "review_open": c(select(func.count()).select_from(DuplicateGroup).where(DuplicateGroup.review_status == "open")),
         "stale_records": c(select(func.count()).select_from(Record).where(Record.is_stale.is_(True))),
         "jobs_running": c(select(func.count()).select_from(Job).where(Job.status.in_(("running", "queued")))),

@@ -236,6 +236,9 @@ class SystemOut(Model):
     documentation_url: str | None
     repository_url: str | None
     storybook_url: str | None
+    official_docs_url: str | None = None
+    related_urls: list[str] = []
+    verification_coverage: dict[str, Any] = {}
     frameworks: list[str]
     platforms: list[str]
     styling_strategy: str | None
@@ -388,6 +391,10 @@ class DashboardSummary(Model):
     tokens: int
     guidelines: int
     patterns: int
+    storybook_projects: int = 0
+    storybook_stories: int = 0
+    storybook_variants: int = 0
+    attribute_evidence: int = 0
     review_open: int
     stale_records: int
     jobs_running: int
@@ -511,3 +518,71 @@ class ConfigUpdate(BaseModel):
             if not re.fullmatch(r"(?=.{1,253}$)([a-z0-9-]{1,63}\.)+[a-z]{2,63}", d.lower()):
                 raise ValueError(f"invalid domain '{d}'")
         return sorted({d.lower() for d in v})
+
+
+# ───────────────────────────── invitations & access ─────────────────────────────
+class InvitationOut(Model):
+    id: uuid.UUID
+    kind: str
+    email: str
+    role: Role
+    status: str
+    delivery_status: str
+    delivery_error: str | None = None
+    send_count: int
+    created_at: datetime
+    expires_at: datetime
+    accepted_at: datetime | None = None
+    revoked_at: datetime | None = None
+    invited_by: uuid.UUID | None = None
+    last_sent_at: datetime | None = None
+
+
+class InvitationCreate(BaseModel):
+    email: EmailStr
+    role: Role = "viewer"
+    ttl_hours: int | None = Field(None, ge=1, le=336)
+
+
+class InvitationValidateRequest(BaseModel):
+    token: str = Field(min_length=1, max_length=200)
+
+
+class InvitationValidateOut(Model):
+    kind: str
+    email_hint: str
+    role: Role
+    expires_at: datetime
+    email_delivery: bool
+
+
+class InvitationSendCodeRequest(BaseModel):
+    token: str = Field(min_length=1, max_length=200)
+
+
+class InvitationAcceptRequest(BaseModel):
+    token: str = Field(min_length=1, max_length=200)
+    code: str = Field(min_length=6, max_length=10)
+    name: str = Field(min_length=1, max_length=200)
+    password: str = Field(min_length=12, max_length=500)
+
+
+class AttributeEvidenceOut(Model):
+    id: int
+    system_id: int | None
+    system_key: str
+    attribute_path: str
+    value: Any
+    source_url: str
+    source_section: str | None
+    source_version: str | None
+    excerpt: str | None
+    verification_status: str
+    method: str
+    checked_at: datetime
+
+
+class ComponentStorybookOut(Model):
+    stories: list[dict[str, Any]]
+    variants: list[dict[str, Any]]
+

@@ -106,6 +106,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/invitations/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate invitation token without consuming it */
+        post: operations["validate_invitation_api_v1_auth_invitations_validate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/invitations/send-code": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send 6-digit email verification code for invitation */
+        post: operations["send_invitation_code_api_v1_auth_invitations_send_code_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/invitations/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Atomically accept invitation, set password and sign in */
+        post: operations["accept_invitation_api_v1_auth_invitations_accept_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/dashboard/summary": {
         parameters: {
             query?: never;
@@ -501,6 +552,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/design-systems/{system_id}/evidence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Field-level attribute evidence for this system */
+        get: operations["system_evidence_api_v1_design_systems__system_id__evidence_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/design-systems/{system_id}/storybook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Storybook showcase project for this system */
+        get: operations["system_storybook_api_v1_design_systems__system_id__storybook_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/components": {
         parameters: {
             query?: never;
@@ -612,6 +697,23 @@ export interface paths {
         };
         /** Same-family components in other libraries/systems */
         get: operations["related_components_api_v1_components__component_id__related_components_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/components/{component_id}/storybook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Storybook stories and variants linked to this component */
+        get: operations["component_storybook_api_v1_components__component_id__storybook_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1032,6 +1134,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/invitations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Invitations Route */
+        get: operations["list_invitations_route_api_v1_admin_invitations_get"];
+        put?: never;
+        /** Create Invitation */
+        post: operations["create_invitation_api_v1_admin_invitations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/invitations/{inv_id}/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resend Invitation */
+        post: operations["resend_invitation_api_v1_admin_invitations__inv_id__resend_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/invitations/{inv_id}/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke Invitation */
+        post: operations["revoke_invitation_api_v1_admin_invitations__inv_id__revoke_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/users": {
         parameters: {
             query?: never;
@@ -1119,6 +1273,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/integrations/github": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** GitHub auth & rate-limit diagnostics (no secrets) */
+        get: operations["github_diag_api_v1_admin_integrations_github_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/review-queue": {
         parameters: {
             query?: never;
@@ -1128,6 +1299,40 @@ export interface paths {
         };
         /** Duplicate candidates & conflicts */
         get: operations["review_queue_api_v1_review_queue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/review-queue/auto-resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Queue the evidence-based resolver (followed by a rebuild) */
+        post: operations["auto_resolve_api_v1_review_queue_auto_resolve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/review-queue/{item_id}/decisions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Decision history for a review item */
+        get: operations["decisions_api_v1_review_queue__item_id__decisions_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1153,10 +1358,193 @@ export interface paths {
         patch: operations["resolve_api_v1_review_queue__item_id__patch"];
         trace?: never;
     };
+    "/api/v1/verification/priority": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Most-cited systems ranked for official-docs verification */
+        get: operations["priority_api_v1_verification_priority_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/verification/official-docs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register top-N official docs sources, approve their domains, queue crawls + build */
+        post: operations["start_api_v1_verification_official_docs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/verification/attributes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Field-level attribute evidence */
+        get: operations["attributes_api_v1_verification_attributes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/storybook/crawl": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Queue showcase enumeration + story extraction */
+        post: operations["crawl_api_v1_storybook_crawl_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/storybook/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Projects */
+        get: operations["projects_api_v1_storybook_projects_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/storybook/projects/{project_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project */
+        get: operations["project_api_v1_storybook_projects__project_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/storybook/stories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Stories */
+        get: operations["stories_api_v1_storybook_stories_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/storybook/stories/{story_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Story */
+        get: operations["story_api_v1_storybook_stories__story_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/storybook/variants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Variants */
+        get: operations["variants_api_v1_storybook_variants_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AttributeEvidenceOut */
+        AttributeEvidenceOut: {
+            /** Id */
+            id: number;
+            /** System Id */
+            system_id: number | null;
+            /** System Key */
+            system_key: string;
+            /** Attribute Path */
+            attribute_path: string;
+            /** Value */
+            value: unknown;
+            /** Source Url */
+            source_url: string;
+            /** Source Section */
+            source_section: string | null;
+            /** Source Version */
+            source_version: string | null;
+            /** Excerpt */
+            excerpt: string | null;
+            /** Verification Status */
+            verification_status: string;
+            /** Method */
+            method: string;
+            /**
+             * Checked At
+             * Format: date-time
+             */
+            checked_at: string;
+        };
         /** AuditEventOut */
         AuditEventOut: {
             /** Id */
@@ -1360,6 +1748,17 @@ export interface components {
             /** Source Version */
             source_version: string | null;
         };
+        /** ComponentStorybookOut */
+        ComponentStorybookOut: {
+            /** Stories */
+            stories: {
+                [key: string]: unknown;
+            }[];
+            /** Variants */
+            variants: {
+                [key: string]: unknown;
+            }[];
+        };
         /** ConfigOut */
         ConfigOut: {
             /** Approved Domains */
@@ -1483,6 +1882,26 @@ export interface components {
             guidelines: number;
             /** Patterns */
             patterns: number;
+            /**
+             * Storybook Projects
+             * @default 0
+             */
+            storybook_projects: number;
+            /**
+             * Storybook Stories
+             * @default 0
+             */
+            storybook_stories: number;
+            /**
+             * Storybook Variants
+             * @default 0
+             */
+            storybook_variants: number;
+            /**
+             * Attribute Evidence
+             * @default 0
+             */
+            attribute_evidence: number;
             /** Review Open */
             review_open: number;
             /** Stale Records */
@@ -1703,6 +2122,105 @@ export interface components {
             /** Review Status */
             review_status: string;
         };
+        /** InvitationAcceptRequest */
+        InvitationAcceptRequest: {
+            /** Token */
+            token: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Password */
+            password: string;
+        };
+        /** InvitationCreate */
+        InvitationCreate: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /**
+             * Role
+             * @default viewer
+             * @enum {string}
+             */
+            role: "admin" | "researcher" | "viewer";
+            /** Ttl Hours */
+            ttl_hours?: number | null;
+        };
+        /** InvitationOut */
+        InvitationOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Email */
+            email: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "admin" | "researcher" | "viewer";
+            /** Status */
+            status: string;
+            /** Delivery Status */
+            delivery_status: string;
+            /** Delivery Error */
+            delivery_error?: string | null;
+            /** Send Count */
+            send_count: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Accepted At */
+            accepted_at?: string | null;
+            /** Revoked At */
+            revoked_at?: string | null;
+            /** Invited By */
+            invited_by?: string | null;
+            /** Last Sent At */
+            last_sent_at?: string | null;
+        };
+        /** InvitationSendCodeRequest */
+        InvitationSendCodeRequest: {
+            /** Token */
+            token: string;
+        };
+        /** InvitationValidateOut */
+        InvitationValidateOut: {
+            /** Kind */
+            kind: string;
+            /** Email Hint */
+            email_hint: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "admin" | "researcher" | "viewer";
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /** Email Delivery */
+            email_delivery: boolean;
+        };
+        /** InvitationValidateRequest */
+        InvitationValidateRequest: {
+            /** Token */
+            token: string;
+        };
         /** Item[ComparisonOut] */
         Item_ComparisonOut_: {
             data: components["schemas"]["ComparisonOut"];
@@ -1710,6 +2228,10 @@ export interface components {
         /** Item[ComponentDetail] */
         Item_ComponentDetail_: {
             data: components["schemas"]["ComponentDetail"];
+        };
+        /** Item[ComponentStorybookOut] */
+        Item_ComponentStorybookOut_: {
+            data: components["schemas"]["ComponentStorybookOut"];
         };
         /** Item[ConfigOut] */
         Item_ConfigOut_: {
@@ -1734,6 +2256,14 @@ export interface components {
         /** Item[GuidelineDetail] */
         Item_GuidelineDetail_: {
             data: components["schemas"]["GuidelineDetail"];
+        };
+        /** Item[InvitationOut] */
+        Item_InvitationOut_: {
+            data: components["schemas"]["InvitationOut"];
+        };
+        /** Item[InvitationValidateOut] */
+        Item_InvitationValidateOut_: {
+            data: components["schemas"]["InvitationValidateOut"];
         };
         /** Item[JobAccepted] */
         Item_JobAccepted_: {
@@ -1879,6 +2409,12 @@ export interface components {
                 [key: string]: number | string;
             } | null;
         };
+        /** Page[AttributeEvidenceOut] */
+        Page_AttributeEvidenceOut_: {
+            /** Data */
+            data: components["schemas"]["AttributeEvidenceOut"][];
+            meta: components["schemas"]["PageMeta"];
+        };
         /** Page[AuditEventOut] */
         Page_AuditEventOut_: {
             /** Data */
@@ -1919,6 +2455,12 @@ export interface components {
         Page_GuidelineOut_: {
             /** Data */
             data: components["schemas"]["GuidelineOut"][];
+            meta: components["schemas"]["PageMeta"];
+        };
+        /** Page[InvitationOut] */
+        Page_InvitationOut_: {
+            /** Data */
+            data: components["schemas"]["InvitationOut"][];
             meta: components["schemas"]["PageMeta"];
         };
         /** Page[JobEventOut] */
@@ -2046,6 +2588,10 @@ export interface components {
             member_count: number;
             /** Review Status */
             review_status: string;
+            /** Resolution */
+            resolution?: string | null;
+            /** Decision Id */
+            decision_id?: number | null;
             /** Details */
             details: {
                 [key: string]: unknown;
@@ -2254,6 +2800,20 @@ export interface components {
             repository_url: string | null;
             /** Storybook Url */
             storybook_url: string | null;
+            /** Official Docs Url */
+            official_docs_url?: string | null;
+            /**
+             * Related Urls
+             * @default []
+             */
+            related_urls: string[];
+            /**
+             * Verification Coverage
+             * @default {}
+             */
+            verification_coverage: {
+                [key: string]: unknown;
+            };
             /** Frameworks */
             frameworks: string[];
             /** Platforms */
@@ -2318,6 +2878,20 @@ export interface components {
             repository_url: string | null;
             /** Storybook Url */
             storybook_url: string | null;
+            /** Official Docs Url */
+            official_docs_url?: string | null;
+            /**
+             * Related Urls
+             * @default []
+             */
+            related_urls: string[];
+            /**
+             * Verification Coverage
+             * @default {}
+             */
+            verification_coverage: {
+                [key: string]: unknown;
+            };
             /** Frameworks */
             frameworks: string[];
             /** Platforms */
@@ -2655,6 +3229,186 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Item_UserOut_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    validate_invitation_api_v1_auth_invitations_validate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvitationValidateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item_InvitationValidateOut_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    send_invitation_code_api_v1_auth_invitations_send_code_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvitationSendCodeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    accept_invitation_api_v1_auth_invitations_accept_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvitationAcceptRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item_SessionOut_"];
                 };
             };
             /** @description Unauthorized */
@@ -4311,6 +5065,125 @@ export interface operations {
             };
         };
     };
+    system_evidence_api_v1_design_systems__system_id__evidence_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                system_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AttributeEvidenceOut_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    system_storybook_api_v1_design_systems__system_id__storybook_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                system_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list__api_v1_components_get: {
         parameters: {
             query?: {
@@ -4698,6 +5571,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Page_ComponentOut_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    component_storybook_api_v1_components__component_id__storybook_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                component_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item_ComponentStorybookOut_"];
                 };
             };
             /** @description Unauthorized */
@@ -6425,6 +7356,242 @@ export interface operations {
             };
         };
     };
+    list_invitations_route_api_v1_admin_invitations_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_InvitationOut_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_invitation_api_v1_admin_invitations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InvitationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item_InvitationOut_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    resend_invitation_api_v1_admin_invitations__inv_id__resend_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inv_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item_InvitationOut_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    revoke_invitation_api_v1_admin_invitations__inv_id__revoke_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                inv_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item_InvitationOut_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     users_api_v1_admin_users_get: {
         parameters: {
             query?: {
@@ -6838,6 +8005,62 @@ export interface operations {
             };
         };
     };
+    github_diag_api_v1_admin_integrations_github_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     review_queue_api_v1_review_queue_get: {
         parameters: {
             query?: {
@@ -6859,6 +8082,120 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Page_ReviewItemOut_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    auto_resolve_api_v1_review_queue_auto_resolve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    decisions_api_v1_review_queue__item_id__decisions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Unauthorized */
@@ -6921,6 +8258,551 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Item_ReviewItemOut_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    priority_api_v1_verification_priority_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    start_api_v1_verification_official_docs_post: {
+        parameters: {
+            query?: {
+                limit?: number;
+                max_pages?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    attributes_api_v1_verification_attributes_get: {
+        parameters: {
+            query?: {
+                system_id?: number | null;
+                attribute?: string | null;
+                status?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    crawl_api_v1_storybook_crawl_post: {
+        parameters: {
+            query?: {
+                refresh?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    projects_api_v1_storybook_projects_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                status?: string | null;
+                sort?: string;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    project_api_v1_storybook_projects__project_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    stories_api_v1_storybook_stories_get: {
+        parameters: {
+            query?: {
+                project_id?: number | null;
+                q?: string | null;
+                resolution?: string | null;
+                component_id?: number | null;
+                has_args?: boolean | null;
+                /** @description Filter by entry_type (repeatable or comma-separated) */
+                entry_type?: string[] | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    story_api_v1_storybook_stories__story_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                story_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    variants_api_v1_storybook_variants_get: {
+        parameters: {
+            query?: {
+                project_id?: number | null;
+                component_id?: number | null;
+                q?: string | null;
+                /** @description Filter by method (repeatable or comma-separated) */
+                method?: string[] | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Unauthorized */

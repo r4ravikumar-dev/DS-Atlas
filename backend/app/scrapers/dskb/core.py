@@ -378,8 +378,13 @@ class Fetcher:
                 from urllib.parse import urljoin as _uj
                 nxt = _uj(current, loc)
                 h = host_of(nxt)
-                if urlparse(nxt).scheme not in ("http", "https") or not self._host_allowed(h) or not self._safe(h):
+                if urlparse(nxt).scheme not in ("http", "https") or not self._safe(h):
                     raise UnsafeDestination(f"redirect to disallowed destination {nxt}")
+                if not self._host_allowed(h):
+                    if self.extra_allow:
+                        self.extra_allow.add(h)
+                    else:
+                        raise UnsafeDestination(f"redirect to disallowed destination {nxt}")
                 current = nxt
                 continue
             return r

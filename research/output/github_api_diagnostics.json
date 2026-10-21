@@ -1,0 +1,46 @@
+{
+  "checked_at": "2026-10-21T11:43:18.347095+00:00",
+  "token_configured": false,
+  "token_source": null,
+  "mode": "unauthenticated",
+  "api_version_header": "2022-11-28",
+  "http_status": 200,
+  "authentication": "not_applicable",
+  "rate_limits": {
+    "code_search": {
+      "limit": 60,
+      "remaining": 51,
+      "used": 9,
+      "reset_at": "2026-10-21T12:12:06+00:00"
+    },
+    "core": {
+      "limit": 60,
+      "remaining": 51,
+      "used": 9,
+      "reset_at": "2026-10-21T12:12:06+00:00"
+    },
+    "graphql": {
+      "limit": 0,
+      "remaining": 0,
+      "used": 0,
+      "reset_at": "2026-10-21T12:43:18+00:00"
+    },
+    "search": {
+      "limit": 10,
+      "remaining": 10,
+      "used": 0,
+      "reset_at": "2026-10-21T11:44:18+00:00"
+    }
+  },
+  "features": {
+    "etag_conditional_requests": true,
+    "raw_githubusercontent_bypass": true,
+    "automatic_quota_gating": true,
+    "max_wait_seconds": 90,
+    "request_telemetry_database_persistence": true,
+    "secret_redaction_verified": true
+  },
+  "usage_since_telemetry_enabled": [],
+  "last_observed_rate_state": null,
+  "engine_requests_this_process": 0
+}

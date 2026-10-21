@@ -1,0 +1,452 @@
+[
+  {
+    "job_id": "ea5d4415-1a09-469b-81d4-66d613f120f1",
+    "source_id": 23,
+    "status": "partially_succeeded",
+    "phase": "partially_succeeded",
+    "attempts": 1,
+    "urls_discovered": 23,
+    "urls_processed": 21,
+    "error_count": 1,
+    "records_extracted": 38,
+    "result": {
+      "errors": 1,
+      "limitations": [
+        "Crawl stopped at the configured page limit (20); 109 discovered URLs not fetched (lower priority)."
+      ],
+      "crawl_status": "inspected_partial",
+      "coverage_notes": [
+        {
+          "sitemap_urls": 1
+        },
+        {
+          "attributes": 14,
+          "thin_pages": 0,
+          "pages_parsed": 18,
+          "frontier_size": 129,
+          "components_listed": 19
+        }
+      ],
+      "records_upserted": 38,
+      "attributes_recorded": 14,
+      "records_marked_stale": 0
+    },
+    "created_at": "2026-10-21T16:52:17.509001+05:30",
+    "started_at": "2026-10-21T16:52:19.458019+05:30",
+    "finished_at": "2026-10-21T16:53:04.890559+05:30"
+  },
+  {
+    "job_id": "a0795654-4cbe-42f6-a44c-7a724aec8d10",
+    "source_id": 32,
+    "status": "succeeded",
+    "phase": "succeeded",
+    "attempts": 1,
+    "urls_discovered": 23,
+    "urls_processed": 23,
+    "error_count": 0,
+    "records_extracted": 69,
+    "result": {
+      "errors": 0,
+      "limitations": [
+        "Crawl stopped at the configured page limit (20); 234 discovered URLs not fetched (lower priority)."
+      ],
+      "crawl_status": "inspected",
+      "coverage_notes": [
+        {
+          "llms_txt": true
+        },
+        {
+          "sitemap_urls": 257
+        },
+        {
+          "attributes": 63,
+          "thin_pages": 0,
+          "pages_parsed": 20,
+          "frontier_size": 254,
+          "components_listed": 48
+        }
+      ],
+      "records_upserted": 69,
+      "attributes_recorded": 63,
+      "records_marked_stale": 0
+    },
+    "created_at": "2026-10-21T16:47:48.766594+05:30",
+    "started_at": "2026-10-21T16:47:50.672758+05:30",
+    "finished_at": "2026-10-21T16:48:33.453331+05:30"
+  },
+  {
+    "job_id": "40e7ad2e-0ce8-4bd5-9098-0ffbbf61ec1a",
+    "source_id": 31,
+    "status": "succeeded",
+    "phase": "succeeded",
+    "attempts": 1,
+    "urls_discovered": 22,
+    "urls_processed": 21,
+    "error_count": 1,
+    "records_extracted": 21,
+    "result": {
+      "errors": 0,
+      "limitations": [
+        "Crawl stopped at the configured page limit (20); 217 discovered URLs not fetched (lower priority)."
+      ],
+      "crawl_status": "inspected",
+      "coverage_notes": [
+        {
+          "sitemap_urls": 217
+        },
+        {
+          "attributes": 23,
+          "thin_pages": 4,
+          "pages_parsed": 20,
+          "frontier_size": 237,
+          "components_listed": 0
+        }
+      ],
+      "records_upserted": 21,
+      "attributes_recorded": 23,
+      "records_marked_stale": 0
+    },
+    "created_at": "2026-10-21T16:47:19.964572+05:30",
+    "started_at": "2026-10-21T16:47:20.575576+05:30",
+    "finished_at": "2026-10-21T16:47:48.776870+05:30"
+  },
+  {
+    "job_id": "c1684ac1-82e7-484e-b038-ea403ee11188",
+    "source_id": 30,
+    "status": "succeeded",
+    "phase": "succeeded",
+    "attempts": 1,
+    "urls_discovered": 22,
+    "urls_processed": 21,
+    "error_count": 1,
+    "records_extracted": 21,
+    "result": {
+      "errors": 0,
+      "limitations": [
+        "20/20 pages returned little server-rendered text (client-side rendering suspected); browser rendering was not used.",
+        "Crawl stopped at the configured page limit (20); 355 discovered URLs not fetched (lower priority)."
+      ],
+      "crawl_status": "inspected",
+      "coverage_notes": [
+        {
+          "sitemap_urls": 375
+        },
+        {
+          "attributes": 25,
+          "thin_pages": 20,
+          "pages_parsed": 20,
+          "frontier_size": 375,
+          "components_listed": 0
+        }
+      ],
+      "records_upserted": 21,
+      "attributes_recorded": 25,
+      "records_marked_stale": 0
+    },
+    "created_at": "2026-10-21T16:46:45.630875+05:30",
+    "started_at": "2026-10-21T16:46:46.459527+05:30",
+    "finished_at": "2026-10-21T16:47:19.961131+05:30"
+  },
+  {
+    "job_id": "75f87966-9e98-4019-8232-436639449132",
+    "source_id": 29,
+    "status": "succeeded",
+    "phase": "succeeded",
+    "attempts": 1,
+    "urls_discovered": 3,
+    "urls_processed": 2,
+    "error_count": 1,
+    "records_extracted": 2,
+    "result": {
+      "errors": 0,
+      "limitations": [],
+      "crawl_status": "inspected",
+      "coverage_notes": [
+        {
+          "sitemap_urls": 24
+        },
+        {
+          "attributes": 1,
+          "thin_pages": 1,
+          "pages_parsed": 1,
+          "frontier_size": 0,
+          "components_listed": 0
+        }
+      ],
+      "records_upserted": 2,
+      "attributes_recorded": 1,
+      "records_marked_stale": 0
+    },
+    "created_at": "2026-10-21T16:46:41.283729+05:30",
+    "started_at": "2026-10-21T16:46:42.442936+05:30",
+    "finished_at": "2026-10-21T16:46:47.789695+05:30"
+  },
+  {
+    "job_id": "5e2a464c-8a33-4bab-8ff7-f784f1c8f212",
+    "source_id": 28,
+    "status": "partially_succeeded",
+    "phase": "partially_succeeded",
+    "attempts": 1,
+    "urls_discovered": 23,
+    "urls_processed": 17,
+    "error_count": 6,
+    "records_extracted": 17,
+    "result": {
+      "errors": 4,
+      "limitations": [
+        "Crawl stopped at the configured page limit (20); 60 discovered URLs not fetched (lower priority)."
+      ],
+      "crawl_status": "inspected_partial",
+      "coverage_notes": [
+        {
+          "attributes": 13,
+          "thin_pages": 0,
+          "pages_parsed": 16,
+          "frontier_size": 80,
+          "components_listed": 0
+        }
+      ],
+      "records_upserted": 17,
+      "attributes_recorded": 13,
+      "records_marked_stale": 0
+    },
+    "created_at": "2026-10-21T16:46:07.990432+05:30",
+    "started_at": "2026-10-21T16:46:08.348928+05:30",
+    "finished_at": "2026-10-21T16:46:41.280418+05:30"
+  },
+  {
+    "job_id": "1fc55a45-8d64-426f-b54f-8965ece96d51",
+    "source_id": 27,
+    "status": "succeeded",
+    "phase": "succeeded",
+    "attempts": 1,
+    "urls_discovered": 23,
+    "urls_processed": 23,
+    "error_count": 0,
+    "records_extracted": 23,
+    "result": {
+      "errors": 0,
+      "limitations": [
+        "Crawl stopped at the configured page limit (20); 56 discovered URLs not fetched (lower priority)."
+      ],
+      "crawl_status": "inspected",
+      "coverage_notes": [
+        {
+          "attributes": 10,
+          "thin_pages": 0,
+          "pages_parsed": 20,
+          "frontier_size": 76,
+          "components_listed": 2
+        }
+      ],
+      "records_upserted": 23,
+      "attributes_recorded": 10,
+      "records_marked_stale": 0
+    },
+    "created_at": "2026-10-21T16:45:35.582296+05:30",
+    "started_at": "2026-10-21T16:45:36.259001+05:30",
+    "finished_at": "2026-10-21T16:46:07.987018+05:30"
+  },
+  {
+    "job_id": "9ddc88e9-a3fb-45a2-92ec-bffcec5583f4",
+    "source_id": 26,
+    "status": "partially_succeeded",
+    "phase": "partially_succeeded",
+    "attempts": 1,
+    "urls_discovered": 22,
+    "urls_processed": 20,
+    "error_count": 2,
+    "records_extracted": 20,
+    "result": {
+      "errors": 1,
+      "limitations": [
+        "Crawl stopped at the configured page limit (20); 244 discovered URLs not fetched (lower priority)."
+      ],
+      "crawl_status": "inspected_partial",
+      "coverage_notes": [
+        {
+          "llms_txt": true
+        },
+        {
+          "attributes": 35,
+          "thin_pages": 0,
+          "pages_parsed": 19,
+          "frontier_size": 264,
+          "components_listed": 0
+        }
+      ],
+      "records_upserted": 20,
+      "attributes_recorded": 35,
+      "records_marked_stale": 0
+    },
+    "created_at": "2026-10-21T16:45:02.532326+05:30",
+    "started_at": "2026-10-21T16:45:04.157503+05:30",
+    "finished_at": "2026-10-21T16:45:35.580134+05:30"
+  },
+  {
+    "job_id": "7d60c6ec-3b98-4067-95ab-c9cc69450857",
+    "source_id": 25,
+    "status": "succeeded",
+    "phase": "succeeded",
+    "attempts": 1,
+    "urls_discovered": 22,
+    "urls_processed": 21,
+    "error_count": 1,
+    "records_extracted": 98,
+    "result": {
+      "errors": 0,
+      "limitations": [
+        "Crawl stopped at the configured page limit (20); 119 discovered URLs not fetched (lower priority)."
+      ],
+      "crawl_status": "inspected",
+      "coverage_notes": [
+        {
+          "llms_txt": true
+        },
+        {
+          "attributes": 35,
+          "thin_pages": 9,
+          "pages_parsed": 20,
+          "frontier_size": 139,
+          "components_listed": 77
+        }
+      ],
+      "records_upserted": 98,
+      "attributes_recorded": 35,
+      "records_marked_stale": 0
+    },
+    "created_at": "2026-10-21T16:44:21.228313+05:30",
+    "started_at": "2026-10-21T16:44:22.041142+05:30",
+    "finished_at": "2026-10-21T16:45:02.653023+05:30"
+  },
+  {
+    "job_id": "3925e50e-1952-4232-98c4-5e8569b3fa2d",
+    "source_id": 24,
+    "status": "succeeded",
+    "phase": "succeeded",
+    "attempts": 1,
+    "urls_discovered": 22,
+    "urls_processed": 21,
+    "error_count": 1,
+    "records_extracted": 117,
+    "result": {
+      "errors": 0,
+      "limitations": [
+        "Crawl stopped at the configured page limit (20); 341 discovered URLs not fetched (lower priority)."
+      ],
+      "crawl_status": "inspected",
+      "coverage_notes": [
+        {
+          "sitemap_urls": 337
+        },
+        {
+          "attributes": 38,
+          "thin_pages": 0,
+          "pages_parsed": 20,
+          "frontier_size": 361,
+          "components_listed": 96
+        }
+      ],
+      "records_upserted": 117,
+      "attributes_recorded": 38,
+      "records_marked_stale": 0
+    },
+    "created_at": "2026-10-21T16:43:42.395877+05:30",
+    "started_at": "2026-10-21T16:43:43.923858+05:30",
+    "finished_at": "2026-10-21T16:44:21.648206+05:30"
+  },
+  {
+    "job_id": "9629ee17-89a5-4c48-a6da-5810e9505320",
+    "source_id": 23,
+    "status": "failed",
+    "phase": "failed",
+    "attempts": 1,
+    "urls_discovered": 1,
+    "urls_processed": 0,
+    "error_count": 1,
+    "records_extracted": 0,
+    "result": {
+      "errors": 1,
+      "limitations": [],
+      "crawl_status": "failed_or_blocked",
+      "coverage_notes": [],
+      "records_upserted": 0,
+      "records_marked_stale": 0
+    },
+    "created_at": "2026-10-21T16:43:41.319151+05:30",
+    "started_at": "2026-10-21T16:43:41.912268+05:30",
+    "finished_at": "2026-10-21T16:43:42.392464+05:30"
+  },
+  {
+    "job_id": "6842ce2c-1ae1-4b16-92b9-46a5941842b5",
+    "source_id": 22,
+    "status": "partially_succeeded",
+    "phase": "partially_succeeded",
+    "attempts": 1,
+    "urls_discovered": 22,
+    "urls_processed": 19,
+    "error_count": 3,
+    "records_extracted": 83,
+    "result": {
+      "errors": 1,
+      "limitations": [
+        "Crawl stopped at the configured page limit (20); 245 discovered URLs not fetched (lower priority)."
+      ],
+      "crawl_status": "inspected_partial",
+      "coverage_notes": [
+        {
+          "attributes": 27,
+          "thin_pages": 5,
+          "pages_parsed": 19,
+          "frontier_size": 265,
+          "components_listed": 63
+        }
+      ],
+      "records_upserted": 83,
+      "attributes_recorded": 27,
+      "records_marked_stale": 0
+    },
+    "created_at": "2026-10-21T16:43:01.939323+05:30",
+    "started_at": "2026-10-21T16:43:03.794728+05:30",
+    "finished_at": "2026-10-21T16:43:41.316463+05:30"
+  },
+  {
+    "job_id": "99789f58-5834-47fd-91ca-8f6f1fd37e33",
+    "source_id": 21,
+    "status": "partially_succeeded",
+    "phase": "partially_succeeded",
+    "attempts": 1,
+    "urls_discovered": 28,
+    "urls_processed": 27,
+    "error_count": 1,
+    "records_extracted": 64,
+    "result": {
+      "errors": 1,
+      "limitations": [
+        "Crawl stopped at the configured page limit (25); 128 discovered URLs not fetched (lower priority)."
+      ],
+      "crawl_status": "inspected_partial",
+      "coverage_notes": [
+        {
+          "llms_txt": true
+        },
+        {
+          "sitemap_urls": 7
+        },
+        {
+          "attributes": 28,
+          "thin_pages": 0,
+          "pages_parsed": 21,
+          "frontier_size": 153,
+          "components_listed": 42
+        }
+      ],
+      "records_upserted": 64,
+      "attributes_recorded": 28,
+      "records_marked_stale": 0
+    },
+    "created_at": "2026-10-21T16:41:11.769796+05:30",
+    "started_at": "2026-10-21T16:41:13.467946+05:30",
+    "finished_at": "2026-10-21T16:42:07.155188+05:30"
+  }
+]

@@ -1,6 +1,6 @@
 # Design-Systems Knowledge Base — Index
 
-_Generated 2026-10-21T09:52:32+00:00 · schema 1.0.0_
+_Generated 2026-10-21T09:34:46.604770+00:00 · schema 1.0.0_
 
 ## Files
 

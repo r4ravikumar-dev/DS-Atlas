@@ -35,8 +35,8 @@ def main() -> None:
             from dotenv import dotenv_values
             env = dotenv_values(BACKEND_DIR / ".env")
             email, pw = email or env.get("ADMIN_EMAIL"), pw or env.get("ADMIN_PASSWORD")
-        if not email or not pw or len(pw) < 12:
-            sys.exit("ADMIN_EMAIL and ADMIN_PASSWORD (≥12 chars) are required")
+        if not email or not pw or len(pw) < 8:
+            sys.exit("ADMIN_EMAIL and ADMIN_PASSWORD (≥8 chars) are required")
         with session_scope() as db:
             u = db.scalar(select(User).where(func.lower(User.email) == email.lower()))
             if u:

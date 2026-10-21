@@ -249,6 +249,217 @@
         }
       }
     },
+    "/api/v1/auth/invitations/validate": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Validate invitation token without consuming it",
+        "operationId": "validate_invitation_api_v1_auth_invitations_validate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationValidateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item_InvitationValidateOut_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/invitations/send-code": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Send 6-digit email verification code for invitation",
+        "operationId": "send_invitation_code_api_v1_auth_invitations_send_code_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationSendCodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/invitations/accept": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Atomically accept invitation, set password and sign in",
+        "operationId": "accept_invitation_api_v1_auth_invitations_accept_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationAcceptRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item_SessionOut_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/dashboard/summary": {
       "get": {
         "tags": [
@@ -1325,7 +1536,7 @@
               "anyOf": [
                 {
                   "type": "string",
-                  "pattern": "^(crawl|build)$"
+                  "pattern": "^(crawl|build|review|storybook)$"
                 },
                 {
                   "type": "null"
@@ -2709,6 +2920,172 @@
         }
       }
     },
+    "/api/v1/design-systems/{system_id}/evidence": {
+      "get": {
+        "tags": [
+          "design-systems"
+        ],
+        "summary": "Field-level attribute evidence for this system",
+        "operationId": "system_evidence_api_v1_design_systems__system_id__evidence_get",
+        "parameters": [
+          {
+            "name": "system_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "System Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 25,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_AttributeEvidenceOut_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/design-systems/{system_id}/storybook": {
+      "get": {
+        "tags": [
+          "design-systems"
+        ],
+        "summary": "Storybook showcase project for this system",
+        "operationId": "system_storybook_api_v1_design_systems__system_id__storybook_get",
+        "parameters": [
+          {
+            "name": "system_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "System Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/v1/components": {
       "get": {
         "tags": [
@@ -3401,6 +3778,78 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Page_ComponentOut_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/components/{component_id}/storybook": {
+      "get": {
+        "tags": [
+          "components"
+        ],
+        "summary": "Storybook stories and variants linked to this component",
+        "operationId": "component_storybook_api_v1_components__component_id__storybook_get",
+        "parameters": [
+          {
+            "name": "component_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Component Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item_ComponentStorybookOut_"
                 }
               }
             }
@@ -6138,6 +6587,325 @@
         }
       }
     },
+    "/api/v1/admin/invitations": {
+      "get": {
+        "tags": [
+          "administration"
+        ],
+        "summary": "List Invitations Route",
+        "operationId": "list_invitations_route_api_v1_admin_invitations_get",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^(pending|accepted|revoked|expired|all)$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 25,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_InvitationOut_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "administration"
+        ],
+        "summary": "Create Invitation",
+        "operationId": "create_invitation_api_v1_admin_invitations_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item_InvitationOut_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/invitations/{inv_id}/resend": {
+      "post": {
+        "tags": [
+          "administration"
+        ],
+        "summary": "Resend Invitation",
+        "operationId": "resend_invitation_api_v1_admin_invitations__inv_id__resend_post",
+        "parameters": [
+          {
+            "name": "inv_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inv Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item_InvitationOut_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/admin/invitations/{inv_id}/revoke": {
+      "post": {
+        "tags": [
+          "administration"
+        ],
+        "summary": "Revoke Invitation",
+        "operationId": "revoke_invitation_api_v1_admin_invitations__inv_id__revoke_post",
+        "parameters": [
+          {
+            "name": "inv_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Inv Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item_InvitationOut_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
     "/api/v1/admin/users": {
       "get": {
         "tags": [
@@ -6670,6 +7438,65 @@
         }
       }
     },
+    "/api/v1/admin/integrations/github": {
+      "get": {
+        "tags": [
+          "administration"
+        ],
+        "summary": "GitHub auth & rate-limit diagnostics (no secrets)",
+        "operationId": "github_diag_api_v1_admin_integrations_github_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/review-queue": {
       "get": {
         "tags": [
@@ -6739,6 +7566,135 @@
                 "schema": {
                   "$ref": "#/components/schemas/Page_ReviewItemOut_"
                 }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/review-queue/auto-resolve": {
+      "post": {
+        "tags": [
+          "administration"
+        ],
+        "summary": "Queue the evidence-based resolver (followed by a rebuild)",
+        "operationId": "auto_resolve_api_v1_review_queue_auto_resolve_post",
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/review-queue/{item_id}/decisions": {
+      "get": {
+        "tags": [
+          "administration"
+        ],
+        "summary": "Decision history for a review item",
+        "operationId": "decisions_api_v1_review_queue__item_id__decisions_get",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
@@ -6866,10 +7822,1081 @@
           }
         }
       }
+    },
+    "/api/v1/verification/priority": {
+      "get": {
+        "tags": [
+          "verification"
+        ],
+        "summary": "Most-cited systems ranked for official-docs verification",
+        "operationId": "priority_api_v1_verification_priority_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 15,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/verification/official-docs": {
+      "post": {
+        "tags": [
+          "verification"
+        ],
+        "summary": "Register top-N official docs sources, approve their domains, queue crawls + build",
+        "operationId": "start_api_v1_verification_official_docs_post",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 15,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "max_pages",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 300,
+              "minimum": 5,
+              "default": 45,
+              "title": "Max Pages"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/verification/attributes": {
+      "get": {
+        "tags": [
+          "verification"
+        ],
+        "summary": "Field-level attribute evidence",
+        "operationId": "attributes_api_v1_verification_attributes_get",
+        "parameters": [
+          {
+            "name": "system_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "System Id"
+            }
+          },
+          {
+            "name": "attribute",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 120
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Attribute"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 25,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/storybook/crawl": {
+      "post": {
+        "tags": [
+          "storybook"
+        ],
+        "summary": "Queue showcase enumeration + story extraction",
+        "operationId": "crawl_api_v1_storybook_crawl_post",
+        "parameters": [
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Refresh"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/storybook/projects": {
+      "get": {
+        "tags": [
+          "storybook"
+        ],
+        "summary": "Projects",
+        "operationId": "projects_api_v1_storybook_projects_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^-?(title|stories|variants)$",
+              "default": "title",
+              "title": "Sort"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 25,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/storybook/projects/{project_id}": {
+      "get": {
+        "tags": [
+          "storybook"
+        ],
+        "summary": "Project",
+        "operationId": "project_api_v1_storybook_projects__project_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/storybook/stories": {
+      "get": {
+        "tags": [
+          "storybook"
+        ],
+        "summary": "Stories",
+        "operationId": "stories_api_v1_storybook_stories_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "resolution",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^(linked|unresolved|not_applicable)$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Resolution"
+            }
+          },
+          {
+            "name": "component_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Component Id"
+            }
+          },
+          {
+            "name": "has_args",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Has Args"
+            }
+          },
+          {
+            "name": "entry_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by entry_type (repeatable or comma-separated)",
+              "title": "Entry Type"
+            },
+            "description": "Filter by entry_type (repeatable or comma-separated)"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 25,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/storybook/stories/{story_id}": {
+      "get": {
+        "tags": [
+          "storybook"
+        ],
+        "summary": "Story",
+        "operationId": "story_api_v1_storybook_stories__story_id__get",
+        "parameters": [
+          {
+            "name": "story_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Story Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/storybook/variants": {
+      "get": {
+        "tags": [
+          "storybook"
+        ],
+        "summary": "Variants",
+        "operationId": "variants_api_v1_storybook_variants_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "component_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Component Id"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "method",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by method (repeatable or comma-separated)",
+              "title": "Method"
+            },
+            "description": "Filter by method (repeatable or comma-separated)"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 25,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AttributeEvidenceOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "system_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Id"
+          },
+          "system_key": {
+            "type": "string",
+            "title": "System Key"
+          },
+          "attribute_path": {
+            "type": "string",
+            "title": "Attribute Path"
+          },
+          "value": {
+            "title": "Value"
+          },
+          "source_url": {
+            "type": "string",
+            "title": "Source Url"
+          },
+          "source_section": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Section"
+          },
+          "source_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Version"
+          },
+          "excerpt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Excerpt"
+          },
+          "verification_status": {
+            "type": "string",
+            "title": "Verification Status"
+          },
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Checked At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "system_id",
+          "system_key",
+          "attribute_path",
+          "value",
+          "source_url",
+          "source_section",
+          "source_version",
+          "excerpt",
+          "verification_status",
+          "method",
+          "checked_at"
+        ],
+        "title": "AttributeEvidenceOut"
+      },
       "AuditEventOut": {
         "properties": {
           "id": {
@@ -7537,6 +9564,32 @@
         ],
         "title": "ComponentOut"
       },
+      "ComponentStorybookOut": {
+        "properties": {
+          "stories": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Stories"
+          },
+          "variants": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Variants"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stories",
+          "variants"
+        ],
+        "title": "ComponentStorybookOut"
+      },
       "ConfigOut": {
         "properties": {
           "approved_domains": {
@@ -7827,6 +9880,26 @@
           "patterns": {
             "type": "integer",
             "title": "Patterns"
+          },
+          "storybook_projects": {
+            "type": "integer",
+            "title": "Storybook Projects",
+            "default": 0
+          },
+          "storybook_stories": {
+            "type": "integer",
+            "title": "Storybook Stories",
+            "default": 0
+          },
+          "storybook_variants": {
+            "type": "integer",
+            "title": "Storybook Variants",
+            "default": 0
+          },
+          "attribute_evidence": {
+            "type": "integer",
+            "title": "Attribute Evidence",
+            "default": 0
           },
           "review_open": {
             "type": "integer",
@@ -8520,6 +10593,268 @@
         ],
         "title": "GuidelineOut"
       },
+      "InvitationAcceptRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Token"
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 10,
+            "minLength": 6,
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 12,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token",
+          "code",
+          "name",
+          "password"
+        ],
+        "title": "InvitationAcceptRequest"
+      },
+      "InvitationCreate": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "researcher",
+              "viewer"
+            ],
+            "title": "Role",
+            "default": "viewer"
+          },
+          "ttl_hours": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 336.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ttl Hours"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "InvitationCreate"
+      },
+      "InvitationOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "researcher",
+              "viewer"
+            ],
+            "title": "Role"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "delivery_status": {
+            "type": "string",
+            "title": "Delivery Status"
+          },
+          "delivery_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Error"
+          },
+          "send_count": {
+            "type": "integer",
+            "title": "Send Count"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "accepted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepted At"
+          },
+          "revoked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revoked At"
+          },
+          "invited_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invited By"
+          },
+          "last_sent_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Sent At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "email",
+          "role",
+          "status",
+          "delivery_status",
+          "send_count",
+          "created_at",
+          "expires_at"
+        ],
+        "title": "InvitationOut"
+      },
+      "InvitationSendCodeRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "InvitationSendCodeRequest"
+      },
+      "InvitationValidateOut": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "email_hint": {
+            "type": "string",
+            "title": "Email Hint"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "admin",
+              "researcher",
+              "viewer"
+            ],
+            "title": "Role"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Expires At"
+          },
+          "email_delivery": {
+            "type": "boolean",
+            "title": "Email Delivery"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "email_hint",
+          "role",
+          "expires_at",
+          "email_delivery"
+        ],
+        "title": "InvitationValidateOut"
+      },
+      "InvitationValidateRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "InvitationValidateRequest"
+      },
       "Item_ComparisonOut_": {
         "properties": {
           "data": {
@@ -8543,6 +10878,18 @@
           "data"
         ],
         "title": "Item[ComponentDetail]"
+      },
+      "Item_ComponentStorybookOut_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ComponentStorybookOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Item[ComponentStorybookOut]"
       },
       "Item_ConfigOut_": {
         "properties": {
@@ -8615,6 +10962,30 @@
           "data"
         ],
         "title": "Item[GuidelineDetail]"
+      },
+      "Item_InvitationOut_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/InvitationOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Item[InvitationOut]"
+      },
+      "Item_InvitationValidateOut_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/InvitationValidateOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Item[InvitationValidateOut]"
       },
       "Item_JobAccepted_": {
         "properties": {
@@ -9024,6 +11395,26 @@
         ],
         "title": "PageMeta"
       },
+      "Page_AttributeEvidenceOut_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/AttributeEvidenceOut"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "Page[AttributeEvidenceOut]"
+      },
       "Page_AuditEventOut_": {
         "properties": {
           "data": {
@@ -9163,6 +11554,26 @@
           "meta"
         ],
         "title": "Page[GuidelineOut]"
+      },
+      "Page_InvitationOut_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/InvitationOut"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "Page[InvitationOut]"
       },
       "Page_JobEventOut_": {
         "properties": {
@@ -9535,6 +11946,28 @@
           "review_status": {
             "type": "string",
             "title": "Review Status"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolution"
+          },
+          "decision_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Id"
           },
           "details": {
             "additionalProperties": true,
@@ -10158,6 +12591,31 @@
             ],
             "title": "Storybook Url"
           },
+          "official_docs_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Official Docs Url"
+          },
+          "related_urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Related Urls",
+            "default": []
+          },
+          "verification_coverage": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Verification Coverage",
+            "default": {}
+          },
           "frameworks": {
             "items": {
               "type": "string"
@@ -10411,6 +12869,31 @@
               }
             ],
             "title": "Storybook Url"
+          },
+          "official_docs_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Official Docs Url"
+          },
+          "related_urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Related Urls",
+            "default": []
+          },
+          "verification_coverage": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Verification Coverage",
+            "default": {}
           },
           "frameworks": {
             "items": {
@@ -10962,6 +13445,14 @@
     {
       "name": "administration",
       "description": "Users, audit trail, configuration, review queue"
+    },
+    {
+      "name": "storybook",
+      "description": "Storybook showcase projects, stories and component variants"
+    },
+    {
+      "name": "verification",
+      "description": "Official-documentation verification and field-level evidence"
     }
   ]
 }

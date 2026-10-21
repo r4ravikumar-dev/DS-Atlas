@@ -6,9 +6,12 @@ from sqlalchemy.orm import Session
 
 from ....core.exceptions import NotFound
 from ....database.session import get_db
-from ....models import Component, DesignSystem, DesignToken, Guideline, Record, Source
+from ....models import AttributeEvidence, Component, DesignSystem, DesignToken, Guideline, Record, Source, StorybookProject
 from ....repositories import list_components, list_guidelines, list_systems, list_tokens, paginate, system_facets
-from ....schemas import ComponentOut, GuidelineOut, Item, Page, SourceOut, SystemDetail, SystemOut, SystemUpdate, TokenOut
+from ....schemas import (
+    AttributeEvidenceOut, ComponentOut, GuidelineOut, Item, Page, SourceOut,
+    SystemDetail, SystemOut, SystemUpdate, TokenOut
+)
 from ....services.audit import audit
 from ...deps import PageParams, Principal, page_params, require
 from ..common import ERRORS, csv_list, page_out
@@ -88,3 +91,26 @@ def sources(system_id: int, db: Session = Depends(get_db)):
                       .order_by(Source.key).limit(100)).all()
     return {"data": [dict(record_id=a, record_key=b, title=c, evidence_url=d, verification_status=e, source_id=f, source_key=g, source_name=h)
                      for a, b, c, d, e, f, g, h in rows]}
+
+
+@router.get("/{system_id}/evidence", response_model=Page[AttributeEvidenceOut], dependencies=[Depends(require("read"))], summary="Field-level attribute evidence for this system")
+def system_evidence(system_id: int, pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
+    sys = _get(db, system_id)
+    stmt = select(AttributeEvidence).where(
+        (AttributeEvidence.system_id == system_id) | (AttributeEvidence.system_key == sys.key)
+    ).order_by(AttributeEvidence.attribute_path, AttributeEvidence.id)
+    rows, total = paginate(db, stmt, pp.page, pp.page_size)
+    return page_out([r[0] for r in rows], total, pp.page, pp.page_size)
+
+
+@router.get("/{system_id}/storybook", dependencies=[Depends(require("read"))], summary="Storybook showcase project for this system")
+def system_storybook(system_id: int, db: Session = Depends(get_db)):
+    sys = _get(db, system_id)
+    proj = db.scalar(select(StorybookProject).where(StorybookProject.system_key == sys.key))
+    if not proj and sys.storybook_url:
+        proj = db.scalar(select(StorybookProject).where(StorybookProject.storybook_url == sys.storybook_url))
+    if not proj:
+        return {"data": None}
+    from .storybook import P_FIELDS, _d
+    return {"data": _d(proj, P_FIELDS)}
+

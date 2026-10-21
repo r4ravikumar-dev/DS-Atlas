@@ -6,9 +6,9 @@ from sqlalchemy.orm import Session
 
 from ....core.exceptions import NotFound
 from ....database.session import get_db
-from ....models import Component, ComponentProp, DesignToken, Evidence, Guideline, Record, Source
+from ....models import Component, ComponentProp, DesignToken, Evidence, Guideline, Record, Source, StorybookStory, StorybookVariant
 from ....repositories import component_facets, list_components
-from ....schemas import ComponentDetail, ComponentOut, EvidenceOut, GuidelineOut, Item, Page, TokenOut
+from ....schemas import ComponentDetail, ComponentOut, ComponentStorybookOut, EvidenceOut, GuidelineOut, Item, Page, TokenOut
 from ...deps import PageParams, page_params, require
 from ..common import ERRORS, csv_list, page_out
 from ..serializers import component_out, guideline_out, token_out
@@ -96,3 +96,16 @@ def related_components(component_id: int, limit: int = Query(30, ge=1, le=100), 
         stmt = stmt.where(Component.detail_level.in_(["api", "doc"]))
     rows = db.execute(stmt.order_by(Component.props_count.desc()).limit(limit)).all()
     return page_out([component_out(x, k) for x, k in rows], len(rows), 1, limit)
+
+
+@router.get("/{component_id}/storybook", response_model=Item[ComponentStorybookOut], summary="Storybook stories and variants linked to this component")
+def component_storybook(component_id: int, db: Session = Depends(get_db)):
+    c, _, _ = _get(db, component_id)
+    from .storybook import S_FIELDS, V_FIELDS, _d
+    stories = db.scalars(select(StorybookStory).where(StorybookStory.component_id == c.id).order_by(StorybookStory.title, StorybookStory.name).limit(100)).all()
+    variants = db.scalars(select(StorybookVariant).where(StorybookVariant.component_id == c.id).order_by(StorybookVariant.label).limit(200)).all()
+    if not stories and c.name:
+        stories = db.scalars(select(StorybookStory).where(func.lower(StorybookStory.component_name) == c.name.lower()).order_by(StorybookStory.title).limit(50)).all()
+        variants = db.scalars(select(StorybookVariant).where(func.lower(StorybookVariant.component_name) == c.name.lower()).order_by(StorybookVariant.label).limit(100)).all()
+    return {"data": {"stories": [_d(s, S_FIELDS) for s in stories], "variants": [_d(v, V_FIELDS) for v in variants]}}
+

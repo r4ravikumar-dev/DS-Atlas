@@ -11,13 +11,42 @@ from ....core.security import hash_password
 from ....database.session import get_db
 from ....models import AuditEvent, DuplicateGroup, Job, User
 from ....repositories import paginate
-from ....schemas import (AuditEventOut, ConfigOut, ConfigUpdate, Item, Page, ReviewItemOut, ReviewResolve, UserCreate, UserOut, UserUpdate)
-from ....services import settings_service
+from ....schemas import (AuditEventOut, ConfigOut, ConfigUpdate, InvitationCreate, InvitationOut, Item, Page, ReviewItemOut, ReviewResolve, UserCreate, UserOut, UserUpdate)
+from ....services import invitations as invsvc, settings_service
 from ....services.audit import audit
 from ...deps import PageParams, Principal, page_params, require
 from ..common import ERRORS, page_out
 
 router = APIRouter(tags=["administration"], responses=ERRORS)
+
+
+@router.get("/admin/invitations", response_model=Page[InvitationOut], dependencies=[Depends(require("admin:users"))])
+def list_invitations_route(status_: str | None = Query(None, alias="status", pattern="^(pending|accepted|revoked|expired|all)$"),
+                          pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
+    filt = None if status_ == "all" else status_
+    items, total = invsvc.list_invitations(db, filt, pp.page, pp.page_size)
+    return page_out(items, total, pp.page, pp.page_size)
+
+
+@router.post("/admin/invitations", response_model=Item[InvitationOut], status_code=status.HTTP_201_CREATED)
+def create_invitation(body: InvitationCreate, p: Principal = Depends(require("admin:users")), db: Session = Depends(get_db)):
+    inv = invsvc.create(db, email=body.email, role=body.role, invited_by=p.id, ttl_hours=body.ttl_hours)
+    db.commit()
+    return {"data": invsvc.to_out(inv)}
+
+
+@router.post("/admin/invitations/{inv_id}/resend", response_model=Item[InvitationOut])
+def resend_invitation(inv_id: uuid.UUID, p: Principal = Depends(require("admin:users")), db: Session = Depends(get_db)):
+    inv = invsvc.resend(db, inv_id, p.id)
+    db.commit()
+    return {"data": invsvc.to_out(inv)}
+
+
+@router.post("/admin/invitations/{inv_id}/revoke", response_model=Item[InvitationOut])
+def revoke_invitation(inv_id: uuid.UUID, p: Principal = Depends(require("admin:users")), db: Session = Depends(get_db)):
+    inv = invsvc.revoke(db, inv_id, p.id)
+    db.commit()
+    return {"data": invsvc.to_out(inv)}
 
 
 @router.get("/admin/users", response_model=Page[UserOut], dependencies=[Depends(require("admin:users"))])

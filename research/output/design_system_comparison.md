@@ -1,6 +1,6 @@
 # Design-System Comparative Analysis
 
-_Generated 2026-10-21T09:52:33+00:00 from the canonical dataset (`design_systems_master.jsonl`). Every number below is computed from extracted records._
+_Generated 2026-10-21T09:34:46+00:00 from the canonical dataset (`design_systems_master.jsonl`). Every number below is computed from extracted records._
 
 **Legend.** Values are **verified source facts** unless marked. `—` = *not documented in the inspected material*; **NI** = *not inspected*; **NA** = *not applicable*. Paragraphs labelled _Interpretation_ are analytical conclusions, not source statements.
 
@@ -207,8 +207,8 @@ Most widely referenced systems (by number of seed sources whose records resolved
 | Spectrum | Adobe | S01, S03, S06, S08, S20 | https://spectrum.adobe.com/ | https://github.com/adobe/react-spectrum | partially_verified |
 | Audi UI | Audi | S02, S03, S08, S20 | https://www.audi.com/ci/ | https://github.com/audi/audi-ui | partially_verified |
 | Cloudscape | Amazon Web Services | S01, S06, S08, S20 | https://cloudscape.design/ | https://github.com/cloudscape-design/components | partially_verified |
-| Design System | BBC | S01, S02, S03, S06 | https://www.bbc.co.uk/gel | https://github.com/bbc/gel | partially_verified |
 | Design System | Elastic | S01, S03, S06, S08 | https://elastic.github.io/eui/#/ | https://github.com/elastic/eui | partially_verified |
+| Design System | BBC | S01, S02, S03, S06 | https://www.bbc.co.uk/gel | https://github.com/bbc/gel | partially_verified |
 | Design System | Pluralsight | S01, S02, S03, S06 | https://design-system.pluralsight.com/ | https://github.com/pluralsight/design-system | partially_verified |
 | Evergreen | Segment | S01, S03, S06, S08 | https://evergreen.segment.com/ | https://github.com/segmentio/evergreen | partially_verified |
 | Geist | Vercel | S01, S06, S08, S20 | https://vercel.com/geist | https://github.com/vercel/geist-font | partially_verified |

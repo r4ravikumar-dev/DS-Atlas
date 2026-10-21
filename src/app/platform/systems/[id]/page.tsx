@@ -5,12 +5,12 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { Pencil } from 'lucide-react'
 import { can, useMe } from '@/features/auth/api'
-import { useSystem, useSystemComponents, useSystemGuidelines, useSystemSources, useSystemTokens, useUpdateSystem } from '@/features/design-systems/api'
+import { useSystem, useSystemComponents, useSystemEvidence, useSystemGuidelines, useSystemSources, useSystemStorybook, useSystemTokens, useUpdateSystem } from '@/features/design-systems/api'
 import { Button, Drawer, ErrorState, ExtLink, Field, fmtDate, KV, Missing, PageHeader, Pagination, Panel, Skeleton, Tabs, Tag, VerifyBadge } from '@/components/ui'
 import { DataTable } from '@/components/ui/DataTable'
 import s from '@/components/platform/page.module.scss'
 
-type Tab = 'components' | 'tokens' | 'guidelines' | 'sources'
+type Tab = 'components' | 'tokens' | 'guidelines' | 'evidence' | 'sources'
 
 export default function SystemDetailPage() {
   const id = Number(useParams<{ id: string }>().id)
@@ -22,12 +22,15 @@ export default function SystemDetailPage() {
   const comps = useSystemComponents(id, tab === 'components' ? page : 1)
   const toks = useSystemTokens(id, tab === 'tokens' ? page : 1)
   const gls = useSystemGuidelines(id, tab === 'guidelines' ? page : 1)
+  const evs = useSystemEvidence(id, tab === 'evidence' ? page : 1)
+  const sbProj = useSystemStorybook(id)
   const srcs = useSystemSources(id)
   const [editing, setEditing] = useState(false)
   if (sys.error) return <ErrorState error={sys.error} onRetry={() => sys.refetch()} />
   const d = sys.data
   const attrs = (d?.attributes ?? {}) as Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
   const cov = attrs.documentation_coverage ?? {}
+  const verCov = d?.verification_coverage ?? {}
   return (
     <>
       <PageHeader
@@ -42,9 +45,11 @@ export default function SystemDetailPage() {
             <div className={s.pad}>
               {d.description ? <p style={{ marginBottom: 12 }}>{d.description}</p> : <p style={{ marginBottom: 12 }}><Missing label="No description extracted from sources" /></p>}
               <KV items={[
+                ['Official documentation', d.official_docs_url && <ExtLink href={d.official_docs_url} />],
                 ['Documentation', d.documentation_url && <ExtLink href={d.documentation_url} />],
                 ['Repository', d.repository_url && <ExtLink href={d.repository_url} />],
                 ['Storybook', d.storybook_url && <ExtLink href={d.storybook_url} />],
+                ['Related addresses', d.related_urls && d.related_urls.length ? <span className={s.row}>{d.related_urls.map((u) => <ExtLink key={u} href={u}>{u.replace(/^https?:\/\//, '').slice(0, 35)}</ExtLink>)}</span> : null],
                 ['Design resources', d.design_resource_url && <ExtLink href={d.design_resource_url} />],
                 ['Frameworks', d.frameworks.length ? <span className={s.row}>{d.frameworks.map((f) => <Tag key={f}>{f}</Tag>)}</span> : null],
                 ['Styling strategy', d.styling_strategy], ['Token architecture', d.token_architecture], ['Accessibility documentation', d.accessibility_documentation],
@@ -54,10 +59,12 @@ export default function SystemDetailPage() {
             </div>
           </Panel>
           <div className={s.stack}>
-            <Panel title="Provenance">
+            <Panel title="Provenance & Verification">
               <div className={s.pad}>
                 <KV items={[
                   ['Independent sources', <span key="s" className={s.row}>{d.source_keys.map((k) => <Tag key={k}>{k}</Tag>)}</span>],
+                  ['Field-level evidence', evs.data?.meta.total_items ? <Tag tone="accent">{evs.data.meta.total_items} verified attributes</Tag> : <Missing label="No official evidence rows" />],
+                  ['Storybook showcase', sbProj.data ? <Link href="/platform/storybook">{sbProj.data.title} ({sbProj.data.stories_extracted} stories, {sbProj.data.variants_extracted} variants)</Link> : null],
                   ['Surf: foundations / components', cov.surf_foundations_claimed !== undefined && cov.surf_foundations_claimed !== null ? `${cov.surf_foundations_claimed} / ${cov.surf_components_claimed}` : null],
                   ['Storybook component count', cov.storybook_component_count],
                 ]} />
@@ -77,6 +84,7 @@ export default function SystemDetailPage() {
           { value: 'components', label: 'Components', count: comps.data?.meta.total_items },
           { value: 'tokens', label: 'Tokens', count: toks.data?.meta.total_items },
           { value: 'guidelines', label: 'Guidelines', count: gls.data?.meta.total_items },
+          { value: 'evidence', label: 'Official evidence', count: evs.data?.meta.total_items },
           { value: 'sources', label: 'Source records', count: srcs.data?.length },
         ]} />
       </div>
@@ -110,6 +118,17 @@ export default function SystemDetailPage() {
               { key: 'v', header: 'Verification', cell: (r) => <VerifyBadge status={r.verification_status} /> },
             ]} />
           {gls.data && <Pagination page={page} pageSize={20} total={gls.data.meta.total_items} totalPages={gls.data.meta.total_pages} onPage={setPage} />}
+        </>)}
+        {tab === 'evidence' && (<>
+          <DataTable caption="Field-level attribute evidence" loading={evs.isFetching} rows={evs.data?.data} rowKey={(r) => r.id}
+            columns={[
+              { key: 'p', header: 'Attribute path', cell: (r) => <span className={s.mono}><strong>{r.attribute_path}</strong></span> },
+              { key: 'v', header: 'Verified value', cell: (r) => <span className={s.mono} style={{ fontSize: '0.8rem' }}>{JSON.stringify(r.value)}</span> },
+              { key: 'st', header: 'Status', cell: (r) => <VerifyBadge status={r.verification_status} /> },
+              { key: 'sec', header: 'Section / Context', cell: (r) => r.source_section || '—', hideBelow: 'md' },
+              { key: 'url', header: 'Official source', cell: (r) => <ExtLink href={r.source_url}>Documentation</ExtLink>, hideBelow: 'md' },
+            ]} />
+          {evs.data && <Pagination page={page} pageSize={20} total={evs.data.meta.total_items} totalPages={evs.data.meta.total_pages} onPage={setPage} />}
         </>)}
         {tab === 'sources' && (
           <DataTable caption="Source records" loading={srcs.isLoading} rows={srcs.data} rowKey={(r) => r.record_id}

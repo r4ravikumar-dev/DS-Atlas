@@ -1,0 +1,64 @@
+[
+  {
+    "job_id": "b3d95dc7-9ab7-4b43-a558-3bcdf5cd9826",
+    "status": "succeeded",
+    "phase": "succeeded",
+    "records_extracted": 17600,
+    "result": {
+      "errors": [
+        {
+          "slug": "bedrock-bedrock",
+          "error": "OperationalError: (psycopg.errors.QueryCanceled) canceling statement due to statement timeout\nCONTEXT:  while inserting index tuple (58,32) in relation \"raw_documents\"\n[SQL: INSERT INTO raw_documents (content_sha256, storage_key, content_type, size_bytes, first_url) VALUES (%(content_sha256)s::VARCHAR, %(storage_key)s::VARCHAR, %(content_type)s::VARCHAR, %(size_bytes)s::INTEGER, %(first_url)s::VARCHAR) ON CONFLICT (content_sha256) DO UPDATE SET storage_key = excluded.storage_key RETURNING raw_documents.id]\n[parameters: {'content_sha256': 'a3fd6bcc49ae21b2993f1e2750b6155a69d54ff56eaec5d78a6db69463c241df', 'storage_key': 'raw/a3/a3fd6bcc49ae21b2993f1e2750b6155a69d54ff56eaec5d78a6db69463c241df', 'content_type': 'application/json', 'size_bytes': 22809, 'first_url': 'https://www.bedrock-layout.dev/index.json'}]\n(Background on this error at: https://sqlalche.me/e/21/e3q8)"
+        },
+        {
+          "slug": "launchdarkly-launchpad",
+          "error": "OperationalError: (psycopg.errors.QueryCanceled) canceling statement due to statement timeout\nCONTEXT:  while inserting index tuple (59,5) in relation \"raw_documents\"\n[SQL: INSERT INTO raw_documents (content_sha256, storage_key, content_type, size_bytes, first_url) VALUES (%(content_sha256)s::VARCHAR, %(storage_key)s::VARCHAR, %(content_type)s::VARCHAR, %(size_bytes)s::INTEGER, %(first_url)s::VARCHAR) ON CONFLICT (content_sha256) DO UPDATE SET storage_key = excluded.storage_key RETURNING raw_documents.id]\n[parameters: {'content_sha256': '0ab53a8c0ab4caec91e3434bd757a7f76a72d29042aa7c6af046936c1e877c5d', 'storage_key': 'raw/0a/0ab53a8c0ab4caec91e3434bd757a7f76a72d29042aa7c6af046936c1e877c5d', 'content_type': 'application/json', 'size_bytes': 150229, 'first_url': 'https://main--626696a2018c1f004a1cde86.chromatic.com/index.json'}]\n(Background on this error at: https://sqlalche.me/e/21/e3q8)"
+        },
+        {
+          "slug": "narmi-narmi-design-system",
+          "error": "OperationalError: (psycopg.errors.QueryCanceled) canceling statement due to statement timeout\nCONTEXT:  while inserting index tuple (60,1) in relation \"raw_documents\"\n[SQL: INSERT INTO raw_documents (content_sha256, storage_key, content_type, size_bytes, first_url) VALUES (%(content_sha256)s::VARCHAR, %(storage_key)s::VARCHAR, %(content_type)s::VARCHAR, %(size_bytes)s::INTEGER, %(first_url)s::VARCHAR) ON CONFLICT (content_sha256) DO UPDATE SET storage_key = excluded.storage_key RETURNING raw_documents.id]\n[parameters: {'content_sha256': '3507af1811ced2a0a489840ca8a857a8303b615f382d0c1285e1ecf420968f5a', 'storage_key': 'raw/35/3507af1811ced2a0a489840ca8a857a8303b615f382d0c1285e1ecf420968f5a', 'content_type': 'application/json; charset=utf-8', 'size_bytes': 171682, 'first_url': 'https://narmi.github.io/design_system/index.json'}]\n(Background on this error at: https://sqlalche.me/e/21/e3q8)"
+        },
+        {
+          "slug": "nasa-jpl-explorer-1",
+          "error": "OperationalError: (psycopg.errors.QueryCanceled) canceling statement due to statement timeout\nCONTEXT:  while inserting index tuple (61,1) in relation \"raw_documents\"\n[SQL: INSERT INTO raw_documents (content_sha256, storage_key, content_type, size_bytes, first_url) VALUES (%(content_sha256)s::VARCHAR, %(storage_key)s::VARCHAR, %(content_type)s::VARCHAR, %(size_bytes)s::INTEGER, %(first_url)s::VARCHAR) ON CONFLICT (content_sha256) DO UPDATE SET storage_key = excluded.storage_key RETURNING raw_documents.id]\n[parameters: {'content_sha256': 'ef50263d193448807b66fcd3d10708a399dd7a33b4e7cc5aa7919146751923ec', 'storage_key': 'raw/ef/ef50263d193448807b66fcd3d10708a399dd7a33b4e7cc5aa7919146751923ec', 'content_type': 'application/json; charset=utf-8', 'size_bytes': 262871, 'first_url': 'https://nasa-jpl.github.io/explorer-1/index.json'}]\n(Background on this error at: https://sqlalche.me/e/21/e3q8)"
+        },
+        {
+          "slug": "nivo-nivo",
+          "error": "OperationalError: (psycopg.errors.QueryCanceled) canceling statement due to statement timeout\nCONTEXT:  while inserting index tuple (61,2) in relation \"raw_documents\"\n[SQL: INSERT INTO raw_documents (content_sha256, storage_key, content_type, size_bytes, first_url) VALUES (%(content_sha256)s::VARCHAR, %(storage_key)s::VARCHAR, %(content_type)s::VARCHAR, %(size_bytes)s::INTEGER, %(first_url)s::VARCHAR) ON CONFLICT (content_sha256) DO UPDATE SET storage_key = excluded.storage_key RETURNING raw_documents.id]\n[parameters: {'content_sha256': '1639886237f18835d43276ba016a6cad929a439ac1fa8c4a469df91464b7caf4', 'storage_key': 'raw/16/1639886237f18835d43276ba016a6cad929a439ac1fa8c4a469df91464b7caf4', 'content_type': 'application/json; charset=utf-8', 'size_bytes': 75306, 'first_url': 'https://nivo.rocks/storybook/index.json'}]\n(Background on this error at: https://sqlalche.me/e/21/e3q8)"
+        },
+        {
+          "slug": "storyblok-design-system",
+          "error": "OperationalError: (psycopg.errors.QueryCanceled) canceling statement due to statement timeout\nCONTEXT:  while inserting index tuple (65,1) in relation \"raw_documents\"\n[SQL: INSERT INTO raw_documents (content_sha256, storage_key, content_type, size_bytes, first_url) VALUES (%(content_sha256)s::VARCHAR, %(storage_key)s::VARCHAR, %(content_type)s::VARCHAR, %(size_bytes)s::INTEGER, %(first_url)s::VARCHAR) ON CONFLICT (content_sha256) DO UPDATE SET storage_key = excluded.storage_key RETURNING raw_documents.id]\n[parameters: {'content_sha256': '2106d57820e5cf3cc3bf303a2cc91614be936488d949679f2ad7677616c55fe9', 'storage_key': 'raw/21/2106d57820e5cf3cc3bf303a2cc91614be936488d949679f2ad7677616c55fe9', 'content_type': 'application/json; charset=utf-8', 'size_bytes': 70880, 'first_url': 'https://www.blok.ink/index.json'}]\n(Background on this error at: https://sqlalche.me/e/21/e3q8)"
+        },
+        {
+          "slug": "sumup-circuit-ui",
+          "error": "OperationalError: (psycopg.errors.QueryCanceled) canceling statement due to statement timeout\nCONTEXT:  while inserting index tuple (61,4) in relation \"raw_documents\"\n[SQL: INSERT INTO raw_documents (content_sha256, storage_key, content_type, size_bytes, first_url) VALUES (%(content_sha256)s::VARCHAR, %(storage_key)s::VARCHAR, %(content_type)s::VARCHAR, %(size_bytes)s::INTEGER, %(first_url)s::VARCHAR) ON CONFLICT (content_sha256) DO UPDATE SET storage_key = excluded.storage_key RETURNING raw_documents.id]\n[parameters: {'content_sha256': '7130d4f7f862a3cce090342eee428dc582d71b17696889750ba90d579ff630a4', 'storage_key': 'raw/71/7130d4f7f862a3cce090342eee428dc582d71b17696889750ba90d579ff630a4', 'content_type': 'application/json; charset=utf-8', 'size_bytes': 145613, 'first_url': 'https://circuit.sumup.com/index.json'}]\n(Background on this error at: https://sqlalche.me/e/21/e3q8)"
+        },
+        {
+          "slug": "telefonica-mistica",
+          "error": "OperationalError: (psycopg.errors.QueryCanceled) canceling statement due to statement timeout\nCONTEXT:  while inserting index tuple (59,10) in relation \"raw_documents\"\n[SQL: INSERT INTO raw_documents (content_sha256, storage_key, content_type, size_bytes, first_url) VALUES (%(content_sha256)s::VARCHAR, %(storage_key)s::VARCHAR, %(content_type)s::VARCHAR, %(size_bytes)s::INTEGER, %(first_url)s::VARCHAR) ON CONFLICT (content_sha256) DO UPDATE SET storage_key = excluded.storage_key RETURNING raw_documents.id]\n[parameters: {'content_sha256': 'f7fd2813d83979afa6031a3c542936ca893944c3270a6e24e92cb03b9509e1eb', 'storage_key': 'raw/f7/f7fd2813d83979afa6031a3c542936ca893944c3270a6e24e92cb03b9509e1eb', 'content_type': 'application/json; charset=utf-8', 'size_bytes': 69289, 'first_url': 'https://mistica-web.vercel.app/index.json'}]\n(Background on this error at: https://sqlalche.me/e/21/e3q8)"
+        },
+        {
+          "slug": "undp-design-system",
+          "error": "OperationalError: (psycopg.errors.QueryCanceled) canceling statement due to statement timeout\nCONTEXT:  while inserting index tuple (62,3) in relation \"raw_documents\"\n[SQL: INSERT INTO raw_documents (content_sha256, storage_key, content_type, size_bytes, first_url) VALUES (%(content_sha256)s::VARCHAR, %(storage_key)s::VARCHAR, %(content_type)s::VARCHAR, %(size_bytes)s::INTEGER, %(first_url)s::VARCHAR) ON CONFLICT (content_sha256) DO UPDATE SET storage_key = excluded.storage_key RETURNING raw_documents.id]\n[parameters: {'content_sha256': 'e63cc9f1a22967985627eb161334d2a14dc511722f6779d7ac1474efd88003c9', 'storage_key': 'raw/e6/e63cc9f1a22967985627eb161334d2a14dc511722f6779d7ac1474efd88003c9', 'content_type': 'application/json', 'size_bytes': 84569, 'first_url': 'https://design.undp.org/index.json'}]\n(Background on this error at: https://sqlalche.me/e/21/e3q8)"
+        },
+        {
+          "slug": "wordpress-gutenberg",
+          "error": "OperationalError: (psycopg.errors.QueryCanceled) canceling statement due to statement timeout\nCONTEXT:  while inserting index tuple (61,10) in relation \"raw_documents\"\n[SQL: INSERT INTO raw_documents (content_sha256, storage_key, content_type, size_bytes, first_url) VALUES (%(content_sha256)s::VARCHAR, %(storage_key)s::VARCHAR, %(content_type)s::VARCHAR, %(size_bytes)s::INTEGER, %(first_url)s::VARCHAR) ON CONFLICT (content_sha256) DO UPDATE SET storage_key = excluded.storage_key RETURNING raw_documents.id]\n[parameters: {'content_sha256': 'c09ef19bd7ba6cfdd5e063a9c8b8e7928af4334ddd853ca095c158518525ae64', 'storage_key': 'raw/c0/c09ef19bd7ba6cfdd5e063a9c8b8e7928af4334ddd853ca095c158518525ae64', 'content_type': 'application/json; charset=utf-8', 'size_bytes': 492660, 'first_url': 'https://wordpress.github.io/gutenberg/index.json'}]\n(Background on this error at: https://sqlalche.me/e/21/e3q8)"
+        }
+      ],
+      "registry": {
+        "added": [],
+        "changed": [],
+        "catalog_projects": 103,
+        "previously_crawled": 103,
+        "removed_from_catalog": []
+      },
+      "projects_processed": 103,
+      "approved_domains_added": []
+    },
+    "created_at": "2026-10-21T17:04:03.748168+05:30",
+    "started_at": "2026-10-21T17:04:04.210671+05:30",
+    "finished_at": "2026-10-21T17:08:15.506077+05:30"
+  }
+]

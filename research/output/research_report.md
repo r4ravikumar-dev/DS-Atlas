@@ -1,11 +1,11 @@
 # Design-Systems Research Report
 
-_Generated 2026-10-21T09:52:32+00:00 · schema 1.0.0. All figures are computed from `crawl_report.json` and the validated datasets._
+_Generated 2026-10-21T09:34:46.604770+00:00 · schema 1.0.0. All figures are computed from `crawl_report.json` and the validated datasets._
 
 ## 1. Executive summary
 
 - **20** seed URLs were attempted; **19** were inspected successfully. Unavailable/partial: S19.
-- **1421** URLs were requested (**1413** succeeded); a further **4916** URLs were discovered in records but not fetched (mostly official component pages linked from directories).
+- **1284** URLs were requested (**1276** succeeded); a further **4916** URLs were discovered in records but not fetched (mostly official component pages linked from directories).
 - **8117** normalized records were produced, resolving to **510** canonical design-system entities (**136** corroborated by ≥2 independent sources).
 - **3038** component records (**396** with structured API/prop data), **1708** token records and **1794** pattern/guideline records.
 - **125** items await manual review (field conflicts, possible duplicate systems).
@@ -36,7 +36,7 @@ Twenty mandatory seed sources (directories, curated GitHub lists, token tooling 
 | S16 | [Ant Design](https://ant.design/) | inspected | 141/141 | 72 | 959 | official llms.txt index (https://ant.design/llms.txt) → per-page Markdown |
 | S17 | [The Design System Guide: Resources](https://thedesignsystem.guide/resources) | inspected | 1/1 | 75 | 75 | html (heading-scoped link extraction) |
 | S18 | [DesignSystems.com](https://www.designsystems.com/) | inspected | 45/45 | 46 | 46 | html (home + section index pages + article meta) |
-| S19 | [Design System Checklist](https://github.com/ardeshireshghi/design-system-checklist) | unavailable_seed__substitute_extracted | 8/14 | 232 | 233 | seed probe; discovered substitute repository via GitHub REST API + raw source files |
+| S19 | [Design System Checklist](https://github.com/ardeshireshghi/design-system-checklist) | unavailable_seed__substitute_extracted | 12/14 | 232 | 233 | seed probe; discovered substitute repository via GitHub REST API + raw source files |
 | S20 | [Design Systems One](https://www.designsystems.one/design-systems) | inspected | 52/52 | 125 | 797 | html gallery + documented public JSON API (advertised in llms.txt) |
 
 ## 4. Methodology
@@ -80,8 +80,8 @@ Number of distinct systems (of 89 Surf systems that list component links) linkin
 | Button | 87 |
 | Text input | 85 |
 | Checkbox | 83 |
-| Progress | 82 |
 | Dialog | 82 |
+| Progress | 82 |
 | Radio | 81 |
 | Tabs | 79 |
 | Menu | 76 |
@@ -90,12 +90,12 @@ Number of distinct systems (of 89 Surf systems that list component links) linkin
 | Tooltip | 70 |
 | Table / Data grid | 68 |
 | Card | 68 |
-| Tag | 65 |
 | Pagination | 65 |
+| Tag | 65 |
 | Date & time picker | 63 |
-| Select | 62 |
-| Navigation | 62 |
 | Accordion | 62 |
+| Navigation | 62 |
+| Select | 62 |
 | Textarea | 61 |
 
 ### 6.3 Component libraries
@@ -160,7 +160,7 @@ _These are syntheses across sources, not statements by any single source._
 - **Problem:** Inconsistent controlled/uncontrolled APIs across components.
 - **Action:** Standardise `value`/`defaultValue`/`onValueChange` (or the convention of your base library) for every stateful component and document it once.
 - **Why:** Section 3 of the comparison shows each library is internally consistent but conventions differ across libraries.
-- **Evidence:** `cmp:s11:alert-dialog`, `cmp:s12:alert-dialog`, `cmp:s12:dialog`, `cmp:s13:alert-dialog`
+- **Evidence:** `cmp:s12:alert-dialog`, `cmp:s12:dialog`, `cmp:s13:alert-dialog`, `cmp:s13:dialog`
 - **Trade-offs:** Wrapping a library with different conventions adds an adapter layer.
 - **May not apply when:** Not needed if you adopt one library's conventions wholesale.
 - **Verify by:** Lint rule or API review checklist item checking prop names.

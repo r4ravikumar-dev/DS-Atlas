@@ -3,7 +3,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, type Query } from '@/lib/api/client'
 import { qk } from '@/lib/api/keys'
-import type { Component, Facet, Guideline, Item, Page, System, SystemDetail, Token } from '@/lib/api/types'
+import type { AttributeEvidence, Component, Facet, Guideline, Item, Page, StorybookProject, System, SystemDetail, Token } from '@/lib/api/types'
 
 export interface SystemFacets { frameworks: Facet[]; sources: Facet[]; verification_status: Facet[] }
 export interface SystemSourceRow { record_id: number; record_key: string; title: string; evidence_url: string; verification_status: string; source_id: number; source_key: string; source_name: string }
@@ -22,6 +22,10 @@ export const useSystemGuidelines = (id: number, page: number) =>
   useQuery({ queryKey: qk.system(id, 'guidelines', page), queryFn: ({ signal }) => api<Page<Guideline>>(`/design-systems/${id}/guidelines`, { query: { page, page_size: 20 }, signal }), placeholderData: keepPreviousData })
 export const useSystemSources = (id: number) =>
   useQuery({ queryKey: qk.system(id, 'sources'), queryFn: ({ signal }) => api<Item<SystemSourceRow[]>>(`/design-systems/${id}/sources`, { signal }).then((r) => r.data) })
+export const useSystemEvidence = (id: number, page: number = 1) =>
+  useQuery({ queryKey: qk.system(id, 'evidence', page), queryFn: ({ signal }) => api<Page<AttributeEvidence>>(`/design-systems/${id}/evidence`, { query: { page, page_size: 20 }, signal }), placeholderData: keepPreviousData })
+export const useSystemStorybook = (id: number) =>
+  useQuery({ queryKey: qk.system(id, 'storybook'), queryFn: ({ signal }) => api<Item<StorybookProject | null>>(`/design-systems/${id}/storybook`, { signal }).then((r) => r.data) })
 
 export function useUpdateSystem(id: number) {
   const qc = useQueryClient()
@@ -30,3 +34,4 @@ export function useUpdateSystem(id: number) {
     onSuccess: (r) => (qc.setQueryData(qk.system(id), r.data), qc.invalidateQueries({ queryKey: ['systems'] })),
   })
 }
+

@@ -1,0 +1,26 @@
+{
+  "initial_queue_size": 126,
+  "processed_count": 126,
+  "remaining_open_count": 0,
+  "by_resolution": {
+    "duplicate_confirmed": 82,
+    "resolved_existing_system": 32,
+    "linked_resource": 10,
+    "distinct_system_confirmed": 2
+  },
+  "by_kind": {
+    "system_field_conflict": {
+      "total": 85,
+      "resolved": 85
+    },
+    "possible_duplicate_system": {
+      "total": 40,
+      "resolved": 40
+    },
+    "same_source_component_duplicate": {
+      "total": 1,
+      "resolved": 1
+    }
+  },
+  "canonical_systems_count": 476
+}

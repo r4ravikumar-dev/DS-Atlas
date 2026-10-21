@@ -18,6 +18,19 @@ const nextConfig: NextConfig = {
     }
     return [{ source: '/api/v1/:path*', destination: `${backend.replace(/\/$/, '')}/api/v1/:path*` }]
   },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        ],
+      },
+    ]
+  },
 }
 
 export default nextConfig

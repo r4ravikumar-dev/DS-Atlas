@@ -3,7 +3,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { api, type Query } from '@/lib/api/client'
 import { qk } from '@/lib/api/keys'
-import type { Component, ComponentDetail, Evidence, Facet, Guideline, Item, Page, Token } from '@/lib/api/types'
+import type { Component, ComponentDetail, ComponentStorybook, Evidence, Facet, Guideline, Item, Page, Token } from '@/lib/api/types'
 
 export interface ComponentFacets { families: Facet[]; libraries: Facet[]; detail_levels: Facet[] }
 
@@ -21,3 +21,6 @@ export const useRelatedGuidelines = (id: number) =>
   useQuery({ queryKey: qk.component(id, 'guidelines'), queryFn: ({ signal }) => api<Page<Guideline>>(`/components/${id}/related-guidelines`, { signal }).then((r) => r.data) })
 export const useRelatedTokens = (id: number) =>
   useQuery({ queryKey: qk.component(id, 'tokens'), queryFn: ({ signal }) => api<Page<Token>>(`/components/${id}/related-tokens`, { signal }).then((r) => r.data) })
+export const useComponentStorybook = (id: number) =>
+  useQuery({ queryKey: qk.component(id, 'storybook'), queryFn: ({ signal }) => api<Item<ComponentStorybook>>(`/components/${id}/storybook`, { signal }).then((r) => r.data) })
+

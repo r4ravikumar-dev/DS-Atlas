@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react'
 import { ApiError } from '@/lib/api/client'
 import { can, useMe } from '@/features/auth/api'
-import { useAudit, useConfig, useCreateUser, useJobHealth, useUpdateConfig, useUpdateUser, useUsers } from '@/features/administration/api'
+import { useAudit, useConfig, useJobHealth, useUpdateConfig, useUpdateUser, useUsers } from '@/features/administration/api'
+import { useCreateInvitation, useInvitations, useResendInvitation, useRevokeInvitation } from '@/features/invitations/api'
 import { Button, ErrorState, Field, fmtDate, KV, PageHeader, Pagination, Panel, Select, Skeleton, Tabs, Tag } from '@/components/ui'
 import { DataTable } from '@/components/ui/DataTable'
 import s from '@/components/platform/page.module.scss'
 
-type Tab = 'users' | 'config' | 'audit' | 'health'
+type Tab = 'users' | 'invitations' | 'config' | 'audit' | 'health'
 
 export default function AdminPage() {
   const { data: me } = useMe()
@@ -16,9 +17,10 @@ export default function AdminPage() {
   if (!can(me, 'admin')) return <ErrorState error={new ApiError(403, { code: 'FORBIDDEN', message: 'Administrator role required.', details: [] }, '')} />
   return (
     <>
-      <PageHeader title="Administration" description="Users and roles, crawl configuration, approved domains, retention and export policy, audit trail and job health. Secrets are never shown here." />
-      <div style={{ marginBottom: 14 }}><Tabs<Tab> value={tab} onChange={setTab} tabs={[{ value: 'users', label: 'Users & roles' }, { value: 'config', label: 'Configuration' }, { value: 'audit', label: 'Audit trail' }, { value: 'health', label: 'Job health' }]} /></div>
-      {tab === 'users' && <Users myId={me!.id} />}
+      <PageHeader title="Administration" description="Users and roles, invitations, crawl configuration, approved domains, retention and export policy, audit trail and job health. Secrets are never shown here." />
+      <div style={{ marginBottom: 14 }}><Tabs<Tab> value={tab} onChange={setTab} tabs={[{ value: 'users', label: 'Users & roles' }, { value: 'invitations', label: 'Invitations' }, { value: 'config', label: 'Configuration' }, { value: 'audit', label: 'Audit trail' }, { value: 'health', label: 'Job health' }]} /></div>
+      {tab === 'users' && <Users myId={me!.id} onGoToInvites={() => setTab('invitations')} />}
+      {tab === 'invitations' && <Invitations />}
       {tab === 'config' && <Config />}
       {tab === 'audit' && <Audit />}
       {tab === 'health' && <Health />}
@@ -26,12 +28,9 @@ export default function AdminPage() {
   )
 }
 
-function Users({ myId }: { myId: string }) {
+function Users({ myId, onGoToInvites }: { myId: string; onGoToInvites: () => void }) {
   const users = useUsers()
-  const create = useCreateUser()
   const update = useUpdateUser()
-  const [f, setF] = useState({ email: '', name: '', password: '', role: 'viewer' as 'viewer' | 'researcher' | 'admin' })
-  const err = create.error instanceof ApiError ? create.error : null
   return (
     <div className={s.grid21}>
       <Panel title="Users">
@@ -47,14 +46,103 @@ function Users({ myId }: { myId: string }) {
         )}
         {update.error && <div className={s.pad}><ErrorState error={update.error} /></div>}
       </Panel>
-      <Panel title="Invite user">
-        <form className={s.pad} style={{ display: 'grid', gap: 12 }} onSubmit={(e) => (e.preventDefault(), create.mutate(f, { onSuccess: () => setF({ email: '', name: '', password: '', role: 'viewer' }) }))}>
-          <Field label="Email" error={err?.details?.find((d) => d.field === 'email')?.reason}><input type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} required /></Field>
-          <Field label="Name"><input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} maxLength={200} /></Field>
-          <Field label="Initial password" hint="At least 12 characters; share it out of band." error={err?.details?.find((d) => d.field === 'password')?.reason}><input type="password" autoComplete="new-password" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} minLength={12} required /></Field>
-          <Field label="Role"><select value={f.role} onChange={(e) => setF({ ...f, role: e.target.value as never })}><option value="viewer">viewer — read & search</option><option value="researcher">researcher — crawl, compare, export</option><option value="admin">admin — everything</option></select></Field>
+      <Panel title="Add user">
+        <div className={s.pad} style={{ display: 'grid', gap: 12 }}>
+          <p className={s.muted} style={{ fontSize: '0.84rem' }}>
+            To enforce single-use identity verification and eliminate unencrypted passwords, all new users must be registered via invitations.
+          </p>
+          <Button variant="primary" onClick={onGoToInvites}>Go to Invitations</Button>
+        </div>
+      </Panel>
+    </div>
+  )
+}
+
+function Invitations() {
+  const [page, setPage] = useState(1)
+  const [statusFilter, setStatusFilter] = useState<string>('')
+  const invQuery = useInvitations({ page, page_size: 20, ...(statusFilter ? { status: statusFilter } : {}) })
+  const createInv = useCreateInvitation()
+  const resendInv = useResendInvitation()
+  const revokeInv = useRevokeInvitation()
+  const [f, setF] = useState({ email: '', role: 'viewer' as 'viewer' | 'researcher' | 'admin', expires_in_days: 7 })
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault()
+    setSuccessMsg(null)
+    createInv.mutate(
+      {
+        email: f.email,
+        role: f.role,
+        ttl_hours: f.expires_in_days * 24,
+      },
+      {
+        onSuccess: (res) => {
+          setF({ email: '', role: 'viewer', expires_in_days: 7 })
+          setSuccessMsg(`Invitation dispatched to ${res.data.email} (${res.data.delivery_status}).`)
+        },
+      }
+    )
+  }
+
+  const err = createInv.error instanceof ApiError ? createInv.error : null
+
+  return (
+    <div className={s.grid21}>
+      <Panel title="Invitations" actions={
+        <Select label="Filter status" value={statusFilter} onChange={setStatusFilter} options={[
+          { value: '', label: 'All statuses' },
+          { value: 'pending', label: 'Pending' },
+          { value: 'accepted', label: 'Accepted' },
+          { value: 'revoked', label: 'Revoked' },
+          { value: 'expired', label: 'Expired' },
+        ]} />
+      }>
+        {invQuery.error ? <ErrorState error={invQuery.error} /> : (
+          <DataTable caption="Invitations" loading={invQuery.isLoading} rows={invQuery.data?.data} rowKey={(i) => i.id}
+            columns={[
+              { key: 'e', header: 'Recipient', cell: (i) => <span className={s.cell}><strong>{i.email}</strong><small>{i.role}</small></span> },
+              { key: 'st', header: 'Status', cell: (i) => (
+                <Tag tone={i.status === 'pending' ? 'accent' : 'muted'}>{i.status}</Tag>
+              ) },
+              { key: 'del', header: 'Delivery', cell: (i) => <Tag tone="muted">{i.delivery_status}</Tag>, hideBelow: 'md' },
+              { key: 'exp', header: 'Expires', cell: (i) => fmtDate(i.expires_at), hideBelow: 'md' },
+              { key: 'act', header: 'Actions', cell: (i) => i.status === 'pending' ? (
+                <div className={s.row} style={{ gap: 4 }}>
+                  <Button size="sm" variant="ghost" loading={resendInv.isPending} onClick={() => resendInv.mutate(i.id)}>Resend</Button>
+                  <Button size="sm" variant="ghost" loading={revokeInv.isPending} onClick={() => revokeInv.mutate(i.id)}>Revoke</Button>
+                </div>
+              ) : '—' },
+            ]} />
+        )}
+        {invQuery.data && <Pagination page={page} pageSize={20} total={invQuery.data.meta.total_items} totalPages={invQuery.data.meta.total_pages} onPage={setPage} />}
+      </Panel>
+      <Panel title="Issue invitation">
+        <form className={s.pad} style={{ display: 'grid', gap: 12 }} onSubmit={handleCreate}>
+          <p className={s.muted} style={{ fontSize: '0.84rem' }}>
+            All platform users must be invited. Invitations are single-use, identity-bound, and require two-step email verification code confirmation.
+          </p>
+          {successMsg && (
+            <div style={{ background: 'var(--panel-active)', border: '1px solid var(--accent)', borderRadius: 6, padding: 10, fontSize: '0.84rem' }}>
+              <strong style={{ color: 'var(--accent)' }}>Success:</strong> {successMsg}
+            </div>
+          )}
+          <Field label="Recipient Email" error={err?.details?.find((d) => d.field === 'email')?.reason}>
+            <input type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} placeholder="user@organization.org" required />
+          </Field>
+          <Field label="Role">
+            <select value={f.role} onChange={(e) => setF({ ...f, role: e.target.value as never })}>
+              <option value="viewer">viewer — read & search</option>
+              <option value="researcher">researcher — crawl, compare, export</option>
+              <option value="admin">admin — everything</option>
+            </select>
+          </Field>
+          <Field label="Validity (days)">
+            <input type="number" min={1} max={30} value={f.expires_in_days} onChange={(e) => setF({ ...f, expires_in_days: Number(e.target.value) })} />
+          </Field>
           {err && <p role="alert" style={{ color: 'var(--coral)', fontSize: '0.84rem' }}>{err.message}</p>}
-          <Button type="submit" variant="primary" loading={create.isPending}>Create user</Button>
+          <Button type="submit" variant="primary" loading={createInv.isPending}>Send invitation</Button>
         </form>
       </Panel>
     </div>

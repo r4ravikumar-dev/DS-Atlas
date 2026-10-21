@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { BarChart3, BookOpen, Boxes, ClipboardCheck, Columns3, Database, FileText, Gauge, LogOut, Menu, Moon, Palette, Search, Settings, Sun, Workflow, X } from 'lucide-react'
+import { BarChart3, BookOpen, Boxes, ClipboardCheck, Columns3, Database, FileText, Gauge, Layers, LogOut, Menu, Moon, Palette, Search, Settings, Sun, Workflow, X } from 'lucide-react'
 import { ApiError } from '@/lib/api/client'
 import { can, useLogout, useMe } from '@/features/auth/api'
 import { useApp } from '../Providers'
@@ -18,6 +18,7 @@ const NAV = [
     items: [
       { href: '/platform/systems', label: 'Design systems', icon: Boxes },
       { href: '/platform/components', label: 'Components', icon: BookOpen },
+      { href: '/platform/storybook', label: 'Storybook & variants', icon: Layers },
       { href: '/platform/tokens', label: 'Tokens', icon: Palette },
       { href: '/platform/guidelines', label: 'Guidelines', icon: ClipboardCheck },
     ],
@@ -35,7 +36,7 @@ const NAV = [
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const isLogin = pathname === '/platform/login'
+  const isPublicAuth = pathname === '/platform/login' || pathname.startsWith('/platform/invite')
   const me = useMe()
   const logout = useLogout()
   const { theme, toggleTheme } = useApp()
@@ -44,11 +45,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const unauth = me.error instanceof ApiError && me.error.status === 401
 
   useEffect(() => {
-    if (unauth && !isLogin) router.replace(`/platform/login?next=${encodeURIComponent(pathname)}`)
-  }, [unauth, isLogin, pathname, router])
+    if (unauth && !isPublicAuth) router.replace(`/platform/login?next=${encodeURIComponent(pathname)}`)
+  }, [unauth, isPublicAuth, pathname, router])
   useEffect(() => setNavOpen(false), [pathname])
 
-  if (isLogin) return <div className={s.loginWrap}>{children}</div>
+  if (isPublicAuth) return <div className={s.loginWrap}>{children}</div>
 
   const user = me.data
   return (

@@ -11,7 +11,10 @@ from ....core.exceptions import AppError, Unauthorized
 from ....core.security import CSRF_COOKIE, SESSION_COOKIE, create_session_token, new_csrf_token, verify_password
 from ....database.session import get_db
 from ....models import User
-from ....schemas import Item, LoginRequest, SessionOut, UserOut
+from ....schemas import (
+    InvitationAcceptRequest, InvitationSendCodeRequest, InvitationValidateOut,
+    InvitationValidateRequest, Item, LoginRequest, SessionOut, UserOut
+)
 from ....services.audit import audit
 from ...deps import Principal, get_principal
 from ..common import ERRORS
@@ -64,3 +67,34 @@ def me(p: Principal = Depends(get_principal)):
     if p.user is None:
         raise Unauthorized("Not signed in.")
     return {"data": p.user}
+
+
+@router.post("/invitations/validate", response_model=Item[InvitationValidateOut], summary="Validate invitation token without consuming it")
+def validate_invitation(body: InvitationValidateRequest, db: Session = Depends(get_db)):
+    from ....services import invitations as invsvc
+    res = invsvc.validate(db, body.token)
+    return {"data": res}
+
+
+@router.post("/invitations/send-code", summary="Send 6-digit email verification code for invitation")
+def send_invitation_code(body: InvitationSendCodeRequest, db: Session = Depends(get_db)):
+    from ....services import invitations as invsvc
+    res = invsvc.send_code(db, body.token)
+    db.commit()
+    return {"data": res}
+
+
+@router.post("/invitations/accept", response_model=Item[SessionOut], summary="Atomically accept invitation, set password and sign in")
+def accept_invitation(body: InvitationAcceptRequest, response: Response, db: Session = Depends(get_db)):
+    from ....services import invitations as invsvc
+    user = invsvc.accept(db, token=body.token, code=body.code, name=body.name, password=body.password)
+    s = get_settings()
+    token = create_session_token(str(user.id), user.role)
+    csrf = new_csrf_token()
+    max_age = s.session_ttl_minutes * 60
+    response.set_cookie(SESSION_COOKIE, token, httponly=True, secure=s.cookie_secure, samesite="lax", max_age=max_age, path="/", domain=s.cookie_domain)
+    response.set_cookie(CSRF_COOKIE, csrf, httponly=False, secure=s.cookie_secure, samesite="lax", max_age=max_age, path="/", domain=s.cookie_domain)
+    user.last_login_at = datetime.now(timezone.utc)
+    db.commit()
+    return {"data": {"user": user, "csrf_token": csrf, "expires_in_seconds": max_age}}
+

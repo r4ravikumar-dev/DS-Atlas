@@ -1,0 +1,326 @@
+[
+  {
+    "source_id": 21,
+    "source_key": "O01",
+    "name": "Carbon — official documentation",
+    "system_key": "dsys:carbondesignsystem-com",
+    "url": "https://www.carbondesignsystem.com/",
+    "canonical_url": "https://www.carbondesignsystem.com/",
+    "domain": "www.carbondesignsystem.com",
+    "status": "inspected_partial",
+    "http_status": 200,
+    "pages_attempted": 27,
+    "pages_ok": 26,
+    "records_count": 64,
+    "crawl_limits": {
+      "max_depth": 3,
+      "max_pages": 25,
+      "selection": {
+        "rank": 1,
+        "selection_reason": "8 independent directory sources; 0 attributes already evidenced",
+        "independent_sources": 8
+      },
+      "system_name": "Carbon",
+      "organization": "IBM"
+    },
+    "last_attempted_at": "2026-10-21T16:42:07.085957+05:30",
+    "last_success_at": "2026-10-21T16:42:07.085957+05:30"
+  },
+  {
+    "source_id": 22,
+    "source_key": "O02",
+    "name": "Pajamas — official documentation",
+    "system_key": "dsys:design-gitlab-com",
+    "url": "https://design.gitlab.com/",
+    "canonical_url": "https://design.gitlab.com/",
+    "domain": "design.gitlab.com",
+    "status": "inspected_partial",
+    "http_status": 200,
+    "pages_attempted": 22,
+    "pages_ok": 19,
+    "records_count": 83,
+    "crawl_limits": {
+      "max_depth": 3,
+      "max_pages": 20,
+      "selection": {
+        "rank": 2,
+        "selection_reason": "8 independent directory sources; 0 attributes already evidenced",
+        "independent_sources": 8
+      },
+      "system_name": "Pajamas",
+      "organization": "GitLab"
+    },
+    "last_attempted_at": "2026-10-21T16:43:41.261683+05:30",
+    "last_success_at": "2026-10-21T16:43:41.261683+05:30"
+  },
+  {
+    "source_id": 23,
+    "source_key": "O03",
+    "name": "Polaris — official documentation",
+    "system_key": "dsys:polaris-shopify-com",
+    "url": "https://shopify.dev/docs/api/polaris",
+    "canonical_url": "https://shopify.dev/docs/api/polaris",
+    "domain": "shopify.dev",
+    "status": "inspected_partial",
+    "http_status": 200,
+    "pages_attempted": 22,
+    "pages_ok": 20,
+    "records_count": 38,
+    "crawl_limits": {
+      "max_depth": 3,
+      "max_pages": 20,
+      "selection": {
+        "rank": 3,
+        "selection_reason": "8 independent directory sources; 0 attributes already evidenced",
+        "independent_sources": 8
+      },
+      "system_name": "Polaris",
+      "organization": "Shopify"
+    },
+    "last_attempted_at": "2026-10-21T16:53:04.839128+05:30",
+    "last_success_at": "2026-10-21T16:53:04.839128+05:30"
+  },
+  {
+    "source_id": 24,
+    "source_key": "O04",
+    "name": "Primer — official documentation",
+    "system_key": "dsys:primer-style",
+    "url": "https://primer.style/",
+    "canonical_url": "https://primer.style/",
+    "domain": "primer.style",
+    "status": "inspected",
+    "http_status": 200,
+    "pages_attempted": 22,
+    "pages_ok": 21,
+    "records_count": 117,
+    "crawl_limits": {
+      "max_depth": 3,
+      "max_pages": 20,
+      "selection": {
+        "rank": 4,
+        "selection_reason": "8 independent directory sources; 0 attributes already evidenced",
+        "independent_sources": 8
+      },
+      "system_name": "Primer",
+      "organization": "GitHub"
+    },
+    "last_attempted_at": "2026-10-21T16:44:21.606348+05:30",
+    "last_success_at": "2026-10-21T16:44:21.606348+05:30"
+  },
+  {
+    "source_id": 25,
+    "source_key": "O05",
+    "name": "Atlassian Design System — official documentation",
+    "system_key": "dsys:atlassian-design",
+    "url": "https://atlassian.design/",
+    "canonical_url": "https://atlassian.design/",
+    "domain": "atlassian.design",
+    "status": "inspected",
+    "http_status": 200,
+    "pages_attempted": 22,
+    "pages_ok": 21,
+    "records_count": 98,
+    "crawl_limits": {
+      "max_depth": 3,
+      "max_pages": 20,
+      "selection": {
+        "rank": 5,
+        "selection_reason": "7 independent directory sources; 0 attributes already evidenced",
+        "independent_sources": 7
+      },
+      "system_name": "Atlassian Design System",
+      "organization": "Atlassian"
+    },
+    "last_attempted_at": "2026-10-21T16:45:02.615631+05:30",
+    "last_success_at": "2026-10-21T16:45:02.615631+05:30"
+  },
+  {
+    "source_id": 26,
+    "source_key": "O06",
+    "name": "Canvas — official documentation",
+    "system_key": "dsys:design-workday-com",
+    "url": "https://design.workday.com/",
+    "canonical_url": "https://design.workday.com/",
+    "domain": "design.workday.com",
+    "status": "inspected_partial",
+    "http_status": 200,
+    "pages_attempted": 22,
+    "pages_ok": 20,
+    "records_count": 20,
+    "crawl_limits": {
+      "max_depth": 3,
+      "max_pages": 20,
+      "selection": {
+        "rank": 6,
+        "selection_reason": "7 independent directory sources; 0 attributes already evidenced",
+        "independent_sources": 7
+      },
+      "system_name": "Canvas",
+      "organization": "Workday"
+    },
+    "last_attempted_at": "2026-10-21T16:45:35.556374+05:30",
+    "last_success_at": "2026-10-21T16:45:35.556374+05:30"
+  },
+  {
+    "source_id": 27,
+    "source_key": "O07",
+    "name": "Fluent UI — official documentation",
+    "system_key": "dsys:developer-microsoft-com",
+    "url": "https://fluent2.microsoft.design/",
+    "canonical_url": "https://fluent2.microsoft.design/",
+    "domain": "fluent2.microsoft.design",
+    "status": "inspected",
+    "http_status": 200,
+    "pages_attempted": 22,
+    "pages_ok": 20,
+    "records_count": 23,
+    "crawl_limits": {
+      "max_depth": 3,
+      "max_pages": 20,
+      "selection": {
+        "rank": 7,
+        "selection_reason": "7 independent directory sources; 0 attributes already evidenced",
+        "independent_sources": 7
+      },
+      "system_name": "Fluent UI",
+      "organization": "Microsoft"
+    },
+    "last_attempted_at": "2026-10-21T16:46:07.952214+05:30",
+    "last_success_at": "2026-10-21T16:46:07.952214+05:30"
+  },
+  {
+    "source_id": 28,
+    "source_key": "O08",
+    "name": "LeafyGreen UI — official documentation",
+    "system_key": "dsys:mongodb-design",
+    "url": "https://www.mongodb.design/",
+    "canonical_url": "https://www.mongodb.design/",
+    "domain": "www.mongodb.design",
+    "status": "inspected_partial",
+    "http_status": 200,
+    "pages_attempted": 22,
+    "pages_ok": 16,
+    "records_count": 17,
+    "crawl_limits": {
+      "max_depth": 3,
+      "max_pages": 20,
+      "selection": {
+        "rank": 8,
+        "selection_reason": "7 independent directory sources; 0 attributes already evidenced",
+        "independent_sources": 7
+      },
+      "system_name": "LeafyGreen UI",
+      "organization": "MongoDB"
+    },
+    "last_attempted_at": "2026-10-21T16:46:41.243582+05:30",
+    "last_success_at": "2026-10-21T16:46:41.243582+05:30"
+  },
+  {
+    "source_id": 29,
+    "source_key": "O09",
+    "name": "Lightning Design System — official documentation",
+    "system_key": "dsys:lightningdesignsystem-com",
+    "url": "https://www.lightningdesignsystem.com/2e1ef8501",
+    "canonical_url": "https://www.lightningdesignsystem.com/2e1ef8501",
+    "domain": "www.lightningdesignsystem.com",
+    "status": "inspected",
+    "http_status": 200,
+    "pages_attempted": 3,
+    "pages_ok": 2,
+    "records_count": 2,
+    "crawl_limits": {
+      "max_depth": 3,
+      "max_pages": 20,
+      "selection": {
+        "rank": 9,
+        "selection_reason": "6 independent directory sources; 0 attributes already evidenced",
+        "independent_sources": 6
+      },
+      "system_name": "Lightning Design System",
+      "organization": "Salesforce"
+    },
+    "last_attempted_at": "2026-10-21T16:46:47.775031+05:30",
+    "last_success_at": "2026-10-21T16:46:47.775031+05:30"
+  },
+  {
+    "source_id": 30,
+    "source_key": "O10",
+    "name": "Material 3 — official documentation",
+    "system_key": "dsys:m3-material-io",
+    "url": "https://m3.material.io",
+    "canonical_url": "https://m3.material.io/",
+    "domain": "m3.material.io",
+    "status": "inspected",
+    "http_status": 200,
+    "pages_attempted": 22,
+    "pages_ok": 21,
+    "records_count": 21,
+    "crawl_limits": {
+      "max_depth": 3,
+      "max_pages": 20,
+      "selection": {
+        "rank": 10,
+        "selection_reason": "6 independent directory sources; 0 attributes already evidenced",
+        "independent_sources": 6
+      },
+      "system_name": "Material 3",
+      "organization": "Google"
+    },
+    "last_attempted_at": "2026-10-21T16:47:19.925466+05:30",
+    "last_success_at": "2026-10-21T16:47:19.925466+05:30"
+  },
+  {
+    "source_id": 31,
+    "source_key": "O11",
+    "name": "Spectrum — official documentation",
+    "system_key": "dsys:spectrum-adobe-com",
+    "url": "https://spectrum.adobe.com/",
+    "canonical_url": "https://spectrum.adobe.com/",
+    "domain": "spectrum.adobe.com",
+    "status": "inspected",
+    "http_status": 200,
+    "pages_attempted": 22,
+    "pages_ok": 21,
+    "records_count": 21,
+    "crawl_limits": {
+      "max_depth": 3,
+      "max_pages": 20,
+      "selection": {
+        "rank": 11,
+        "selection_reason": "6 independent directory sources; 0 attributes already evidenced",
+        "independent_sources": 6
+      },
+      "system_name": "Spectrum",
+      "organization": "Adobe"
+    },
+    "last_attempted_at": "2026-10-21T16:47:48.736346+05:30",
+    "last_success_at": "2026-10-21T16:47:48.736346+05:30"
+  },
+  {
+    "source_id": 32,
+    "source_key": "O12",
+    "name": "U.S. Web Design System — official documentation",
+    "system_key": "dsys:designsystem-digital-gov",
+    "url": "https://designsystem.digital.gov/",
+    "canonical_url": "https://designsystem.digital.gov/",
+    "domain": "designsystem.digital.gov",
+    "status": "inspected",
+    "http_status": 200,
+    "pages_attempted": 22,
+    "pages_ok": 22,
+    "records_count": 69,
+    "crawl_limits": {
+      "max_depth": 3,
+      "max_pages": 20,
+      "selection": {
+        "rank": 12,
+        "selection_reason": "6 independent directory sources; 0 attributes already evidenced",
+        "independent_sources": 6
+      },
+      "system_name": "U.S. Web Design System",
+      "organization": "U.S. Government"
+    },
+    "last_attempted_at": "2026-10-21T16:48:33.388404+05:30",
+    "last_success_at": "2026-10-21T16:48:33.388404+05:30"
+  }
+]

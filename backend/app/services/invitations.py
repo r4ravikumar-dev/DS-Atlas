@@ -192,3 +192,20 @@ def accept(db: Session, *, token: str, code: str, name: str, password: str) -> U
     inv.accepted_user_id = user.id
     audit(db, user.id, "invitation.accept" if inv.kind == "access" else "password.reset", "invitation", inv.id, role=user.role)
     return user
+
+
+def list_invitations(db: Session, status_filter: str | None = None, page: int = 1, page_size: int = 25) -> tuple[list[dict[str, Any]], int]:
+    stmt = select(Invitation).order_by(Invitation.created_at.desc())
+    if status_filter == "pending":
+        stmt = stmt.where(Invitation.accepted_at.is_(None), Invitation.revoked_at.is_(None), Invitation.expires_at > now())
+    elif status_filter == "accepted":
+        stmt = stmt.where(Invitation.accepted_at.is_not(None))
+    elif status_filter == "revoked":
+        stmt = stmt.where(Invitation.revoked_at.is_not(None))
+    elif status_filter == "expired":
+        stmt = stmt.where(Invitation.accepted_at.is_(None), Invitation.revoked_at.is_(None), Invitation.expires_at <= now())
+    
+    total = db.scalar(select(func.count()).select_from(stmt.subquery())) or 0
+    rows = db.scalars(stmt.offset((page - 1) * page_size).limit(page_size)).all()
+    return [to_out(r) for r in rows], total
+
