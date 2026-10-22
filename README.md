@@ -1,23 +1,22 @@
-# Design Systems Knowledge Base
+# Design Systems Directory
 
-A private, administrator-only workspace. It collects design-system information from the web, keeps one canonical record per distinct design system, and shows the whole deduplicated dataset in a dashboard. There is no public site, no public registration, and only one role (administrator).
+A public directory of design systems — components, variants, design tokens, guidelines, Storybook stories and official resource links —
+with a private administration area and an automated daily synchronization that keeps the data current.
 
-| Part | Path | Stack | Owns |
+| Part | Path | Who | Owns |
 |---|---|---|---|
-| **Dashboard** | repo root (`src/`) | Next.js 16, TypeScript, SCSS modules, TanStack Query | UI only. Every record comes from the authenticated `/api/v1`; no research data is bundled. |
-| **Backend API** | `backend/app` | FastAPI, Pydantic, SQLAlchemy 2, Alembic | admin auth, canonical data, search and filters, deduplication, resource links, data quality, intake |
-| **Workers** | `backend/app/workers` | same codebase, separate process | crawl, build, review, Storybook and link-verification jobs from a durable PostgreSQL queue |
-| **Scraping engine** | `backend/app/scrapers/dskb` | requests, BeautifulSoup | robots-aware, rate-limited, SSRF-guarded fetching on an approved-domain list, plus source adapters |
-| **Database** | PostgreSQL | — | the single source of truth: systems, links, components, variants, tokens, guidelines, Storybook, evidence, jobs |
+| **Public directory** | `src/app/(public)` → `/`, `/systems/{id}`, `/components`, `/tokens`, `/guidelines`, `/patterns`, `/storybook`, `/compare`, `/search` | anyone, no account | browsing, server-side search/filters/pagination, read-only comparisons |
+| **Administration** | `src/app/admin` → `/admin`, `/admin/sync`, `/admin/add`, `/admin/sources`, `/admin/jobs`, `/admin/quality`, `/admin/review`, `/admin/reports`, `/admin/settings` | the administrator | sources, crawls, data quality, duplicate review, corrections, sync schedule |
+| **Backend API** | `backend/app` (`/api/v1`) | — | public read-only endpoints (`public:read`) and admin endpoints (session-enforced on every request) |
+| **Worker** | `backend/app/workers` | — | crawls, rebuilds, verification, and the **daily synchronization** scheduler |
+| **Database** | PostgreSQL (Supabase in production) | — | the single source of truth, content fingerprints, change history, sync runs |
 
-## Dashboard (all under `/platform`, all behind the administrator login)
-
-* **Overview** — live counts: canonical systems, source references, verified/partial systems, components, stories, variants, tokens, guidelines and patterns, links, missing official links, review backlog, extraction errors, crawl activity. Every tile links to its view.
-* **Design systems** — the catalog, filtered and paginated server-side. Search by name/organization/description or by component, and filter by technology, platform, has/verified/missing resource type, source and verification status. Each card shows only links that exist (website, docs, GitHub, Figma, Storybook), each marked verified or directory-listed.
-* **System detail** — overview, official resources (with provenance, evidence and admin confirm/flag/primary/remove), verification and crawl status, plus tabs for components, variants and API, tokens, patterns and guidelines, Storybook, evidence and source references. Old IDs of merged records open the canonical system.
-* **Add source** — paste a URL. Existing canonical systems are checked first; then attach the URL to one, or explicitly create a separate system. Official URLs are crawled, rebuilt and link-verified automatically.
-* **Data quality** — duplicate candidates, missing official URLs, invalid links, unverified GitHub links, broken relationships, extraction failures and sources needing a re-crawl. Absent Figma files are reported separately from unchecked ones.
-* Components, Storybook and variants, Tokens, Guidelines, Compare, Reports and exports, Review queue, Sources, Crawl jobs, and Settings and account.
+**Daily synchronization.** Every 24 hours (default 03:00 UTC, set in Admin → Daily sync) the worker re-checks every enabled source:
+* It uses conditional requests (ETag / Last-Modified) and compares content fingerprints per record.
+* New information is added and changed records are updated.
+* **Unchanged content is not written at all:** no new versions and no `content_updated_at` change; only "last checked" moves.
+* A failing or rate-limited source is retried once and never hides existing data.
+* Every run is recorded with real metrics and a per-record change log.
 
 ## Quick start (local)
 
@@ -35,17 +34,17 @@ cp .env.example .env                                # DATABASE_URL, SECRET_KEY, 
 
 # dashboard (repo root)
 npm install
-BACKEND_URL=http://localhost:8000 npm run dev        # http://localhost:3000 → /platform
+BACKEND_URL=http://localhost:8000 npm run dev        # http://localhost:3000 (directory) · /admin (administration)
 ```
 
-`BACKEND_URL` is read on the server only; the browser talks to the same origin, and `/api/v1/*` is proxied. For `npm run build`, set `BACKEND_URL` at **build time**, because Next.js bakes rewrites into the build.
+`BACKEND_URL` is read on the server only; the browser talks to the same origin, and `/api/v1/*` is proxied. For `npm run build`, set `BACKEND_URL` at **build time**, because Next.js bakes rewrites into the build. The public directory is at http://localhost:3000; the administration area is at http://localhost:3000/admin.
 
-## Administrator access
+## Administrator access (administration area only — the directory needs no account)
 
 * **First administrator:** `manage.py bootstrap-admin` from a shell on the server. It reads `ADMIN_EMAIL`/`ADMIN_PASSWORD` from the environment or `backend/.env`, and refuses to run once any administrator exists. There is no HTTP endpoint that can create an account.
 * **Change password:** Settings → Account. This signs out every other session.
 * **Forgotten password:** `manage.py reset-admin-password <email>` from a shell on the server. The password comes from `ADMIN_PASSWORD` or a hidden prompt, and every session is signed out.
-* Every API route except `/health`, `/ready`, `/auth/login`, `/auth/logout` and `/auth/me` requires an active administrator session (httpOnly cookie plus CSRF header, or a Bearer token). Responses carry `X-Robots-Tag: noindex`, and the interactive API docs are disabled in production.
+* Published data (`public:read`) needs no account. Every other API route requires an active administrator session (httpOnly cookie plus CSRF header, or a Bearer token): sources, crawls, jobs, raw documents, review, quality, exports, settings and sync. API responses carry `X-Robots-Tag: noindex`, and the interactive API docs are disabled in production.
 
 ## Commands
 

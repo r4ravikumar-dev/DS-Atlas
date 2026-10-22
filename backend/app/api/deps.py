@@ -8,7 +8,7 @@ from fastapi import Depends, Query, Request
 from sqlalchemy.orm import Session
 
 from ..core.exceptions import AppError, Forbidden, Unauthorized
-from ..core.permissions import has_permission
+from ..core.permissions import PUBLIC, has_permission
 from ..core.security import CSRF_COOKIE, CSRF_HEADER, SESSION_COOKIE, decode_session_token
 from ..database.session import get_db
 from ..models import User
@@ -58,6 +58,8 @@ def get_principal(request: Request, db: Session = Depends(get_db)) -> Principal:
 
 def require(permission: str):
     def dep(p: Principal = Depends(get_principal)) -> Principal:
+        if permission in PUBLIC:
+            return p  # published data: no account needed (rate-limited per client in the HTTP middleware)
         if p.user is None:
             raise Unauthorized("Authentication required.")
         if not has_permission(p.role, permission):

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { BarChart3, BookOpen, Boxes, ClipboardCheck, Columns3, Database, FileText, Gauge, Layers, LogOut, Menu, Moon, Palette, PlusCircle, Search, Settings, ShieldCheck, Sun, Workflow, X } from 'lucide-react'
+import { BarChart3, BookOpen, Boxes, ClipboardCheck, Columns3, Database, FileText, Gauge, Layers, LogOut, Menu, Moon, Palette, PlusCircle, RefreshCw, Search, Settings, ShieldCheck, Sun, Workflow, X } from 'lucide-react'
 import { ApiError } from '@/lib/api/client'
 import { isAdmin, useLogout, useMe } from '@/features/auth/api'
 import { useApp } from '../Providers'
@@ -11,32 +11,32 @@ import { Skeleton } from '../ui'
 import s from './Shell.module.scss'
 
 const NAV = [
-  { group: 'Overview', items: [{ href: '/platform', label: 'Dashboard', icon: Gauge, exact: true }] },
+  { group: 'Overview', items: [{ href: '/admin', label: 'Dashboard', icon: Gauge, exact: true }, { href: '/admin/sync', label: 'Daily sync', icon: RefreshCw }] },
   {
     group: 'Collection',
     items: [
-      { href: '/platform/add', label: 'Add source', icon: PlusCircle },
-      { href: '/platform/sources', label: 'Sources', icon: Database },
-      { href: '/platform/jobs', label: 'Crawl jobs', icon: Workflow },
+      { href: '/admin/add', label: 'Add source', icon: PlusCircle },
+      { href: '/admin/sources', label: 'Sources', icon: Database },
+      { href: '/admin/jobs', label: 'Crawl jobs', icon: Workflow },
     ],
   },
   {
-    group: 'Knowledge',
+    group: 'Data',
     items: [
-      { href: '/platform/systems', label: 'Design systems', icon: Boxes },
-      { href: '/platform/components', label: 'Components', icon: BookOpen },
-      { href: '/platform/storybook', label: 'Storybook & variants', icon: Layers },
-      { href: '/platform/tokens', label: 'Tokens', icon: Palette },
-      { href: '/platform/guidelines', label: 'Guidelines', icon: ClipboardCheck },
+      { href: '/admin/quality', label: 'Data quality', icon: ShieldCheck },
+      { href: '/admin/review', label: 'Review queue', icon: BarChart3 },
+      { href: '/admin/reports', label: 'Reports & exports', icon: FileText },
     ],
   },
   {
-    group: 'Analysis',
+    group: 'Public directory',
     items: [
-      { href: '/platform/compare', label: 'Compare', icon: Columns3 },
-      { href: '/platform/reports', label: 'Reports & exports', icon: FileText },
-      { href: '/platform/quality', label: 'Data quality', icon: ShieldCheck },
-      { href: '/platform/review', label: 'Review queue', icon: BarChart3 },
+      { href: '/', label: 'Design systems', icon: Boxes, exact: true },
+      { href: '/components', label: 'Components', icon: BookOpen },
+      { href: '/storybook', label: 'Storybook', icon: Layers },
+      { href: '/tokens', label: 'Tokens', icon: Palette },
+      { href: '/guidelines', label: 'Guidelines', icon: ClipboardCheck },
+      { href: '/compare', label: 'Compare', icon: Columns3 },
     ],
   },
 ]
@@ -44,7 +44,7 @@ const NAV = [
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const isPublicAuth = pathname === '/platform/login'
+  const isPublicAuth = pathname === '/admin/login'
   const me = useMe()
   const logout = useLogout()
   const { theme, toggleTheme } = useApp()
@@ -53,7 +53,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const unauth = me.error instanceof ApiError && me.error.status === 401
 
   useEffect(() => {
-    if (unauth && !isPublicAuth) router.replace(`/platform/login?next=${encodeURIComponent(pathname)}`)
+    if (unauth && !isPublicAuth) router.replace(`/admin/login?next=${encodeURIComponent(pathname)}`)
   }, [unauth, isPublicAuth, pathname, router])
   useEffect(() => setNavOpen(false), [pathname])
 
@@ -63,14 +63,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className={s.shell}>
       <aside className={s.side} data-open={navOpen || undefined} aria-label="Platform navigation">
-        <Link href="/platform" className={s.brand}>
+        <Link href="/admin" className={s.brand} aria-label="Administration home">
           <span className={s.mark} aria-hidden>
             <i />
             <i />
             <i />
             <i />
           </span>
-          DS <em>Research</em>
+          DS <em>Admin</em>
         </Link>
         <nav>
           {NAV.map((g) => (
@@ -90,7 +90,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           {isAdmin(user) && (
             <div className={s.group}>
               <p>Administration</p>
-              <Link href="/platform/admin" aria-current={pathname.startsWith('/platform/admin') ? 'page' : undefined}>
+              <Link href="/admin/settings" aria-current={pathname.startsWith('/admin/settings') ? 'page' : undefined}>
                 <Settings size={16} aria-hidden />
                 Settings & account
               </Link>
@@ -110,7 +110,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             className={s.search}
             onSubmit={(e) => {
               e.preventDefault()
-              if (q.trim()) router.push(`/platform/search?q=${encodeURIComponent(q.trim())}`)
+              if (q.trim()) router.push(`/search?q=${encodeURIComponent(q.trim())}`)
             }}
           >
             <Search size={16} aria-hidden />
@@ -132,7 +132,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 <button
                   className={s.icon}
                   aria-label="Sign out"
-                  onClick={() => logout.mutate(undefined, { onSettled: () => router.replace('/platform/login') })}
+                  onClick={() => logout.mutate(undefined, { onSettled: () => router.replace('/admin/login') })}
                 >
                   <LogOut size={16} />
                 </button>

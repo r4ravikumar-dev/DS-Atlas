@@ -13,7 +13,7 @@ from ...deps import PageParams, page_params, require
 from ..common import ERRORS, csv_list, page_out
 from ..serializers import token_out
 
-router = APIRouter(prefix="/tokens", tags=["tokens"], responses=ERRORS, dependencies=[Depends(require("read"))])
+router = APIRouter(prefix="/tokens", tags=["tokens"], responses=ERRORS, dependencies=[Depends(require("public:read"))])
 
 
 @router.get("", response_model=Page[TokenOut])

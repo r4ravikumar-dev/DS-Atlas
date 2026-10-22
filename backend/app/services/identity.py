@@ -125,7 +125,8 @@ def apply(db: Session, entities: list[dict[str, Any]]) -> tuple[list[dict[str, A
             e["supported_platforms"] = list(c.value)
         elif c.field in ("name", "description", "styling_strategy", "repository_url", "storybook_url", "design_resource_url") and c.value:
             e[c.field] = c.value
-        e.setdefault("curated_fields", {})[c.field] = {"value": c.value, "evidence": (c.evidence or [])[:3]}
+        ev = [{k: v for k, v in x.items() if k != "user_id"} if isinstance(x, dict) else x for x in (c.evidence or [])[:3]]
+        e.setdefault("curated_fields", {})[c.field] = {"value": c.value, "evidence": ev}
 
     # field-level verification coverage
     ev = defaultdict(lambda: defaultdict(lambda: {"verified": 0, "partially_verified": 0, "unverified": 0}))

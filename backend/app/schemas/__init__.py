@@ -299,6 +299,7 @@ class SystemOut(Model):
     last_verified_at: datetime | None
     created_at: datetime | None = None
     updated_at: datetime | None = None
+    content_updated_at: datetime | None = None
     links: list[ResourceLink] = []
     resource_count: int = 0
 

@@ -6,7 +6,7 @@ def test_health_ready_meta(client):
     assert client.get("/api/v1/health").json() == {"status": "ok"}
     r = client.get("/api/v1/ready").json()
     assert r["status"] == "ready" and r["checks"]["database"] == "ok"
-    assert client.get("/api/v1/meta").status_code == 401  # metadata is private too
+    assert client.get("/api/v1/meta").status_code == 200  # taxonomy is public
 
 
 def test_request_id_header_and_security_headers(client):
@@ -60,9 +60,9 @@ def test_csrf_required_for_cookie_authenticated_mutations(client, users):
 
 
 def test_only_administrators_are_authorized(client, as_viewer, as_researcher, as_admin, fixture_source):
-    """Legacy non-admin accounts (pre-simplification) hold valid sessions but are refused on every protected surface."""
+    """Legacy non-admin accounts hold valid sessions but get only what the public gets."""
     for h in (as_viewer, as_researcher):
-        assert client.get("/api/v1/design-systems", headers=h).status_code == 403
+        assert client.get("/api/v1/design-systems", headers=h).status_code == 200  # public data
         assert client.get("/api/v1/dashboard/summary", headers=h).status_code == 403
         assert client.post(f"/api/v1/sources/{fixture_source}/crawl", headers=h).status_code == 403
         assert client.get("/api/v1/export-jobs", headers=h).status_code == 403

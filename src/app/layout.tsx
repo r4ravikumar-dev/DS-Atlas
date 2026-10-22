@@ -9,11 +9,10 @@ const serif = Instrument_Serif({ subsets: ['latin'], weight: '400', style: ['ita
 
 export const metadata: Metadata = {
   title: {
-    default: 'Design Systems Knowledge Base',
-    template: '%s · DS Knowledge Base',
+    default: 'Design Systems Directory',
+    template: '%s · Design Systems Directory',
   },
-  description: 'Private administrator workspace.',
-  robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
+  description: 'Explore design systems: components, variants, design tokens, guidelines, Storybook stories and official resources — collected from their sources, with provenance.',
 }
 
 export const viewport: Viewport = {

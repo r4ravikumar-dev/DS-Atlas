@@ -46,6 +46,9 @@ class Settings(BaseSettings):
 
     worker_concurrency: int = 4
     worker_poll_seconds: float = 2.0
+    scheduler_tick_seconds: float = 30.0
+    public_rate_limit_per_minute: int = 240
+    cron_secret: SecretStr | None = Field(None, description="Vercel Cron bearer secret for /api/v1/internal/cron/sync (set CRON_SECRET)")
     job_heartbeat_timeout_seconds: int = 300
 
     github_token: SecretStr | None = Field(None, description="Optional GitHub token (read-only public metadata). Never logged or returned.")

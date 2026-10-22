@@ -34,7 +34,7 @@ def ready():
     return {"status": "ready", "checks": checks}
 
 
-@router.get("/meta", summary="API metadata & taxonomy", dependencies=[Depends(require("read"))])
+@router.get("/meta", summary="API metadata & taxonomy", dependencies=[Depends(require("public:read"))])
 def meta():
     s = get_settings()
     return {"data": {"name": s.app_name, "api_version": "v1", "record_schema_version": SCHEMA_VERSION, "environment": s.environment,

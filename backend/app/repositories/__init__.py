@@ -212,6 +212,6 @@ def guideline_facets(db: Session, record_types: list[str]) -> dict[str, list[dic
     base = Guideline.record_type.in_(record_types)
     cat = db.execute(select(Guideline.category, func.count()).where(base).group_by(Guideline.category).order_by(Guideline.category)).all()
     kind = db.execute(select(Guideline.kind, func.count()).where(base, Guideline.kind.is_not(None)).group_by(Guideline.kind).order_by(func.count().desc())).all()
-    src = db.execute(select(Source.key, func.count()).join(Source, Source.id == Guideline.source_id).where(base).group_by(Source.key).order_by(Source.key)).all()
+    src = db.execute(select(Source.key, func.count()).select_from(Guideline).join(Source, Source.id == Guideline.source_id).where(base).group_by(Source.key).order_by(Source.key)).all()
     return {"categories": [{"value": a, "count": b} for a, b in cat], "kinds": [{"value": a, "count": b} for a, b in kind],
             "sources": [{"value": a, "count": b} for a, b in src]}

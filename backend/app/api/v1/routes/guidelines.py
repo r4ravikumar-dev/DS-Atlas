@@ -13,7 +13,7 @@ from ...deps import PageParams, page_params, require
 from ..common import ERRORS, csv_list, page_out
 from ..serializers import guideline_out
 
-router = APIRouter(tags=["guidelines"], responses=ERRORS, dependencies=[Depends(require("read"))])
+router = APIRouter(tags=["guidelines"], responses=ERRORS, dependencies=[Depends(require("public:read"))])
 GUIDE_TYPES, PATTERN_TYPES = ["guideline", "specification"], ["pattern"]
 
 

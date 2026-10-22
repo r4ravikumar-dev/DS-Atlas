@@ -21,7 +21,7 @@ npm install
 npm run dev                                       # .env.development sets BACKEND_URL=http://127.0.0.1:8000
 ```
 
-Then sign in at `http://localhost:3000/platform/login`, open **Sources → Crawl all**. Optional: reuse a previous engine cache to avoid re-fetching: `python scripts/manage.py import-cache ../research/data/cache/http`.
+Then sign in at `http://localhost:3000/admin/login`, open **Sources → Crawl all**. Optional: reuse a previous engine cache to avoid re-fetching: `python scripts/manage.py import-cache ../research/data/cache/http`.
 
 ## Tests
 
@@ -174,3 +174,48 @@ Raw page snapshots and exports go to the private bucket. Download endpoints firs
 * **Local development.** `vercel dev` runs `app` and `backend` but not daemons. Run `python -m app.workers.main` alongside it, or `docker build -f backend/Dockerfile.worker backend/`.
 * **Rate limits.** Login and intake limits are per instance.
 * **Engine cache.** The crawler's HTTP cache lives in the worker's ephemeral `/tmp` and is rebuilt after restarts.
+
+
+## Daily synchronization — operation, monitoring and recovery
+
+**Where it runs.** Every worker process (the Vercel daemon `worker` in production; `python -m app.workers.main` locally) runs a scheduler tick every `SCHEDULER_TICK_SECONDS` (30 s).
+* The tick claims the run only when `sync_schedule.next_run_at` has passed, using `SELECT … FOR UPDATE SKIP LOCKED`. It advances `next_run_at` in the same transaction.
+* A partial unique index allows only one `running` run.
+* So scaling the worker, restarting it, or the hourly Vercel Cron backup (`/api/v1/internal/cron/sync`, needs `CRON_SECRET`) can never start two runs.
+* The schedule lives in the database, so it survives restarts and redeploys. Times are stored and run in **UTC**; the admin page also shows your local time.
+
+**What a run does.**
+1. Snapshot counts.
+2. Queue a `refresh` crawl of every enabled (not paused) source; sources already being crawled are skipped and reported.
+3. Ingest compares each record's fingerprint. New records are inserted; changed ones are updated, with `content_updated_at` set and a `record_changes` row written. Unchanged records get **no write**.
+4. Records missing from a crawl are marked stale only after a complete, error-free crawl, and only if at most 30 % of the source's records went missing. Otherwise they are kept and reported as "kept for review".
+5. `sync_finalize` retries failed sources once after 10 minutes.
+6. The canonical dataset is rebuilt **only if some source changed**. The rebuild itself writes only rows whose fingerprint differs.
+7. Metrics, per-source outcomes and errors are stored in `sync_runs`.
+
+**Monitoring.** Admin → **Daily sync** shows:
+* whether the scheduler is enabled;
+* the worker heartbeat (red if none in 10 minutes);
+* next run, current run, last run and last successful run;
+* history with per-source outcomes and the content-change log.
+
+The admin dashboard shows the same summary.
+
+**Run outcomes.**
+* `succeeded`: every source checked.
+* `partially_succeeded`: some sources failed or were incomplete (rate limits, timeouts); their existing data is preserved.
+* `failed`: every source failed.
+* `interrupted`: the run had no active jobs for 8 hours, e.g. the worker was down. It is marked automatically, and the next scheduled run proceeds normally.
+
+**Recovery.**
+* *Worker was down at run time*: the next tick after it comes back claims the overdue run immediately.
+* *A source keeps failing*: check Admin → Sources → the source (its `last_change_summary`, `consecutive_failures`, and job events), then pause it or fix its URL. Its data stays published meanwhile.
+* *Run now*: Admin → Daily sync → **Run now**. It is refused while another run is in progress.
+* *Disable automatic runs*: switch the toggle off in Admin → Daily sync. Manual runs still work.
+
+**Verified no-change behaviour.**
+* Automated: `tests/test_daily_sync.py` covers cases A–G and the scheduler.
+* On the real dataset, a second full build reported all 430 systems, 3,397 components, 1,708 tokens and 1,997 guidelines unchanged, with zero writes.
+* Two consecutive live syncs of designsystems.one and Garden's docs:
+  * The first added the 2 genuinely new systems (Magma, workload.zero).
+  * The second reported 0 changed, 906 unchanged, no rebuild and no change rows.

@@ -13,7 +13,7 @@ from ...deps import PageParams, page_params, require
 from ..common import ERRORS, csv_list, page_out
 from ..serializers import component_out, guideline_out, token_out
 
-router = APIRouter(prefix="/components", tags=["components"], responses=ERRORS, dependencies=[Depends(require("read"))])
+router = APIRouter(prefix="/components", tags=["components"], responses=ERRORS, dependencies=[Depends(require("public:read"))])
 
 
 def _get(db: Session, component_id: int) -> tuple[Component, Record, str]:

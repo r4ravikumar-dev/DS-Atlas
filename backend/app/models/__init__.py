@@ -61,6 +61,10 @@ class AuditEvent(Base):
 class Source(TimestampMixin, Base):
     __tablename__ = "sources"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    last_content_hash: Mapped[str | None] = mapped_column(String(64))  # fingerprint of this source's extracted records
+    last_content_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_change_summary: Mapped[Any] = mapped_column(JSONB, nullable=False, default=dict)
+    consecutive_failures: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     key: Mapped[str] = mapped_column(String(20), unique=True, nullable=False)  # S01…S20, U001… for user-added
     name: Mapped[str] = mapped_column(String(300), nullable=False)
     url: Mapped[str] = mapped_column(Text, nullable=False)
@@ -166,6 +170,8 @@ class Record(TimestampMixin, Base):
     `record_key` is the engine's deterministic ID, so re-crawls upsert instead of duplicating."""
     __tablename__ = "records"
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    fingerprint: Mapped[str | None] = mapped_column(String(64))  # hash of the stored content fields (change detection)
+    content_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # last *content* change, not last check
     record_key: Mapped[str] = mapped_column(String(300), unique=True, nullable=False)
     record_type: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     title: Mapped[str] = mapped_column(Text, nullable=False)
@@ -221,6 +227,8 @@ class DesignSystem(TimestampMixin, Base):
     """Canonical, entity-resolved design system (rebuilt from records by the build job)."""
     __tablename__ = "design_systems"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    fingerprint: Mapped[str | None] = mapped_column(String(64))  # hash of the stored content fields (change detection)
+    content_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # last *content* change, not last check
     key: Mapped[str] = mapped_column(String(300), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(300), nullable=False, index=True)
     organization: Mapped[str | None] = mapped_column(String(300), index=True)
@@ -259,6 +267,8 @@ class DesignSystem(TimestampMixin, Base):
 class Component(Base):
     __tablename__ = "components"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    fingerprint: Mapped[str | None] = mapped_column(String(64))  # hash of the stored content fields (change detection)
+    content_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # last *content* change, not last check
     record_id: Mapped[int] = mapped_column(ForeignKey("records.id", ondelete="CASCADE"), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(300), nullable=False, index=True)
     family: Mapped[str | None] = mapped_column(String(100), index=True)
@@ -295,6 +305,8 @@ class ComponentProp(Base):
 class DesignToken(Base):
     __tablename__ = "design_tokens"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    fingerprint: Mapped[str | None] = mapped_column(String(64))  # hash of the stored content fields (change detection)
+    content_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # last *content* change, not last check
     record_id: Mapped[int] = mapped_column(ForeignKey("records.id", ondelete="CASCADE"), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(300), nullable=False, index=True)
     path: Mapped[str] = mapped_column(String(500), nullable=False, index=True)
@@ -329,6 +341,8 @@ class Guideline(Base):
     """Guidelines, patterns and specification sections (record_type distinguishes them)."""
     __tablename__ = "guidelines"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    fingerprint: Mapped[str | None] = mapped_column(String(64))  # hash of the stored content fields (change detection)
+    content_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # last *content* change, not last check
     record_id: Mapped[int] = mapped_column(ForeignKey("records.id", ondelete="CASCADE"), unique=True, nullable=False)
     record_type: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     kind: Mapped[str | None] = mapped_column(String(60), index=True)
@@ -587,3 +601,52 @@ class SystemAlias(Base):
     evidence: Mapped[Any] = mapped_column(JSONB, nullable=False, default=list)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+
+
+class RecordChange(Base):
+    """Content-change history: one row per created / updated / staled / restored record (never for unchanged content)."""
+    __tablename__ = "record_changes"
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    sync_run_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), index=True)
+    job_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), index=True)
+    source_id: Mapped[int | None] = mapped_column(ForeignKey("sources.id", ondelete="SET NULL"), index=True)
+    record_key: Mapped[str] = mapped_column(String(400), nullable=False, index=True)
+    record_type: Mapped[str] = mapped_column(String(30), nullable=False)
+    change: Mapped[str] = mapped_column(String(20), nullable=False, index=True)  # created | updated | staled | restored
+    title: Mapped[str | None] = mapped_column(Text)
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
+
+
+class SyncSchedule(Base):
+    """Singleton (id=1): the persisted daily schedule. Claiming a due run is an atomic UPDATE, so any number of worker
+    instances or cron calls start at most one run per period."""
+    __tablename__ = "sync_schedule"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    interval_hours: Mapped[int] = mapped_column(Integer, nullable=False, default=24)
+    hour_utc: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
+    minute_utc: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    next_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_run_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    last_heartbeat_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+
+class SyncRun(Base):
+    """One synchronization run (scheduled or manual) with metrics computed from what actually happened."""
+    __tablename__ = "sync_runs"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_uuid)
+    trigger: Mapped[str] = mapped_column(String(20), nullable=False)  # scheduled | manual | retry
+    status: Mapped[str] = mapped_column(String(30), nullable=False, default="running", index=True)
+    # running | succeeded | partially_succeeded | failed | interrupted
+    scheduled_for: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    attempt: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    built: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    metrics: Mapped[Any] = mapped_column(JSONB, nullable=False, default=dict)
+    sources: Mapped[Any] = mapped_column(JSONB, nullable=False, default=list)  # per-source outcome
+    errors: Mapped[Any] = mapped_column(JSONB, nullable=False, default=list)
+    next_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
