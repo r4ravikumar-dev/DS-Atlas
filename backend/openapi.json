@@ -249,18 +249,18 @@
         }
       }
     },
-    "/api/v1/auth/invitations/validate": {
+    "/api/v1/auth/password": {
       "post": {
         "tags": [
           "auth"
         ],
-        "summary": "Validate invitation token without consuming it",
-        "operationId": "validate_invitation_api_v1_auth_invitations_validate_post",
+        "summary": "Change the administrator password (signs out every other session)",
+        "operationId": "change_password_api_v1_auth_password_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/InvitationValidateRequest"
+                "$ref": "#/components/schemas/PasswordChange"
               }
             }
           },
@@ -272,147 +272,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Item_InvitationValidateOut_"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/auth/invitations/send-code": {
-      "post": {
-        "tags": [
-          "auth"
-        ],
-        "summary": "Send 6-digit email verification code for invitation",
-        "operationId": "send_invitation_code_api_v1_auth_invitations_send_code_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/InvitationSendCodeRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable Entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/auth/invitations/accept": {
-      "post": {
-        "tags": [
-          "auth"
-        ],
-        "summary": "Atomically accept invitation, set password and sign in",
-        "operationId": "accept_invitation_api_v1_auth_invitations_accept_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/InvitationAcceptRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Item_SessionOut_"
+                  "$ref": "#/components/schemas/Item_UserOut_"
                 }
               }
             }
@@ -1536,7 +1396,7 @@
               "anyOf": [
                 {
                   "type": "string",
-                  "pattern": "^(crawl|build|review|storybook)$"
+                  "pattern": "^(crawl|build|review|storybook|verify_resources)$"
                 },
                 {
                   "type": "null"
@@ -2198,6 +2058,42 @@
             }
           },
           {
+            "name": "missing_resource",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^(official|official_website|official_documentation|github_repository|figma_file|storybook)$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Missing Resource"
+            }
+          },
+          {
+            "name": "component",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "systems having a component whose name matches",
+              "title": "Component"
+            },
+            "description": "systems having a component whose name matches"
+          },
+          {
             "name": "sort",
             "in": "query",
             "required": false,
@@ -2255,6 +2151,69 @@
               "title": "Source"
             },
             "description": "Filter by source (repeatable or comma-separated)"
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by platform (repeatable or comma-separated)",
+              "title": "Platform"
+            },
+            "description": "Filter by platform (repeatable or comma-separated)"
+          },
+          {
+            "name": "resource",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by resource (repeatable or comma-separated)",
+              "title": "Resource"
+            },
+            "description": "Filter by resource (repeatable or comma-separated)"
+          },
+          {
+            "name": "verified_resource",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by verified_resource (repeatable or comma-separated)",
+              "title": "Verified Resource"
+            },
+            "description": "Filter by verified_resource (repeatable or comma-separated)"
           },
           {
             "name": "page",
@@ -2499,6 +2458,182 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Item_SystemDetail_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/design-systems/{system_id}/resources": {
+      "get": {
+        "tags": [
+          "design-systems"
+        ],
+        "summary": "List Resources",
+        "operationId": "list_resources_api_v1_design_systems__system_id__resources_get",
+        "parameters": [
+          {
+            "name": "system_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "System Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 25,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ResourceOut_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "design-systems"
+        ],
+        "summary": "Add a resource link (administrator)",
+        "operationId": "add_resource_api_v1_design_systems__system_id__resources_post",
+        "parameters": [
+          {
+            "name": "system_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "System Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResourceCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item_ResourceOut_"
                 }
               }
             }
@@ -6587,641 +6722,6 @@
         }
       }
     },
-    "/api/v1/admin/invitations": {
-      "get": {
-        "tags": [
-          "administration"
-        ],
-        "summary": "List Invitations Route",
-        "operationId": "list_invitations_route_api_v1_admin_invitations_get",
-        "parameters": [
-          {
-            "name": "status",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "pattern": "^(pending|accepted|revoked|expired|all)$"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Status"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 10000,
-              "minimum": 1,
-              "default": 1,
-              "title": "Page"
-            }
-          },
-          {
-            "name": "page_size",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 100,
-              "minimum": 1,
-              "default": 25,
-              "title": "Page Size"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Page_InvitationOut_"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "administration"
-        ],
-        "summary": "Create Invitation",
-        "operationId": "create_invitation_api_v1_admin_invitations_post",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/InvitationCreate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Item_InvitationOut_"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          }
-        }
-      }
-    },
-    "/api/v1/admin/invitations/{inv_id}/resend": {
-      "post": {
-        "tags": [
-          "administration"
-        ],
-        "summary": "Resend Invitation",
-        "operationId": "resend_invitation_api_v1_admin_invitations__inv_id__resend_post",
-        "parameters": [
-          {
-            "name": "inv_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Inv Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Item_InvitationOut_"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          }
-        }
-      }
-    },
-    "/api/v1/admin/invitations/{inv_id}/revoke": {
-      "post": {
-        "tags": [
-          "administration"
-        ],
-        "summary": "Revoke Invitation",
-        "operationId": "revoke_invitation_api_v1_admin_invitations__inv_id__revoke_post",
-        "parameters": [
-          {
-            "name": "inv_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Inv Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Item_InvitationOut_"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          }
-        }
-      }
-    },
-    "/api/v1/admin/users": {
-      "get": {
-        "tags": [
-          "administration"
-        ],
-        "summary": "Users",
-        "operationId": "users_api_v1_admin_users_get",
-        "parameters": [
-          {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 10000,
-              "minimum": 1,
-              "default": 1,
-              "title": "Page"
-            }
-          },
-          {
-            "name": "page_size",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "maximum": 100,
-              "minimum": 1,
-              "default": 25,
-              "title": "Page Size"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Page_UserOut_"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          }
-        }
-      }
-    },
-    "/api/v1/admin/users/{user_id}": {
-      "patch": {
-        "tags": [
-          "administration"
-        ],
-        "summary": "Update User",
-        "operationId": "update_user_api_v1_admin_users__user_id__patch",
-        "parameters": [
-          {
-            "name": "user_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "User Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserUpdate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Item_UserOut_"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          }
-        }
-      }
-    },
-    "/api/v1/admin/users/{user_id}/revoke-sessions": {
-      "post": {
-        "tags": [
-          "administration"
-        ],
-        "summary": "Sign a user out of every session",
-        "operationId": "revoke_sessions_api_v1_admin_users__user_id__revoke_sessions_post",
-        "parameters": [
-          {
-            "name": "user_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "User Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Item_UserOut_"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          }
-        }
-      }
-    },
-    "/api/v1/admin/users/{user_id}/password-reset": {
-      "post": {
-        "tags": [
-          "administration"
-        ],
-        "summary": "Email the user a single-use password-reset link",
-        "operationId": "password_reset_api_v1_admin_users__user_id__password_reset_post",
-        "parameters": [
-          {
-            "name": "user_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "User Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Item_InvitationOut_"
-                }
-              }
-            }
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          }
-        }
-      }
-    },
     "/api/v1/admin/audit-events": {
       "get": {
         "tags": [
@@ -7772,6 +7272,88 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/review-queue/{item_id}/decide": {
+      "post": {
+        "tags": [
+          "administration"
+        ],
+        "summary": "Merge or separate possible duplicates (then rebuild)",
+        "operationId": "decide_api_v1_review_queue__item_id__decide_post",
+        "parameters": [
+          {
+            "name": "item_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Item Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DuplicateDecision"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item_ReviewItemOut_"
+                }
               }
             }
           },
@@ -8487,6 +8069,22 @@
             }
           },
           {
+            "name": "system_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "System Id"
+            }
+          },
+          {
             "name": "q",
             "in": "query",
             "required": false,
@@ -8745,6 +8343,22 @@
             }
           },
           {
+            "name": "system_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "System Id"
+            }
+          },
+          {
             "name": "component_id",
             "in": "query",
             "required": false,
@@ -8831,6 +8445,687 @@
                 "schema": {}
               }
             }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/quality": {
+      "get": {
+        "tags": [
+          "data-quality"
+        ],
+        "summary": "Data-quality summary (counts per issue type)",
+        "operationId": "quality_summary_api_v1_quality_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Quality Summary Api V1 Quality Get"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quality/issues": {
+      "get": {
+        "tags": [
+          "data-quality"
+        ],
+        "summary": "Items for one data-quality issue type (paginated)",
+        "operationId": "quality_issues_api_v1_quality_issues_get",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^(duplicate_candidates|missing_official_url|invalid_links|unverified_github|figma_not_found|figma_unchecked|orphaned_records|extraction_failures|needs_recrawl)$",
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 25,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/intake/check": {
+      "post": {
+        "tags": [
+          "data-quality"
+        ],
+        "summary": "Before adding a URL: find likely existing canonical systems",
+        "operationId": "intake_check_api_v1_intake_check_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntakeCheck"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item_IntakeCheckOut_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/intake": {
+      "post": {
+        "tags": [
+          "data-quality"
+        ],
+        "summary": "Attach a URL to a system or create a separate system, then crawl",
+        "operationId": "intake_api_v1_intake_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntakeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item_IntakeOut_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/resources/verify": {
+      "post": {
+        "tags": [
+          "data-quality"
+        ],
+        "summary": "Queue verification of official pages (repository / Figma / Storybook discovery)",
+        "operationId": "queue_verify_api_v1_resources_verify_post",
+        "parameters": [
+          {
+            "name": "system_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "System Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/resources": {
+      "get": {
+        "tags": [
+          "design-systems"
+        ],
+        "summary": "All resource links (filterable)",
+        "operationId": "all_resources_api_v1_resources_get",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^(verified|unverified|invalid)$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "origin",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 30
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Origin"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "resource_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by resource_type (repeatable or comma-separated)",
+              "title": "Resource Type"
+            },
+            "description": "Filter by resource_type (repeatable or comma-separated)"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10000,
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 25,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ResourceOut_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      }
+    },
+    "/api/v1/resources/{resource_id}": {
+      "patch": {
+        "tags": [
+          "design-systems"
+        ],
+        "summary": "Correct, confirm, or flag a resource link",
+        "operationId": "update_resource_api_v1_resources__resource_id__patch",
+        "parameters": [
+          {
+            "name": "resource_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Resource Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResourceUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Item_ResourceOut_"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "design-systems"
+        ],
+        "summary": "Remove an administrator-added link",
+        "operationId": "delete_resource_api_v1_resources__resource_id__delete",
+        "parameters": [
+          {
+            "name": "resource_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Resource Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "401": {
             "content": {
@@ -9982,6 +10277,51 @@
             "type": "integer",
             "title": "Review Open"
           },
+          "source_references": {
+            "type": "integer",
+            "title": "Source References",
+            "default": 0
+          },
+          "systems_verified": {
+            "type": "integer",
+            "title": "Systems Verified",
+            "default": 0
+          },
+          "systems_partially_verified": {
+            "type": "integer",
+            "title": "Systems Partially Verified",
+            "default": 0
+          },
+          "systems_missing_official_link": {
+            "type": "integer",
+            "title": "Systems Missing Official Link",
+            "default": 0
+          },
+          "resources": {
+            "type": "integer",
+            "title": "Resources",
+            "default": 0
+          },
+          "resources_verified": {
+            "type": "integer",
+            "title": "Resources Verified",
+            "default": 0
+          },
+          "systems_with_figma": {
+            "type": "integer",
+            "title": "Systems With Figma",
+            "default": 0
+          },
+          "systems_with_github": {
+            "type": "integer",
+            "title": "Systems With Github",
+            "default": 0
+          },
+          "extraction_errors": {
+            "type": "integer",
+            "title": "Extraction Errors",
+            "default": 0
+          },
           "stale_records": {
             "type": "integer",
             "title": "Stale Records"
@@ -10136,6 +10476,44 @@
           "expires_at"
         ],
         "title": "DownloadLink"
+      },
+      "DuplicateDecision": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "merge",
+              "distinct"
+            ],
+            "title": "Decision"
+          },
+          "canonical_key": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Canonical Key"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 3,
+            "title": "Note",
+            "description": "Why (evidence the administrator relied on)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision",
+          "note"
+        ],
+        "title": "DuplicateDecision",
+        "description": "Administrator decision on a possible-duplicate item: merge every listed system into canonical_key, or keep them distinct."
       },
       "ErrorBody": {
         "properties": {
@@ -10670,112 +11048,17 @@
         ],
         "title": "GuidelineOut"
       },
-      "InvitationAcceptRequest": {
+      "IntakeCandidate": {
         "properties": {
-          "token": {
-            "type": "string",
-            "maxLength": 200,
-            "minLength": 1,
-            "title": "Token"
-          },
-          "code": {
-            "type": "string",
-            "maxLength": 10,
-            "minLength": 6,
-            "title": "Code"
+          "system_id": {
+            "type": "integer",
+            "title": "System Id"
           },
           "name": {
             "type": "string",
-            "maxLength": 200,
-            "minLength": 1,
             "title": "Name"
           },
-          "password": {
-            "type": "string",
-            "maxLength": 500,
-            "minLength": 12,
-            "title": "Password"
-          }
-        },
-        "type": "object",
-        "required": [
-          "token",
-          "code",
-          "name",
-          "password"
-        ],
-        "title": "InvitationAcceptRequest"
-      },
-      "InvitationCreate": {
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email",
-            "title": "Email"
-          },
-          "role": {
-            "type": "string",
-            "enum": [
-              "admin",
-              "researcher",
-              "viewer"
-            ],
-            "title": "Role",
-            "default": "viewer"
-          },
-          "ttl_hours": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "maximum": 336.0,
-                "minimum": 1.0
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Ttl Hours"
-          }
-        },
-        "type": "object",
-        "required": [
-          "email"
-        ],
-        "title": "InvitationCreate"
-      },
-      "InvitationOut": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Id"
-          },
-          "kind": {
-            "type": "string",
-            "title": "Kind"
-          },
-          "email": {
-            "type": "string",
-            "title": "Email"
-          },
-          "role": {
-            "type": "string",
-            "enum": [
-              "admin",
-              "researcher",
-              "viewer"
-            ],
-            "title": "Role"
-          },
-          "status": {
-            "type": "string",
-            "title": "Status"
-          },
-          "delivery_status": {
-            "type": "string",
-            "title": "Delivery Status"
-          },
-          "delivery_error": {
+          "organization": {
             "anyOf": [
               {
                 "type": "string"
@@ -10784,153 +11067,252 @@
                 "type": "null"
               }
             ],
-            "title": "Delivery Error"
+            "title": "Organization"
           },
-          "send_count": {
-            "type": "integer",
-            "title": "Send Count"
-          },
-          "created_at": {
+          "match": {
             "type": "string",
-            "format": "date-time",
-            "title": "Created At"
+            "title": "Match"
           },
-          "expires_at": {
+          "detail": {
             "type": "string",
-            "format": "date-time",
-            "title": "Expires At"
-          },
-          "accepted_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Accepted At"
-          },
-          "revoked_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Revoked At"
-          },
-          "invited_by": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Invited By"
-          },
-          "last_sent_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Last Sent At"
+            "title": "Detail"
           }
         },
         "type": "object",
         "required": [
-          "id",
-          "kind",
-          "email",
-          "role",
-          "status",
-          "delivery_status",
-          "send_count",
-          "created_at",
-          "expires_at"
+          "system_id",
+          "name",
+          "organization",
+          "match",
+          "detail"
         ],
-        "title": "InvitationOut"
+        "title": "IntakeCandidate"
       },
-      "InvitationSendCodeRequest": {
+      "IntakeCheck": {
         "properties": {
-          "token": {
+          "url": {
             "type": "string",
-            "maxLength": 200,
-            "minLength": 1,
-            "title": "Token"
+            "title": "Url"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
           }
         },
         "type": "object",
         "required": [
-          "token"
+          "url"
         ],
-        "title": "InvitationSendCodeRequest"
+        "title": "IntakeCheck"
       },
-      "InvitationValidateOut": {
+      "IntakeCheckOut": {
         "properties": {
-          "kind": {
+          "url": {
             "type": "string",
-            "title": "Kind"
+            "title": "Url"
           },
-          "email_hint": {
+          "canonical_url": {
             "type": "string",
-            "title": "Email Hint"
+            "title": "Canonical Url"
           },
-          "role": {
+          "suggested_type": {
             "type": "string",
             "enum": [
-              "admin",
-              "researcher",
-              "viewer"
+              "official_website",
+              "official_documentation",
+              "github_repository",
+              "figma_file",
+              "storybook",
+              "additional_resource"
             ],
-            "title": "Role"
+            "title": "Suggested Type"
           },
-          "expires_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Expires At"
+          "predicted_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Predicted Key"
           },
-          "email_delivery": {
-            "type": "boolean",
-            "title": "Email Delivery"
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/IntakeCandidate"
+            },
+            "type": "array",
+            "title": "Candidates"
           }
         },
         "type": "object",
         "required": [
-          "kind",
-          "email_hint",
-          "role",
-          "expires_at",
-          "email_delivery"
+          "url",
+          "canonical_url",
+          "suggested_type",
+          "predicted_key",
+          "candidates"
         ],
-        "title": "InvitationValidateOut"
+        "title": "IntakeCheckOut"
       },
-      "InvitationValidateRequest": {
+      "IntakeNewSystem": {
         "properties": {
-          "token": {
+          "name": {
             "type": "string",
-            "maxLength": 200,
+            "maxLength": 300,
             "minLength": 1,
-            "title": "Token"
+            "title": "Name"
+          },
+          "organization": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization"
           }
         },
         "type": "object",
         "required": [
-          "token"
+          "name"
         ],
-        "title": "InvitationValidateRequest"
+        "title": "IntakeNewSystem"
+      },
+      "IntakeOut": {
+        "properties": {
+          "system_key": {
+            "type": "string",
+            "title": "System Key"
+          },
+          "system_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Id"
+          },
+          "resource": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ResourceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "job_ids": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Job Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "system_key",
+          "system_id",
+          "resource",
+          "source_id",
+          "job_ids"
+        ],
+        "title": "IntakeOut"
+      },
+      "IntakeRequest": {
+        "properties": {
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "resource_type": {
+            "type": "string",
+            "enum": [
+              "official_website",
+              "official_documentation",
+              "github_repository",
+              "figma_file",
+              "storybook",
+              "additional_resource"
+            ],
+            "title": "Resource Type"
+          },
+          "system_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Id"
+          },
+          "new_system": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/IntakeNewSystem"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "separate_from": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Separate From",
+            "default": []
+          },
+          "verified": {
+            "type": "boolean",
+            "title": "Verified",
+            "default": false
+          },
+          "crawl": {
+            "type": "boolean",
+            "title": "Crawl",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "url",
+          "resource_type"
+        ],
+        "title": "IntakeRequest",
+        "description": "Attach a URL to an existing system (system_id) or create a separate system (new_system).\nCreating a new system while likely duplicates exist requires separate_from = the candidate ids the administrator rejected."
       },
       "Item_ComparisonOut_": {
         "properties": {
@@ -11040,29 +11422,29 @@
         ],
         "title": "Item[GuidelineDetail]"
       },
-      "Item_InvitationOut_": {
+      "Item_IntakeCheckOut_": {
         "properties": {
           "data": {
-            "$ref": "#/components/schemas/InvitationOut"
+            "$ref": "#/components/schemas/IntakeCheckOut"
           }
         },
         "type": "object",
         "required": [
           "data"
         ],
-        "title": "Item[InvitationOut]"
+        "title": "Item[IntakeCheckOut]"
       },
-      "Item_InvitationValidateOut_": {
+      "Item_IntakeOut_": {
         "properties": {
           "data": {
-            "$ref": "#/components/schemas/InvitationValidateOut"
+            "$ref": "#/components/schemas/IntakeOut"
           }
         },
         "type": "object",
         "required": [
           "data"
         ],
-        "title": "Item[InvitationValidateOut]"
+        "title": "Item[IntakeOut]"
       },
       "Item_JobAccepted_": {
         "properties": {
@@ -11099,6 +11481,18 @@
           "data"
         ],
         "title": "Item[ReportDetail]"
+      },
+      "Item_ResourceOut_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ResourceOut"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Item[ResourceOut]"
       },
       "Item_ReviewItemOut_": {
         "properties": {
@@ -11632,26 +12026,6 @@
         ],
         "title": "Page[GuidelineOut]"
       },
-      "Page_InvitationOut_": {
-        "properties": {
-          "data": {
-            "items": {
-              "$ref": "#/components/schemas/InvitationOut"
-            },
-            "type": "array",
-            "title": "Data"
-          },
-          "meta": {
-            "$ref": "#/components/schemas/PageMeta"
-          }
-        },
-        "type": "object",
-        "required": [
-          "data",
-          "meta"
-        ],
-        "title": "Page[InvitationOut]"
-      },
       "Page_JobEventOut_": {
         "properties": {
           "data": {
@@ -11711,6 +12085,26 @@
           "meta"
         ],
         "title": "Page[ReportOut]"
+      },
+      "Page_ResourceOut_": {
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/ResourceOut"
+            },
+            "type": "array",
+            "title": "Data"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "Page[ResourceOut]"
       },
       "Page_ReviewItemOut_": {
         "properties": {
@@ -11812,25 +12206,27 @@
         ],
         "title": "Page[TokenOut]"
       },
-      "Page_UserOut_": {
+      "PasswordChange": {
         "properties": {
-          "data": {
-            "items": {
-              "$ref": "#/components/schemas/UserOut"
-            },
-            "type": "array",
-            "title": "Data"
+          "current_password": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Current Password"
           },
-          "meta": {
-            "$ref": "#/components/schemas/PageMeta"
+          "new_password": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 12,
+            "title": "New Password"
           }
         },
         "type": "object",
         "required": [
-          "data",
-          "meta"
+          "current_password",
+          "new_password"
         ],
-        "title": "Page[UserOut]"
+        "title": "PasswordChange"
       },
       "PropOut": {
         "properties": {
@@ -12001,6 +12397,327 @@
           "job_id"
         ],
         "title": "ReportOut"
+      },
+      "ResourceCreate": {
+        "properties": {
+          "resource_type": {
+            "type": "string",
+            "enum": [
+              "official_website",
+              "official_documentation",
+              "github_repository",
+              "figma_file",
+              "storybook",
+              "additional_resource"
+            ],
+            "title": "Resource Type"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "verification_status": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "unverified"
+            ],
+            "title": "Verification Status",
+            "default": "unverified"
+          },
+          "evidence_note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "resource_type",
+          "url"
+        ],
+        "title": "ResourceCreate"
+      },
+      "ResourceLink": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "official_website",
+              "official_documentation",
+              "github_repository",
+              "figma_file",
+              "storybook",
+              "additional_resource"
+            ],
+            "title": "Type"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "verified": {
+            "type": "boolean",
+            "title": "Verified"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "url",
+          "verified"
+        ],
+        "title": "ResourceLink",
+        "description": "Primary link per resource type (as shown on catalog cards)."
+      },
+      "ResourceOut": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "system_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "System Id"
+          },
+          "resource_type": {
+            "type": "string",
+            "enum": [
+              "official_website",
+              "official_documentation",
+              "github_repository",
+              "figma_file",
+              "storybook",
+              "additional_resource"
+            ],
+            "title": "Resource Type"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "origin": {
+            "type": "string",
+            "title": "Origin"
+          },
+          "source_keys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Keys"
+          },
+          "verification_status": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "unverified",
+              "invalid"
+            ],
+            "title": "Verification Status"
+          },
+          "verification_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verification Method"
+          },
+          "evidence_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Url"
+          },
+          "evidence_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Note"
+          },
+          "http_status": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Http Status"
+          },
+          "access_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Note"
+          },
+          "is_primary": {
+            "type": "boolean",
+            "title": "Is Primary"
+          },
+          "last_checked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Checked At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "system_id",
+          "resource_type",
+          "url",
+          "label",
+          "origin",
+          "source_keys",
+          "verification_status",
+          "verification_method",
+          "evidence_url",
+          "evidence_note",
+          "http_status",
+          "access_note",
+          "is_primary",
+          "last_checked_at",
+          "updated_at"
+        ],
+        "title": "ResourceOut"
+      },
+      "ResourceUpdate": {
+        "properties": {
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Label"
+          },
+          "verification_status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "verified",
+                  "unverified",
+                  "invalid"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verification Status"
+          },
+          "evidence_note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Note"
+          },
+          "is_primary": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Primary"
+          }
+        },
+        "type": "object",
+        "title": "ResourceUpdate"
       },
       "ReviewItemOut": {
         "properties": {
@@ -12784,6 +13501,43 @@
             ],
             "title": "Last Verified At"
           },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/ResourceLink"
+            },
+            "type": "array",
+            "title": "Links",
+            "default": []
+          },
+          "resource_count": {
+            "type": "integer",
+            "title": "Resource Count",
+            "default": 0
+          },
           "design_resource_url": {
             "anyOf": [
               {
@@ -12844,6 +13598,59 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Attributes"
+          },
+          "resources": {
+            "items": {
+              "$ref": "#/components/schemas/ResourceOut"
+            },
+            "type": "array",
+            "title": "Resources",
+            "default": []
+          },
+          "merged_aliases": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Merged Aliases",
+            "default": []
+          },
+          "requested_alias": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Alias"
+          },
+          "storybook_projects": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Storybook Projects",
+            "default": []
+          },
+          "story_count": {
+            "type": "integer",
+            "title": "Story Count",
+            "default": 0
+          },
+          "variant_count": {
+            "type": "integer",
+            "title": "Variant Count",
+            "default": 0
+          },
+          "guideline_count": {
+            "type": "integer",
+            "title": "Guideline Count",
+            "default": 0
           }
         },
         "type": "object",
@@ -13062,6 +13869,43 @@
               }
             ],
             "title": "Last Verified At"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/ResourceLink"
+            },
+            "type": "array",
+            "title": "Links",
+            "default": []
+          },
+          "resource_count": {
+            "type": "integer",
+            "title": "Resource Count",
+            "default": 0
           }
         },
         "type": "object",
@@ -13091,6 +13935,31 @@
       },
       "SystemUpdate": {
         "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "organization": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 300
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization"
+          },
           "description": {
             "anyOf": [
               {
@@ -13103,24 +13972,52 @@
             ],
             "title": "Description"
           },
+          "frameworks": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 30
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frameworks"
+          },
           "platforms": {
             "anyOf": [
               {
                 "items": {
                   "type": "string"
                 },
-                "type": "array"
+                "type": "array",
+                "maxItems": 30
               },
               {
                 "type": "null"
               }
             ],
             "title": "Platforms"
+          },
+          "styling_strategy": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Styling Strategy"
           }
         },
         "type": "object",
         "title": "SystemUpdate",
-        "description": "Curator edits are limited to descriptive fields; provenance fields are derived."
+        "description": "Administrator edits of descriptive fields. Stored as audited curation, so they survive every rebuild."
       },
       "TokenOut": {
         "properties": {
@@ -13377,51 +14274,6 @@
           "created_at"
         ],
         "title": "UserOut"
-      },
-      "UserUpdate": {
-        "properties": {
-          "name": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 200
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
-          },
-          "role": {
-            "anyOf": [
-              {
-                "type": "string",
-                "enum": [
-                  "admin",
-                  "researcher",
-                  "viewer"
-                ]
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Role"
-          },
-          "is_active": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Is Active"
-          }
-        },
-        "type": "object",
-        "title": "UserUpdate"
       }
     }
   },
@@ -13437,6 +14289,10 @@
     {
       "name": "dashboard",
       "description": "Server-side aggregates"
+    },
+    {
+      "name": "data-quality",
+      "description": "Data-quality issues and the add-a-source workflow"
     },
     {
       "name": "sources",

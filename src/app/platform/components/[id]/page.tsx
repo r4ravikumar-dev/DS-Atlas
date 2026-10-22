@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { Columns3, Info } from 'lucide-react'
-import { can, useMe } from '@/features/auth/api'
+import { isAdmin, useMe } from '@/features/auth/api'
 import { useCreateComparison } from '@/features/comparisons/api'
 import { useComponent, useComponentEvidence, useComponentStorybook, useRelatedComponents, useRelatedGuidelines, useRelatedTokens } from '@/features/components/api'
 import { Button, EmptyState, ErrorState, ExtLink, fmtDate, KV, Missing, PageHeader, Panel, SearchInput, Select, Skeleton, Tabs, Tag, VerifyBadge } from '@/components/ui'
@@ -39,7 +39,7 @@ export default function ComponentDetailPage() {
         crumbs={[{ href: '/platform/components', label: 'Components' }]}
         title={d ? <>{d.name} <span className={s.muted} style={{ fontSize: '0.6em' }}>· {d.library}</span></> : <Skeleton w={260} h={30} />}
         description={d && <span className={s.row}><VerifyBadge status={d.verification_status} />{d.family && <Tag>{d.family}</Tag>}{d.kind && <Tag>{d.kind}</Tag>}{d.source_version && <Tag>v{d.source_version}</Tag>}<span className={s.mono}>{d.source_key}</span></span>}
-        actions={d && can(me, 'researcher') && peers.length > 0 && (
+        actions={d && isAdmin(me) && peers.length > 0 && (
           <Button icon={<Columns3 size={15} />} loading={createCmp.isPending}
             onClick={() => createCmp.mutate({ name: `${d.family ?? d.name}: ${d.library} vs ${peers.map((p) => p.library).join(', ')}`, kind: 'components', item_ids: [d.id, ...peers.map((p) => p.id)], dimensions: [] },
               { onSuccess: (r) => router.push(`/platform/compare/${r.data.id}`) })}>

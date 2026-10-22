@@ -20,7 +20,9 @@ warnings.filterwarnings("ignore")  # LibreSSL notice from urllib3 on macOS syste
 import requests  # noqa: E402
 
 SCHEMA_VERSION = "1.0.0"
-ROOT = Path(os.environ.get("DSKB_DATA_DIR") or Path(__file__).resolve().parents[3] / "storage" / "engine")
+# The fetcher creates its cache directory at import; on Vercel Functions only /tmp is writable.
+ROOT = Path(os.environ.get("DSKB_DATA_DIR") or (Path("/tmp/dsrp-storage/engine") if os.environ.get("VERCEL")
+                                                else Path(__file__).resolve().parents[3] / "storage" / "engine"))
 DATA = ROOT / "data"
 CACHE = DATA / "cache"
 STAGE = DATA / "stage"
@@ -269,8 +271,17 @@ class Fetcher:
     def _cached(self, url: str) -> Optional[Tuple[Dict[str, Any], bytes]]:
         body, meta = self._cache_paths(url)
         if body.exists() and meta.exists():
-            return json.loads(meta.read_text()), body.read_bytes()
+            try:
+                return json.loads(meta.read_text()), body.read_bytes()
+            except (ValueError, OSError):
+                return None  # unreadable/partial cache entry → refetch (it is rewritten atomically)
         return None
+
+    @staticmethod
+    def _atomic_write(path: Path, data: bytes) -> None:
+        tmp = path.with_name(f"{path.name}.{os.getpid()}.{threading.get_ident()}.tmp")
+        tmp.write_bytes(data)
+        os.replace(tmp, path)
 
     # main -----------------------------------------------------------------
     def get(self, url: str, *, source_id: str, parent: Optional[str] = None, depth: int = 0,
@@ -336,7 +347,7 @@ class Fetcher:
             if r.status_code == 304 and cached:
                 meta, body = cached
                 meta["_epoch"] = time.time()
-                self._cache_paths(url)[1].write_text(json.dumps(meta))
+                self._atomic_write(self._cache_paths(url)[1], json.dumps(meta).encode())
                 resp = Response(url, meta["final_url"], meta["status"], body, meta.get("headers", {}), meta["fetched_at"], True, meta.get("content_sha256", ""))
                 self._emit(source_id, {**base_log, "outcome": "not_modified", "status": 304, "final_url": meta["final_url"], "bytes": len(body), "content_sha256": meta.get("content_sha256")}, resp)
                 return resp
@@ -355,8 +366,8 @@ class Fetcher:
                     "headers": h, "etag": r.headers.get("ETag"), "last_modified": r.headers.get("Last-Modified"), "content_sha256": digest}
             if r.status_code == 200:
                 bp, mp = self._cache_paths(url)
-                bp.write_bytes(content)
-                mp.write_text(json.dumps(meta))
+                self._atomic_write(bp, content)
+                self._atomic_write(mp, json.dumps(meta).encode())
             resp = Response(url, r.url, r.status_code, content, h, fetched, False, digest)
             self._emit(source_id, {**base_log, "outcome": "fetched" if r.ok else "http_error", "status": r.status_code, "final_url": r.url,
                                    "bytes": len(content), "content_sha256": digest, "content_type": h.get("content-type")}, resp)

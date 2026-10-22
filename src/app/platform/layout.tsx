@@ -3,8 +3,9 @@ import { PlatformProviders } from '@/components/platform/PlatformProviders'
 import { Shell } from '@/components/platform/Shell'
 
 export const metadata: Metadata = {
-  title: { default: 'Research Platform', template: '%s · DS Research Platform' },
-  description: 'Backend-managed design-systems research data: sources, crawl jobs, systems, components, tokens, guidelines, comparisons and reports.',
+  title: { default: 'Knowledge Base', template: '%s · DS Knowledge Base' },
+  description: 'Private administrator workspace for the design-systems knowledge base.',
+  robots: { index: false, follow: false, nocache: true },
 }
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {

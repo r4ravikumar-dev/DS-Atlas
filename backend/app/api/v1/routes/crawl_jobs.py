@@ -17,11 +17,11 @@ from ...deps import PageParams, Principal, page_params, require
 from ..common import ERRORS, page_out
 
 router = APIRouter(prefix="/crawl-jobs", tags=["crawl-jobs"], responses=ERRORS)
-KINDS = ["crawl", "build", "review", "storybook"]
+KINDS = ["crawl", "build", "review", "storybook", "verify_resources"]
 
 
 @router.get("", response_model=Page[JobOut], dependencies=[Depends(require("read"))])
-def list_(status_: str | None = Query(None, alias="status"), kind: str | None = Query(None, pattern="^(crawl|build|review|storybook)$"), source_id: int | None = None,
+def list_(status_: str | None = Query(None, alias="status"), kind: str | None = Query(None, pattern="^(crawl|build|review|storybook|verify_resources)$"), source_id: int | None = None,
           pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
     items, total = list_jobs(db, kinds=[kind] if kind else KINDS, status=status_, source_id=source_id, page=pp.page, page_size=pp.page_size)
     return page_out([jobsvc.to_out(j) for j in items], total, pp.page, pp.page_size)

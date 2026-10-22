@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from fastapi import Depends, Query, Request
 from sqlalchemy.orm import Session
 
-from ..core.config import get_settings
 from ..core.exceptions import AppError, Forbidden, Unauthorized
 from ..core.permissions import has_permission
 from ..core.security import CSRF_COOKIE, CSRF_HEADER, SESSION_COOKIE, decode_session_token
@@ -59,12 +58,10 @@ def get_principal(request: Request, db: Session = Depends(get_db)) -> Principal:
 
 def require(permission: str):
     def dep(p: Principal = Depends(get_principal)) -> Principal:
-        if permission in ("read", "search") and p.user is None and get_settings().allow_anonymous_read:
-            return p
         if p.user is None:
             raise Unauthorized("Authentication required.")
         if not has_permission(p.role, permission):
-            raise Forbidden(f"Your role does not allow '{permission}'.")
+            raise Forbidden("Administrator access required.")
         return p
     return dep
 

@@ -35,6 +35,11 @@ def crawl(refresh: bool = False, p: Principal = Depends(require("crawl:start")),
     return {"data": {"job_ids": [job.id]}}
 
 
+def _system_projects(db: Session, system_id: int):
+    from ....models import DesignSystem
+    return select(StorybookProject.id).join(DesignSystem, DesignSystem.key == StorybookProject.system_key).where(DesignSystem.id == system_id)
+
+
 @router.get("/projects", dependencies=[Depends(require("read"))])
 def projects(q: str | None = Query(None, max_length=200), status_: str | None = Query(None, alias="status"), sort: str = Query("title", pattern="^-?(title|stories|variants)$"),
              pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
@@ -58,12 +63,14 @@ def project(project_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/stories", dependencies=[Depends(require("read"))])
-def stories(project_id: int | None = None, q: str | None = Query(None, max_length=200), entry_type: list[str] | None = Depends(csv_list("entry_type")),
+def stories(project_id: int | None = None, system_id: int | None = None, q: str | None = Query(None, max_length=200), entry_type: list[str] | None = Depends(csv_list("entry_type")),
             resolution: str | None = Query(None, pattern="^(linked|unresolved|not_applicable)$"), component_id: int | None = None,
             has_args: bool | None = None, pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
     stmt = select(StorybookStory)
     if project_id:
         stmt = stmt.where(StorybookStory.project_id == project_id)
+    if system_id:
+        stmt = stmt.where(StorybookStory.project_id.in_(_system_projects(db, system_id)))
     if component_id:
         stmt = stmt.where(StorybookStory.component_id == component_id)
     if q:
@@ -88,11 +95,13 @@ def story(story_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/variants", dependencies=[Depends(require("read"))])
-def variants(project_id: int | None = None, component_id: int | None = None, method: list[str] | None = Depends(csv_list("method")),
+def variants(project_id: int | None = None, system_id: int | None = None, component_id: int | None = None, method: list[str] | None = Depends(csv_list("method")),
              q: str | None = Query(None, max_length=200), pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
     stmt = select(StorybookVariant)
     if project_id:
         stmt = stmt.where(StorybookVariant.project_id == project_id)
+    if system_id:
+        stmt = stmt.where(StorybookVariant.project_id.in_(_system_projects(db, system_id)))
     if component_id:
         stmt = stmt.where(StorybookVariant.component_id == component_id)
     if method:

@@ -2,8 +2,8 @@
 
 import { Suspense, useState } from 'react'
 import Link from 'next/link'
-import { can, useMe } from '@/features/auth/api'
-import { useResolveReview, useReview } from '@/features/administration/api'
+import { isAdmin, useMe } from '@/features/auth/api'
+import { useDecideDuplicate, useResolveReview, useReview } from '@/features/administration/api'
 import { useUrlState } from '@/hooks/useUrlState'
 import { Button, EmptyState, ErrorState, PageHeader, Pagination, Panel, Select, SkeletonRows, Tag } from '@/components/ui'
 import s from '@/components/platform/page.module.scss'
@@ -17,7 +17,9 @@ function ReviewInner() {
   const status = u.get('review_status', 'open')
   const list = useReview({ kind: u.get('kind'), review_status: status, page, page_size: 15 })
   const resolve = useResolveReview()
+  const decide = useDecideDuplicate()
   const [notes, setNotes] = useState<Record<number, string>>({})
+  const [canon, setCanon] = useState<Record<number, string>>({})
   return (
     <>
       <PageHeader title="Review queue" description="Deduplication never merges on names alone. Conflicts and uncertain duplicates are queued here; decisions are audited and preserved across rebuilds." />
@@ -34,18 +36,36 @@ function ReviewInner() {
               <Panel key={it.id} title={<span className={s.row}><Tag tone="accent">{KINDS[it.kind] ?? it.kind}</Tag>{d.organization ?? d.entity ?? d.group}</span>} actions={<Tag>{it.review_status}</Tag>}>
                 <div className={s.pad} style={{ display: 'grid', gap: 10 }}>
                   {d.reason && <p className={s.muted}>{d.reason}</p>}
-                  {d.entities && <ul style={{ paddingLeft: 18 }}>{d.entities.map((e: any) => <li key={e.system_id}>{e.name} <span className={s.mono}>{e.site ?? 'no docs host'}</span></li>)}</ul>}
+                  {d.entities && it.kind === 'possible_duplicate_system' && isAdmin(me) && it.review_status === 'open' ? (
+                    <fieldset style={{ border: 0, padding: 0, display: 'grid', gap: 6 }}>
+                      <legend className={s.muted} style={{ fontSize: '0.8rem', marginBottom: 4 }}>Canonical record if merged:</legend>
+                      {d.entities.map((e: any) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
+                        <label key={e.system_id} className={s.row}>
+                          <input type="radio" name={`canon-${it.id}`} checked={canon[it.id] === e.system_id} onChange={() => setCanon({ ...canon, [it.id]: e.system_id })} />
+                          <strong>{e.name}</strong>{e.organization && <span className={s.muted}>{e.organization}</span>}<span className={s.mono}>{e.site ?? 'no docs host'}</span>
+                        </label>
+                      ))}
+                    </fieldset>
+                  ) : d.entities && <ul style={{ paddingLeft: 18 }}>{d.entities.map((e: any) => <li key={e.system_id}>{e.name} <span className={s.mono}>{e.site ?? 'no docs host'}</span></li>)}</ul>}
                   {d.details && <pre className={s.code}>{JSON.stringify(d.details, null, 2)}</pre>}
                   {d.records && <p className={s.mono}>{d.records.join(', ')}</p>}
                   {it.resolution_note && <p>Note: {it.resolution_note}</p>}
-                  {can(me, 'researcher') && it.review_status === 'open' && (
+                  {isAdmin(me) && it.review_status === 'open' && (
                     <div className={s.row}>
-                      <input aria-label="Resolution note" placeholder="Resolution note (optional)" value={notes[it.id] ?? ''} onChange={(e) => setNotes({ ...notes, [it.id]: e.target.value })}
+                      <input aria-label="Resolution note" placeholder={it.kind === 'possible_duplicate_system' ? 'Evidence for your decision (required)' : 'Resolution note (optional)'} value={notes[it.id] ?? ''} onChange={(e) => setNotes({ ...notes, [it.id]: e.target.value })}
                         style={{ flex: 1, minWidth: 200, height: 34, padding: '0 10px', borderRadius: 8, border: '1px solid var(--line-strong)', background: 'var(--surface)', color: 'var(--text)' }} maxLength={2000} />
-                      <Button size="sm" onClick={() => resolve.mutate({ id: it.id, review_status: 'resolved', resolution_note: notes[it.id] })}>Mark resolved</Button>
-                      <Button size="sm" variant="ghost" onClick={() => resolve.mutate({ id: it.id, review_status: 'dismissed', resolution_note: notes[it.id] })}>Dismiss</Button>
+                      {it.kind === 'possible_duplicate_system' ? (<>
+                        <Button size="sm" variant="primary" disabled={!canon[it.id] || (notes[it.id] ?? '').trim().length < 3} loading={decide.isPending}
+                          onClick={() => decide.mutate({ id: it.id, decision: 'merge', canonical_key: canon[it.id], note: notes[it.id] })}>Merge into selected</Button>
+                        <Button size="sm" disabled={(notes[it.id] ?? '').trim().length < 3} loading={decide.isPending}
+                          onClick={() => decide.mutate({ id: it.id, decision: 'distinct', note: notes[it.id] })}>Keep separate</Button>
+                      </>) : (<>
+                        <Button size="sm" onClick={() => resolve.mutate({ id: it.id, review_status: 'resolved', resolution_note: notes[it.id] })}>Mark resolved</Button>
+                        <Button size="sm" variant="ghost" onClick={() => resolve.mutate({ id: it.id, review_status: 'dismissed', resolution_note: notes[it.id] })}>Dismiss</Button>
+                      </>)}
                     </div>
                   )}
+                  {decide.error && decide.variables?.id === it.id && <ErrorState error={decide.error} />}
                 </div>
               </Panel>
             )

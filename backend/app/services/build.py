@@ -68,6 +68,7 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
     from . import identity
     entities, merged = identity.apply(db, entities)
     review = _remap_review(review, merged)
+    review += identity.name_collisions(entities, db)
     review += engine.dedupe_other(records)
     validation = engine.validate(records, entities)
     now = datetime.now(timezone.utc)
@@ -80,7 +81,9 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
     existing = dict(db.execute(select(DesignSystem.key, DesignSystem.id)).all())
     keep = set()
     for e in entities:
-        desc = next((by_key[k]["summary"] for k in e["source_record_ids"] if by_key.get(k, {}).get("summary") and by_key[k]["record_type"] == "system"), None)
+        desc = e.get("description") or next((by_key[k]["summary"] for k in e["source_record_ids"]
+                                             if by_key.get(k, {}).get("summary") and by_key[k]["record_type"] == "system"
+                                             and not by_key[k]["summary"].startswith("Official documentation of ")), None)
         vals = dict(name=_s(e["name"], 300), organization=_s(e["organization"], 300), description=desc, documentation_url=e.get("documentation_url"),
                     repository_url=e.get("repository_url"), storybook_url=e.get("storybook_url"), design_resource_url=e.get("design_resource_url"),
                     frameworks=e.get("supported_frameworks") or [], platforms=e.get("supported_platforms") or [], styling_strategy=e.get("styling_strategy"),
@@ -101,6 +104,7 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
         keep.add(e["system_id"])
     stale_keys = [k for k in existing if k not in keep]
     if stale_keys:
+        _record_aliases(db, stale_keys, merged, entities)
         db.execute(delete(DesignSystem).where(DesignSystem.key.in_(stale_keys)))
     sys_ids = dict(db.execute(select(DesignSystem.key, DesignSystem.id)).all())
     # attach field-level evidence to (possibly merged) canonical systems
@@ -221,6 +225,15 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
         db.execute(stmt.on_conflict_do_update(index_elements=["key"], set_={"details": item, "member_count": members, "updated_at": now}))
         open_keys.add(key[:400])
     db.execute(delete(DuplicateGroup).where(DuplicateGroup.key.not_in(open_keys or {"-"}), DuplicateGroup.review_status == "open"))
+
+    # ── Storybook projects follow their showcase listing to the (possibly merged) canonical system ──
+    db.execute(text("""UPDATE storybook_projects p SET system_key = d.key FROM records r JOIN design_systems d ON d.id = r.system_id
+                       WHERE r.record_key = p.showcase_record_key AND p.system_key IS DISTINCT FROM d.key"""))
+    db.execute(text("""UPDATE storybook_projects p SET system_key = a.canonical_key FROM system_aliases a WHERE p.system_key = a.alias_key"""))
+
+    # ── typed, evidence-backed resource links ──
+    from . import resources
+    resources.sync(db)
 
     # ── counts on systems ──
     db.execute(text("""UPDATE design_systems d SET
@@ -356,3 +369,29 @@ def _remap_review(review: list[dict[str, Any]], merged: dict[str, str]) -> list[
             item = {**item, "entities": ents}
         out.append(item)
     return out
+
+
+def _record_aliases(db: Session, stale_keys: list[str], merged: dict[str, str], entities: list[dict[str, Any]]) -> None:
+    """Before a system row disappears, remember which canonical system absorbed it (old id + key keep resolving)."""
+    from ..models import SystemAlias
+    rec_owner = {k: e["system_id"] for e in entities for k in e["source_record_ids"]}
+    why = {}
+    for e in entities:
+        for m in e.get("merged_from") or []:
+            ev = (m.get("evidence") or [{}])[0]
+            why[m.get("system_id")] = {"bound_source": "bound_source"}.get(ev.get("type") if isinstance(ev, dict) else None, "identity_decision")
+    rows = db.execute(select(DesignSystem.key, DesignSystem.id, DesignSystem.name, DesignSystem.attributes).where(DesignSystem.key.in_(stale_keys))).all()
+    for key, sid, name, attrs in rows:
+        target, reason = merged.get(key), why.get(key, "identity_decision")
+        while target in merged:
+            target = merged[target]
+        if not target:
+            owners = {rec_owner[k] for k in (attrs or {}).get("source_record_keys", []) if k in rec_owner}
+            if len(owners) == 1:
+                target, reason = owners.pop(), "records_regrouped"
+        if not target:
+            continue  # its records are gone (stale source); nothing absorbed it
+        vals = dict(alias_id=sid, alias_name=name, canonical_key=target, reason=reason,
+                    evidence=[{"source_record_keys": ((attrs or {}).get("source_record_keys") or [])[:20]}])
+        stmt = insert(SystemAlias).values(alias_key=key, **vals)
+        db.execute(stmt.on_conflict_do_update(index_elements=["alias_key"], set_={**vals, "updated_at": datetime.now(timezone.utc)}))

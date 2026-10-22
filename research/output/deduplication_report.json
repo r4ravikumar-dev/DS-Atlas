@@ -1,26 +1,154 @@
 {
-  "initial_queue_size": 126,
-  "processed_count": 126,
-  "remaining_open_count": 0,
-  "by_resolution": {
-    "duplicate_confirmed": 82,
-    "resolved_existing_system": 32,
+  "generated_at": "2026-10-22T07:13:14+00:00",
+  "baseline": {
+    "source": "backups/dsrp-20261022T061440Z-pre-simplify.dump",
+    "design_systems": 477,
+    "same_normalized_name_groups": 35,
+    "rows_in_same_name_groups": 76,
+    "systems_without_docs_or_repo": 102
+  },
+  "current": {
+    "design_systems": 430,
+    "same_normalized_name_groups": 10,
+    "rows_in_same_name_groups": 22,
+    "systems_without_docs_or_repo": 28
+  },
+  "net_reduction": 47,
+  "merges": {
+    "recorded_aliases": 7,
+    "by_reason": {
+      "identity_decision": 7
+    },
+    "note": "Merges done by the engine's URL identity during this run (after the designsystems.one detail-page fix) fold records into an existing canonical key without a separate row being removed, so they show up as the net reduction rather than as alias rows.",
+    "aliases": [
+      {
+        "alias_key": "dsys:cisco-momentum-design",
+        "alias_id": 336,
+        "alias_name": "Momentum Design",
+        "canonical_key": "dsys:momentum-design",
+        "reason": "identity_decision"
+      },
+      {
+        "alias_key": "dsys:design-liferay-com",
+        "alias_id": 4268,
+        "alias_name": "Lexicon",
+        "canonical_key": "dsys:lexicondesign-io",
+        "reason": "identity_decision"
+      },
+      {
+        "alias_key": "dsys:eu-europa-component-library",
+        "alias_id": 246,
+        "alias_name": "Europa Component Library",
+        "canonical_key": "dsys:eu-european-commission-europa-component-library",
+        "reason": "identity_decision"
+      },
+      {
+        "alias_key": "dsys:priceline-github-io",
+        "alias_id": 387,
+        "alias_name": "Priceline One Design System",
+        "canonical_key": "dsys:priceline-github-iodesign-system",
+        "reason": "identity_decision"
+      },
+      {
+        "alias_key": "dsys:reshaped-reshaped",
+        "alias_id": 409,
+        "alias_name": "Reshaped",
+        "canonical_key": "dsys:reshaped-so",
+        "reason": "identity_decision"
+      },
+      {
+        "alias_key": "dsys:shopify-dev",
+        "alias_id": 3868,
+        "alias_name": "Polaris",
+        "canonical_key": "dsys:polaris-shopify-com",
+        "reason": "identity_decision"
+      },
+      {
+        "alias_key": "dsys:wix-wix-style-react",
+        "alias_id": 499,
+        "alias_name": "Wix Style React",
+        "canonical_key": "dsys:wix-style-react-com",
+        "reason": "identity_decision"
+      }
+    ]
+  },
+  "identity_links": {
+    "same_as": 42,
+    "related_to": 11,
+    "implementation_of": 10,
+    "distinct_from": 8
+  },
+  "review_decisions_latest_per_item": {
+    "duplicate_confirmed": 92,
     "linked_resource": 10,
-    "distinct_system_confirmed": 2
+    "distinct_system_confirmed": 11,
+    "resolved_existing_system": 34,
+    "manual_review_required": 5
   },
-  "by_kind": {
-    "system_field_conflict": {
-      "total": 85,
-      "resolved": 85
+  "decisions_resting_on_curated_rationale": 13,
+  "open_items": [
+    {
+      "key": "possible_duplicate_system:name:australian government",
+      "kind": "possible_duplicate_system",
+      "resolution": "manual_review_required",
+      "entities": [
+        "Australian Government Design System",
+        "Australian Government Design System"
+      ],
+      "rationale": "Australian Government Design System \u2194 Australian Government Design System: manual_review_required (Same name but no redirect or cross-reference evidence; may be moved documentation or a fork.)"
     },
-    "possible_duplicate_system": {
-      "total": 40,
-      "resolved": 40
+    {
+      "key": "possible_duplicate_system:name:base",
+      "kind": "possible_duplicate_system",
+      "resolution": "manual_review_required",
+      "entities": [
+        "Base Web",
+        "base",
+        "Base UI"
+      ],
+      "rationale": "Base Web \u2194 base: distinct_system_confirmed (Different publishing organizations (Uber vs Mapbox), different locations, no redirect or cross-reference.); Base Web \u2194 Base UI: manual_review_required (Same name but no redirect or cross-reference evidence; may be moved documentation or a fork.); base \u2194 Base UI: source_unavailable (At least one entity's resources could not be fetched; identity cannot be evaluated.)"
     },
-    "same_source_component_duplicate": {
-      "total": 1,
-      "resolved": 1
+    {
+      "key": "possible_duplicate_system:name:blip",
+      "kind": "possible_duplicate_system",
+      "resolution": "manual_review_required",
+      "entities": [
+        "BLiP",
+        "Blip Design System"
+      ],
+      "rationale": "BLiP \u2194 Blip Design System: manual_review_required (Same name but no redirect or cross-reference evidence; may be moved documentation or a fork.)"
+    },
+    {
+      "key": "possible_duplicate_system:name:foundation",
+      "kind": "possible_duplicate_system",
+      "resolution": "manual_review_required",
+      "entities": [
+        "Foundation",
+        "foundation design system"
+      ],
+      "rationale": "Foundation \u2194 foundation design system: manual_review_required (Same name but no redirect or cross-reference evidence; may be moved documentation or a fork.)"
+    },
+    {
+      "key": "possible_duplicate_system:name:react95",
+      "kind": "possible_duplicate_system",
+      "resolution": "manual_review_required",
+      "entities": [
+        "React95",
+        "React95"
+      ],
+      "rationale": "React95 \u2194 React95: manual_review_required (Same name but no redirect or cross-reference evidence; may be moved documentation or a fork.)"
     }
-  },
-  "canonical_systems_count": 476
+  ],
+  "remaining_same_name_groups": [
+    "australiangovernment",
+    "blip",
+    "canvas",
+    "components",
+    "foundation",
+    "orbit",
+    "react95",
+    "solar",
+    "styleguide",
+    "ui"
+  ]
 }

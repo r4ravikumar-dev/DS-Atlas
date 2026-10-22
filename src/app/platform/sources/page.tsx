@@ -4,7 +4,7 @@ import { Suspense, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, RefreshCw } from 'lucide-react'
 import { ApiError } from '@/lib/api/client'
-import { can, useMe } from '@/features/auth/api'
+import { isAdmin, useMe } from '@/features/auth/api'
 import { useCrawlAll } from '@/features/crawl-jobs/api'
 import { useCreateSource, useSources } from '@/features/sources/api'
 import { useUrlState } from '@/hooks/useUrlState'
@@ -29,7 +29,7 @@ function SourcesInner() {
         title="Sources & crawl management"
         description="The source registry is backend-managed. Status reflects each adapter's documented outcome — a loaded landing page never counts as “fully scraped”."
         actions={
-          can(me, 'researcher') && (
+          isAdmin(me) && (
             <>
               <Button icon={<Plus size={15} />} onClick={() => setAdding(true)}>
                 Register source

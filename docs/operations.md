@@ -84,3 +84,93 @@ Single client, warm cache, embedded PostgreSQL on a laptop, 8,117 records (40 se
 | `GET /guidelines?q=accessibility` | 7.2 ms | 8.2 ms |
 
 Full crawl of all 20 sources through workers (with the reused HTTP cache): ~2.5 minutes for crawls + ~10 s for the build. This is a baseline, **not** a load test; establish targets against production infrastructure with a concurrent load tool before committing to SLOs.
+
+## Deploying: Vercel (frontend + backend) and Supabase (database + files)
+
+```
+           Browser ──https──▶ Vercel project (one domain)
+                               ├─ /api/*  → service `backend`  (FastAPI, Python function)  ─┐
+                               └─ /*      → service `app`      (Next.js dashboard)          │
+                               daemon `worker` (container, no ingress) ─────────────────────┤
+                                                                                            ▼
+                                            Supabase:  Postgres (via Supavisor pooler)  +  Storage (private bucket)
+```
+
+| Name | Kind | Root | Public path | Talks to |
+|---|---|---|---|---|
+| `app` | Vercel service (Next.js) | `.` | `/(.*)` | nothing server-side; the browser calls `/api/v1` on the same domain |
+| `backend` | Vercel service (FastAPI, `app.main:app`) | `backend` | `/api/(.*)` (receives `/api/v1/...` unchanged) | Supabase Postgres + Storage |
+| `worker` | Vercel daemon (`backend/Dockerfile.worker`) | `backend/` | — | Supabase Postgres + Storage; crawls approved public sites |
+
+No service bindings are declared, because no Vercel service calls another over HTTP. The database is the shared state, and Supabase is an external endpoint configured through environment variables.
+
+### 1. Supabase
+
+1. Create a project. Pick its region and note it, so the Vercel functions and the worker can run near it.
+2. **Database → Connect:** copy the *Transaction pooler* URI (port 6543) and the *Session pooler* URI (port 5432). Rewrite each as `postgresql+psycopg://…?sslmode=require`. Vercel egress is IPv4, so use the pooler hostnames rather than the direct `db.<ref>.supabase.co` address.
+3. **Project Settings → API keys:** copy the project URL and the **service-role / secret** key. It is server-side only.
+4. From a trusted machine, run the migrations, the one-shot admin bootstrap and the private bucket setup:
+
+```bash
+cd backend
+export DATABASE_URL='postgresql+psycopg://postgres.<ref>:<pw>@aws-0-<region>.pooler.supabase.com:6543/postgres?sslmode=require'
+export MIGRATION_DATABASE_URL='postgresql+psycopg://postgres.<ref>:<pw>@aws-0-<region>.pooler.supabase.com:5432/postgres?sslmode=require'
+.venv/bin/alembic upgrade head                      # also locks the Data API out of every table (see below)
+ADMIN_EMAIL=… ADMIN_PASSWORD=… .venv/bin/python scripts/manage.py bootstrap-admin
+STORAGE_BACKEND=supabase SUPABASE_URL=https://<ref>.supabase.co SUPABASE_SERVICE_ROLE_KEY=… .venv/bin/python scripts/manage.py setup-storage
+.venv/bin/python scripts/manage.py seed             # register the seed sources
+```
+
+**Supabase Data API lockdown.** Supabase auto-exposes the `public` schema to its `anon` and `authenticated` roles through PostgREST. This application never uses that API; all access goes through the FastAPI backend and its administrator session. After every `alembic upgrade`, `app/database/supabase.py`:
+* revokes all table, sequence and function privileges, including default privileges, from those roles;
+* enables row-level security with no policies on every table.
+
+The app connects as the table owner, which RLS does not restrict. Re-apply it any time with `manage.py supabase-lockdown`. Optionally also disable the Data API under Project Settings → API.
+
+**Moving the existing knowledge base (one command).** `backend/scripts/supabase_setup.py` restores a `pg_dump` of the local database into the empty project, then:
+* runs the migrations and the Data API lockdown;
+* creates the private bucket;
+* uploads the local raw snapshots and exports;
+* verifies row counts, privileges and RLS.
+
+Credentials come from your shell, and only hostnames are printed:
+
+```bash
+cd backend
+export MIGRATION_DATABASE_URL='postgresql+psycopg://postgres.<ref>:<pw>@aws-0-<region>.pooler.supabase.com:5432/postgres?sslmode=require'
+export SUPABASE_URL='https://<ref>.supabase.co' SUPABASE_SERVICE_ROLE_KEY='…'
+.venv/bin/python scripts/supabase_setup.py all --dump ../backups/dsrp-20261022T071629Z-for-supabase.dump
+```
+
+Each step (`check`, `data`, `schema`, `bucket`, `objects`, `verify`) can be run on its own, and each is idempotent: `data` refuses a non-empty database. The administrator accounts come across with the data, so `bootstrap-admin` is only needed for a fresh, empty start.
+
+### 2. Vercel
+
+Import the repository; `vercel.json` defines the services, routing and daemon. Project environment variables (Production; add Preview if previews should use a separate Supabase project):
+
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | transaction pooler URI (port 6543). Detected automatically: no client pool, no prepared statements, no session `SET`s. |
+| `SECRET_KEY` | ≥ 32 random characters |
+| `ENVIRONMENT` | `production` (disables the interactive API docs) |
+| `COOKIE_SECURE` | `true` |
+| `STORAGE_BACKEND` | `supabase` |
+| `SUPABASE_URL` | `https://<ref>.supabase.co` |
+| `SUPABASE_SERVICE_ROLE_KEY` | the secret key, marked **Sensitive**. Never prefix it with `NEXT_PUBLIC_`. |
+| `SUPABASE_STORAGE_BUCKET` | `dsrp-private` (default) |
+| `GITHUB_TOKEN` | optional |
+
+Do **not** set `BACKEND_URL` on Vercel. That `next.config.ts` rewrite is for local `next dev` only; the top-level rewrite already routes `/api/*` to `backend`.
+
+Set the Functions region (Project Settings → Functions) and the worker's `instances` region in `vercel.json` to match the Supabase region.
+
+### Files and downloads
+
+Raw page snapshots and exports go to the private bucket. Download endpoints first authorize the administrator, then redirect (303) to a 60-second signed Supabase URL that forces an attachment. Large exports therefore never pass through the function response-size limit, and stored HTML is never rendered on the app's origin.
+
+### Constraints
+
+* **Previews.** During Vercel's beta, daemons run in production only, so jobs queued from preview deployments wait until a production worker runs. Use a separate Supabase project for previews if they must not touch production data.
+* **Local development.** `vercel dev` runs `app` and `backend` but not daemons. Run `python -m app.workers.main` alongside it, or `docker build -f backend/Dockerfile.worker backend/`.
+* **Rate limits.** Login and intake limits are per instance.
+* **Engine cache.** The crawler's HTTP cache lives in the worker's ephemeral `/tmp` and is rebuilt after restarts.

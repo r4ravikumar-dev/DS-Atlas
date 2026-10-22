@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
-from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -32,8 +31,8 @@ def document_content(document_id: int, db: Session = Depends(get_db)):
     if not d or not storage().exists(d.storage_key):
         raise NotFound("Document not found.")
     # Untrusted content: never render inline as HTML in our origin.
-    return FileResponse(storage().path(d.storage_key), media_type="text/plain; charset=utf-8", filename=f"snapshot-{d.content_sha256[:12]}.txt",
-                        headers={"Content-Security-Policy": "sandbox; default-src 'none'", "X-Content-Type-Options": "nosniff"})
+    return storage().download_response(d.storage_key, f"snapshot-{d.content_sha256[:12]}.txt", media_type="text/plain; charset=utf-8",
+                                       headers={"Content-Security-Policy": "sandbox; default-src 'none'", "X-Content-Type-Options": "nosniff"})
 
 
 @router.get("/records/{record_id}", summary="Any extracted record with evidence")

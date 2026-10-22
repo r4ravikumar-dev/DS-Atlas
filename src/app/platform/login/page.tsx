@@ -34,7 +34,7 @@ function LoginForm() {
     >
       <div>
         <h1>Sign in</h1>
-        <p>Design Systems Research Platform. Accounts are created by an administrator.</p>
+        <p>Design Systems Knowledge Base — private administrator workspace. There is no public registration.</p>
       </div>
       <Field label="Email" error={emailErr}>
         <input type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required />

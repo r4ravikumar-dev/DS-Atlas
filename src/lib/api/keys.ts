@@ -29,6 +29,6 @@ export const qk = {
   review: (args?: unknown) => ['review', args] as const,
   storybook: (part: string, args?: unknown) => ['storybook', part, args] as const,
   verification: (part: string, args?: unknown) => ['verification', part, args] as const,
-  invitations: (args?: unknown) => ['invitations', args] as const,
+  quality: (part: string, args?: unknown) => ['quality', part, args] as const,
 }
 

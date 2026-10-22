@@ -161,6 +161,7 @@ def run_official_docs(seed: Dict[str, Any]) -> Dict[str, Any]:
     packages: Dict[str, str] = {}
     frameworks: Dict[str, Tuple[str, str]] = {}
     components: Dict[str, str] = {}
+    comp_pages: Dict[str, set] = {}  # component page URL → link texts pointing at it (one component per page)
     for url, p in pages.items():
         if p is None:
             continue
@@ -229,12 +230,21 @@ def run_official_docs(seed: Dict[str, Any]) -> Dict[str, Any]:
                     break
         # component inventory from component index pages
         if "components" in ts:
+            here = canonical_url(url)
             for lu, lt in p["links"]:
+                cu = canonical_url(lu)
+                if cu == here:
+                    continue  # in-page section anchors ("#legend") are headings of this page, not components
                 path = urlparse(lu).path.rstrip("/")
                 mm = re.search(r"/components?/([\w-]+)$", path)
                 if mm and _same_site(lu, host) and lt and 1 < len(lt) <= 40 and not re.search(r"overview|all components|getting started|introduction|^components?$", lt, re.I):
-                    components.setdefault(lt.strip(), canonical_url(lu))
+                    comp_pages.setdefault(cu, set()).add(lt.strip())
 
+    for cu, texts in comp_pages.items():
+        slug = urlparse(cu).path.rstrip("/").rsplit("/", 1)[-1]
+        named = sorted(t for t in texts if slugify(t) == slug.lower())
+        name = named[0] if named else slug.replace("-", " ").replace("_", " ").strip().capitalize()
+        components.setdefault(name, cu)
     if repo_found:
         attr("identity.repository", repo_found[0], repo_found[1], None, f"Repository link published on the official site: {repo_found[0]}", status="verified")
         gm = re.match(r"https?://(?:www\.)?github\.com/([\w.-]+)/([\w.-]+)", repo_found[0])
@@ -263,7 +273,8 @@ def run_official_docs(seed: Dict[str, Any]) -> Dict[str, Any]:
         attr("components.inventory", {"count": len(components), "names": sorted(components)[:300]}, idx, None, f"{len(components)} component pages linked from the official component index")
 
     # system record so the source resolves to the canonical entity (same documentation host)
-    srec = make_record("system", sid, sys_key, sys_name or sys_key, summary=f"Official documentation of {sys_name}", primary_category="C12",
+    site_desc = (root_page or {}).get("description") if isinstance(root_page, dict) else None
+    srec = make_record("system", sid, sys_key, sys_name or sys_key, summary=excerpt(site_desc, 600) if site_desc else None, primary_category="C12",
                        source_url=root.final_url, extraction_method="html", source_status="official")
     srec.update(organization=org, design_system=sys_name, repository_url=repo_found[0] if repo_found else None)
     srec["normalized_content"] = {"name": sys_name, "organization": org, "documentation_url": root.final_url,

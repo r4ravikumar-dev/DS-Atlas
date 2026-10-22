@@ -38,25 +38,25 @@ def test_fetcher_refuses_non_allowlisted_and_bad_scheme():
     assert f.get("file:///etc/passwd", source_id="T") is None
 
 
-def test_source_registration_rules(client, as_researcher, as_viewer):
+def test_source_registration_rules(client, as_admin, as_viewer):
     url = "/api/v1/sources"
     assert client.post(url, headers=as_viewer, json={"name": "x", "url": "https://ant.design/x"}).status_code == 403
-    r = client.post(url, headers=as_researcher, json={"name": "Plain http", "url": "http://ant.design/x"})
+    r = client.post(url, headers=as_admin, json={"name": "Plain http", "url": "http://ant.design/x"})
     assert r.status_code == 422
-    r = client.post(url, headers=as_researcher, json={"name": "Unapproved", "url": "https://unapproved-domain.example/docs"})
+    r = client.post(url, headers=as_admin, json={"name": "Unapproved", "url": "https://unapproved-domain.example/docs"})
     assert r.status_code == 422 and r.json()["error"]["code"] == "DOMAIN_NOT_APPROVED"
-    r = client.post(url, headers=as_researcher, json={"name": "Creds", "url": "https://user:pw@ant.design/x"})
+    r = client.post(url, headers=as_admin, json={"name": "Creds", "url": "https://user:pw@ant.design/x"})
     assert r.status_code == 422
 
 
-def test_raw_snapshot_served_inert(client, as_viewer, db):
+def test_raw_snapshot_served_inert(client, as_admin, db):
     from app.models import RawDocument
     from app.services.storage import storage
     key = storage().put("raw/te/test-inert", b"<script>alert(1)</script>")
     d = RawDocument(content_sha256="f" * 64, storage_key=key, content_type="text/html", size_bytes=25, first_url="https://fixture.example")
     db.add(d)
     db.commit()
-    r = client.get(f"/api/v1/documents/{d.id}/content", headers=as_viewer)
+    r = client.get(f"/api/v1/documents/{d.id}/content", headers=as_admin)
     assert r.status_code == 200
     assert r.headers["content-type"].startswith("text/plain")
     assert "sandbox" in r.headers["content-security-policy"] and "attachment" in r.headers["content-disposition"]

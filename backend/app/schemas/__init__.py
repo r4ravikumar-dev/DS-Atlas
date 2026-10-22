@@ -73,10 +73,9 @@ class SessionOut(Model):
     expires_in_seconds: int
 
 
-class UserUpdate(BaseModel):
-    name: str | None = Field(None, max_length=200)
-    role: Role | None = None
-    is_active: bool | None = None
+class PasswordChange(BaseModel):
+    current_password: str = Field(min_length=1, max_length=500)
+    new_password: str = Field(min_length=12, max_length=500)
 
 
 # ───────────────────────────── sources ─────────────────────────────
@@ -220,6 +219,60 @@ class EvidenceOut(Model):
     raw_document_id: int | None
 
 
+ResourceType = Literal["official_website", "official_documentation", "github_repository", "figma_file", "storybook", "additional_resource"]
+
+
+class ResourceLink(Model):
+    """Primary link per resource type (as shown on catalog cards)."""
+    type: ResourceType
+    url: str
+    verified: bool
+
+
+class ResourceOut(Model):
+    id: int
+    system_id: int | None
+    resource_type: ResourceType
+    url: str
+    label: str | None
+    origin: str
+    source_keys: list[str]
+    verification_status: Literal["verified", "unverified", "invalid"]
+    verification_method: str | None
+    evidence_url: str | None
+    evidence_note: str | None
+    http_status: int | None
+    access_note: str | None
+    is_primary: bool
+    last_checked_at: datetime | None
+    updated_at: datetime
+
+
+def _http_url(v: str) -> str:
+    v = (v or "").strip()
+    if not v.startswith(("https://", "http://")) or len(v) > 2000 or " " in v:
+        raise ValueError("must be an absolute http(s) URL")
+    return v
+
+
+class ResourceCreate(BaseModel):
+    resource_type: ResourceType
+    url: str
+    label: str | None = Field(None, max_length=300)
+    verification_status: Literal["verified", "unverified"] = "unverified"
+    evidence_note: str | None = Field(None, max_length=2000)
+    _v = field_validator("url")(classmethod(lambda cls, v: _http_url(v)))
+
+
+class ResourceUpdate(BaseModel):
+    url: str | None = None
+    label: str | None = Field(None, max_length=300)
+    verification_status: Literal["verified", "unverified", "invalid"] | None = None
+    evidence_note: str | None = Field(None, max_length=2000)
+    is_primary: bool | None = None
+    _v = field_validator("url")(classmethod(lambda cls, v: v if v is None else _http_url(v)))
+
+
 class SystemOut(Model):
     id: int
     key: str
@@ -244,6 +297,10 @@ class SystemOut(Model):
     token_count: int
     deprecated: bool
     last_verified_at: datetime | None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    links: list[ResourceLink] = []
+    resource_count: int = 0
 
 
 class SystemDetail(SystemOut):
@@ -254,12 +311,71 @@ class SystemDetail(SystemOut):
     conflicts: dict[str, Any]
     aliases: list[str]
     attributes: dict[str, Any]
+    resources: list[ResourceOut] = []
+    merged_aliases: list[dict[str, Any]] = []
+    requested_alias: dict[str, Any] | None = None
+    storybook_projects: list[dict[str, Any]] = []
+    story_count: int = 0
+    variant_count: int = 0
+    guideline_count: int = 0
 
 
 class SystemUpdate(BaseModel):
-    """Curator edits are limited to descriptive fields; provenance fields are derived."""
+    """Administrator edits of descriptive fields. Stored as audited curation, so they survive every rebuild."""
+    name: str | None = Field(None, min_length=1, max_length=300)
+    organization: str | None = Field(None, max_length=300)
     description: str | None = Field(None, max_length=5000)
-    platforms: list[str] | None = None
+    frameworks: list[str] | None = Field(None, max_length=30)
+    platforms: list[str] | None = Field(None, max_length=30)
+    styling_strategy: str | None = Field(None, max_length=200)
+
+
+class IntakeCheck(BaseModel):
+    url: str
+    name: str | None = Field(None, max_length=300)
+    _v = field_validator("url")(classmethod(lambda cls, v: _http_url(v)))
+
+
+class IntakeCandidate(Model):
+    system_id: int
+    name: str
+    organization: str | None
+    match: str
+    detail: str
+
+
+class IntakeCheckOut(Model):
+    url: str
+    canonical_url: str
+    suggested_type: ResourceType
+    predicted_key: str | None
+    candidates: list[IntakeCandidate]
+
+
+class IntakeNewSystem(BaseModel):
+    name: str = Field(min_length=1, max_length=300)
+    organization: str | None = Field(None, max_length=300)
+
+
+class IntakeRequest(BaseModel):
+    """Attach a URL to an existing system (system_id) or create a separate system (new_system).
+    Creating a new system while likely duplicates exist requires separate_from = the candidate ids the administrator rejected."""
+    url: str
+    resource_type: ResourceType
+    system_id: int | None = None
+    new_system: IntakeNewSystem | None = None
+    separate_from: list[int] = []
+    verified: bool = False
+    crawl: bool = True
+    _v = field_validator("url")(classmethod(lambda cls, v: _http_url(v)))
+
+
+class IntakeOut(Model):
+    system_key: str
+    system_id: int | None
+    resource: ResourceOut | None
+    source_id: int | None
+    job_ids: list[uuid.UUID]
 
 
 class PropOut(Model):
@@ -389,6 +505,15 @@ class DashboardSummary(Model):
     storybook_variants: int = 0
     attribute_evidence: int = 0
     review_open: int
+    source_references: int = 0
+    systems_verified: int = 0
+    systems_partially_verified: int = 0
+    systems_missing_official_link: int = 0
+    resources: int = 0
+    resources_verified: int = 0
+    systems_with_figma: int = 0
+    systems_with_github: int = 0
+    extraction_errors: int = 0
     stale_records: int
     jobs_running: int
     last_crawl_at: datetime | None
@@ -473,6 +598,13 @@ class ReviewResolve(BaseModel):
     resolution_note: str | None = Field(None, max_length=2000)
 
 
+class DuplicateDecision(BaseModel):
+    """Administrator decision on a possible-duplicate item: merge every listed system into canonical_key, or keep them distinct."""
+    decision: Literal["merge", "distinct"]
+    canonical_key: str | None = Field(None, max_length=300)
+    note: str = Field(min_length=3, max_length=2000, description="Why (evidence the administrator relied on)")
+
+
 class AuditEventOut(Model):
     id: int
     ts: datetime
@@ -514,52 +646,6 @@ class ConfigUpdate(BaseModel):
 
 
 # ───────────────────────────── invitations & access ─────────────────────────────
-class InvitationOut(Model):
-    id: uuid.UUID
-    kind: str
-    email: str
-    role: Role
-    status: str
-    delivery_status: str
-    delivery_error: str | None = None
-    send_count: int
-    created_at: datetime
-    expires_at: datetime
-    accepted_at: datetime | None = None
-    revoked_at: datetime | None = None
-    invited_by: uuid.UUID | None = None
-    last_sent_at: datetime | None = None
-
-
-class InvitationCreate(BaseModel):
-    email: EmailStr
-    role: Role = "viewer"
-    ttl_hours: int | None = Field(None, ge=1, le=336)
-
-
-class InvitationValidateRequest(BaseModel):
-    token: str = Field(min_length=1, max_length=200)
-
-
-class InvitationValidateOut(Model):
-    kind: str
-    email_hint: str
-    role: Role
-    expires_at: datetime
-    email_delivery: bool
-
-
-class InvitationSendCodeRequest(BaseModel):
-    token: str = Field(min_length=1, max_length=200)
-
-
-class InvitationAcceptRequest(BaseModel):
-    token: str = Field(min_length=1, max_length=200)
-    code: str = Field(min_length=6, max_length=10)
-    name: str = Field(min_length=1, max_length=200)
-    password: str = Field(min_length=12, max_length=500)
-
-
 class AttributeEvidenceOut(Model):
     id: int
     system_id: int | None

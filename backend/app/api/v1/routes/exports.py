@@ -4,7 +4,6 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, Query, Request, status
-from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -77,8 +76,10 @@ def download(export_job_id: uuid.UUID, request: Request, token: str | None = Que
         user_id = data["sub"]
     else:
         p = get_principal(request, db)
-        if p.user is None or not has_permission(p.role, "export:create"):
+        if p.user is None:
             raise Unauthorized("Authentication required.")
+        if not has_permission(p.role, "export:create"):
+            raise Forbidden("Administrator access required.")
         user_id = str(p.id)
     u = db.get(User, uuid.UUID(user_id))
     if not u or not u.is_active or not has_permission(u.role, "export:create"):
@@ -93,5 +94,4 @@ def download(export_job_id: uuid.UUID, request: Request, token: str | None = Que
         raise NotFound("Export file is no longer available.")
     audit(db, u.id, "export.download", "job", j.id)
     db.commit()
-    return FileResponse(storage().path(res["storage_key"]), filename=res["filename"], media_type="application/octet-stream",
-                        headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})
+    return storage().download_response(res["storage_key"], res["filename"], headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"})

@@ -1,8 +1,11 @@
 """Environment-driven settings. Secrets come from the environment / .env (never committed)."""
 from __future__ import annotations
 
+import os
+
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -18,6 +21,9 @@ class Settings(BaseSettings):
     api_prefix: str = "/api/v1"
 
     database_url: str = Field(..., description="SQLAlchemy URL, e.g. postgresql+psycopg://user:pass@host:5432/dsrp")
+    db_pool_mode: Literal["auto", "direct", "transaction"] = Field(
+        "auto", description="transaction = a transaction-mode pooler such as Supabase Supavisor on port 6543 (no client pool, no prepared "
+                            "statements, no session SETs). auto picks transaction for port 6543.")
     db_pool_size: int = 10
     db_statement_timeout_ms: int = 15000
 
@@ -25,26 +31,22 @@ class Settings(BaseSettings):
     session_ttl_minutes: int = 8 * 60
     cookie_secure: bool = False
     cookie_domain: str | None = None
-    allow_anonymous_read: bool = False
     cors_origins: list[str] = []
 
-    storage_dir: Path = BACKEND_DIR / "storage"
+    # On Vercel Functions only /tmp is writable (and ephemeral); elsewhere storage lives next to the code. Override with STORAGE_DIR.
+    storage_dir: Path = Field(default_factory=lambda: Path("/tmp/dsrp-storage") if os.environ.get("VERCEL") else BACKEND_DIR / "storage")
     export_ttl_hours: int = 24
+    # Object storage for raw snapshots and exports. "local" = STORAGE_DIR; "supabase" = a private Supabase Storage bucket, shared by the
+    # API functions and the worker. The service-role key is server-side only (never sent to the browser or logged).
+    storage_backend: Literal["local", "supabase"] = "local"
+    supabase_url: str | None = Field(None, description="https://<project-ref>.supabase.co")
+    supabase_service_role_key: SecretStr | None = None
+    supabase_storage_bucket: str = "dsrp-private"
+    signed_url_ttl_seconds: int = 60
 
     worker_concurrency: int = 4
     worker_poll_seconds: float = 2.0
     job_heartbeat_timeout_seconds: int = 300
-
-    app_base_url: str = Field("http://localhost:3000", description="Public origin of the frontend, used to build invitation links")
-    invitation_ttl_hours: int = 72
-    invitation_max_ttl_hours: int = 24 * 14
-    email_transport: str = Field("outbox", description="smtp | outbox (development only: writes messages to storage/outbox) | disabled")
-    smtp_host: str | None = None
-    smtp_port: int = 587
-    smtp_username: str | None = None
-    smtp_password: SecretStr | None = None
-    smtp_from: str | None = None
-    smtp_starttls: bool = True
 
     github_token: SecretStr | None = Field(None, description="Optional GitHub token (read-only public metadata). Never logged or returned.")
 

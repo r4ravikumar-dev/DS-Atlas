@@ -1,179 +1,277 @@
 {
-  "metadata": {
-    "generated_at": "2026-10-21T11:59:44.837477+00:00",
-    "title": "Design Systems Research Platform \u2014 Data Pipeline Reconciliation Report",
-    "environment": "Development / Live PostgreSQL"
+  "generated_at": "2026-10-22T07:13:14+00:00",
+  "canonical_system_count": 430,
+  "baseline_system_count": 477,
+  "confirmed_duplicates_merged": 47,
+  "retained": {
+    "records": {
+      "before": 8690,
+      "after": 9062
+    },
+    "components": {
+      "before": 3385,
+      "after": 3397
+    },
+    "component_props": {
+      "before": 22066,
+      "after": 22066
+    },
+    "design_tokens": {
+      "before": 1708,
+      "after": 1708
+    },
+    "guidelines": {
+      "before": 1997,
+      "after": 1997
+    },
+    "storybook_projects": {
+      "before": 103,
+      "after": 103
+    },
+    "storybook_stories": {
+      "before": 17600,
+      "after": 17600
+    },
+    "storybook_variants": {
+      "before": 12150,
+      "after": 12150
+    },
+    "attribute_evidence": {
+      "before": 312,
+      "after": 375
+    },
+    "sources": {
+      "before": 32,
+      "after": 33
+    },
+    "raw_documents": {
+      "before": 1600,
+      "after": 1722
+    }
   },
-  "reconciliation_metrics": {
-    "stored_records_total": 8690,
-    "design_systems_stored": 477,
-    "components_stored": 3385,
-    "component_props_stored": 22066,
-    "tokens_stored": 1708,
-    "guidelines_stored": 1997,
-    "storybook_projects_stored": 103,
-    "storybook_stories_stored": 17600,
-    "storybook_variants_stored": 12150,
-    "attribute_evidence_stored": 312,
-    "sources_stored": 32,
-    "evidence_citations_stored": 8690,
-    "orphaned_records": {
-      "components": 0,
-      "props": 0,
-      "tokens": 0,
-      "guidelines": 0,
-      "storybook_stories": 0,
-      "storybook_variants": 0
+  "resources": {
+    "by_type_and_status": [
+      {
+        "type": "additional_resource",
+        "status": "unverified",
+        "count": 211
+      },
+      {
+        "type": "figma_file",
+        "status": "unverified",
+        "count": 4
+      },
+      {
+        "type": "figma_file",
+        "status": "verified",
+        "count": 17
+      },
+      {
+        "type": "github_repository",
+        "status": "unverified",
+        "count": 198
+      },
+      {
+        "type": "github_repository",
+        "status": "verified",
+        "count": 139
+      },
+      {
+        "type": "official_documentation",
+        "status": "invalid",
+        "count": 15
+      },
+      {
+        "type": "official_documentation",
+        "status": "unverified",
+        "count": 122
+      },
+      {
+        "type": "official_documentation",
+        "status": "verified",
+        "count": 44
+      },
+      {
+        "type": "official_website",
+        "status": "invalid",
+        "count": 9
+      },
+      {
+        "type": "official_website",
+        "status": "unverified",
+        "count": 258
+      },
+      {
+        "type": "official_website",
+        "status": "verified",
+        "count": 11
+      },
+      {
+        "type": "storybook",
+        "status": "unverified",
+        "count": 131
+      },
+      {
+        "type": "storybook",
+        "status": "verified",
+        "count": 5
+      }
+    ],
+    "systems_with": {
+      "official_website": 252,
+      "official_documentation": 129,
+      "github_repository": 269,
+      "figma_file": 18,
+      "storybook": 117
     },
-    "integrity_score": "100% (Zero orphaned records in database relationships)"
+    "systems_with_verified": {
+      "official_website": 11,
+      "official_documentation": 44,
+      "github_repository": 105,
+      "figma_file": 15,
+      "storybook": 5
+    },
+    "figma_profile_or_community_pages_reclassified_as_additional_resource": 37
   },
-  "pipeline_layers_audited": [
+  "orphaned_relationships": {
+    "before": {
+      "storybook_projects_without_system": 63
+    },
+    "after": {
+      "components_unattached_despite_system_link": 0,
+      "tokens_unattached_despite_system_link": 0,
+      "guidelines_unattached_despite_system_link": 0,
+      "resources_without_system": 0,
+      "storybook_projects_without_system": 0,
+      "evidence_without_system": 0,
+      "system_records_without_system": 0,
+      "system_agnostic_guidelines (not broken)": 490
+    }
+  },
+  "verification_status": {
+    "partially_verified": 151,
+    "unverified": 279
+  },
+  "remaining_issues": {
+    "systems_missing_official_link": 100,
+    "systems_without_organization": 112,
+    "invalid_links": 24,
+    "storybook_projects_not_indexed": 63,
+    "open_review_items": 5
+  },
+  "storage_to_api_trace": [
     {
-      "layer": "Database (PostgreSQL)",
-      "status": "Healthy",
-      "notes": "All foreign keys intact, 0 orphaned records."
+      "record_type": "design systems",
+      "endpoint": "/api/v1/design-systems",
+      "stored": 430,
+      "api_total": 430,
+      "http_status": 200,
+      "match": true
     },
     {
-      "layer": "Repository Layer",
-      "status": "Healthy",
-      "notes": "Paginated queries and deterministic order."
+      "record_type": "components",
+      "endpoint": "/api/v1/components",
+      "stored": 3397,
+      "api_total": 3397,
+      "http_status": 200,
+      "match": true
     },
     {
-      "layer": "API Serializers",
-      "status": "Defective (Repaired)",
-      "notes": "Omitted official_docs_url, related_urls, verification_coverage."
+      "record_type": "design tokens",
+      "endpoint": "/api/v1/tokens",
+      "stored": 1708,
+      "api_total": 1708,
+      "http_status": 200,
+      "match": true
     },
     {
-      "layer": "API Endpoints",
-      "status": "Gaps Identified",
-      "notes": "Missing invitation routes, component storybook endpoint, and system evidence endpoint."
+      "record_type": "guidelines (guideline/specification)",
+      "endpoint": "/api/v1/guidelines",
+      "stored": 1942,
+      "api_total": 1942,
+      "http_status": 200,
+      "match": true
     },
     {
-      "layer": "Frontend API Client",
-      "status": "Healthy",
-      "notes": "Typescript types require synchronization with enhanced backend schemas."
+      "record_type": "patterns",
+      "endpoint": "/api/v1/patterns",
+      "stored": 55,
+      "api_total": 55,
+      "http_status": 200,
+      "match": true
     },
     {
-      "layer": "Frontend Views",
-      "status": "Gaps Identified",
-      "notes": "Missing Storybook explorer, Verification evidence tabs, and Invite flow."
+      "record_type": "storybook projects",
+      "endpoint": "/api/v1/storybook/projects",
+      "stored": 103,
+      "api_total": 103,
+      "http_status": 200,
+      "match": true
     },
     {
-      "layer": "Access Control & Security",
-      "status": "Gaps Identified",
-      "notes": "Need Next.js middleware to strictly enforce invitation-only private gating."
+      "record_type": "storybook stories",
+      "endpoint": "/api/v1/storybook/stories",
+      "stored": 17600,
+      "api_total": 17600,
+      "http_status": 200,
+      "match": true
+    },
+    {
+      "record_type": "component variants",
+      "endpoint": "/api/v1/storybook/variants",
+      "stored": 12150,
+      "api_total": 12150,
+      "http_status": 200,
+      "match": true
+    },
+    {
+      "record_type": "resource links (attached)",
+      "endpoint": "/api/v1/resources",
+      "stored": 1164,
+      "api_total": 1164,
+      "http_status": 200,
+      "match": true
+    },
+    {
+      "record_type": "sources",
+      "endpoint": "/api/v1/sources",
+      "stored": 33,
+      "api_total": 33,
+      "http_status": 200,
+      "match": true
+    },
+    {
+      "record_type": "attribute evidence",
+      "endpoint": "/api/v1/verification/attributes",
+      "stored": 375,
+      "api_total": 375,
+      "http_status": 200,
+      "match": true
+    },
+    {
+      "record_type": "design systems \u2014 last page",
+      "endpoint": "/api/v1/design-systems?page=18&page_size=25",
+      "stored": 5,
+      "api_total": 5,
+      "http_status": 200,
+      "match": true
+    },
+    {
+      "record_type": "anonymous access",
+      "endpoint": "/api/v1/design-systems (no credentials)",
+      "stored": null,
+      "api_total": null,
+      "http_status": 401,
+      "match": true
     }
   ],
-  "defects": [
-    {
-      "id": "DEF-001",
-      "layer": "API Serializer",
-      "category": "Design Systems",
-      "severity": "High",
-      "root_cause": "SystemOut & SystemDetail Pydantic schemas omit official_docs_url, related_urls, and verification_coverage columns.",
-      "impact": "Frontend never receives official documentation URLs or coverage metrics extracted during Phase 2 verification.",
-      "resolution": "Add official_docs_url, related_urls, and verification_coverage to SystemOut and SystemDetail schemas in backend/app/schemas/__init__.py.",
-      "status": "In Progress"
-    },
-    {
-      "id": "DEF-002",
-      "layer": "Backend Service & API",
-      "category": "Dashboard",
-      "severity": "Medium",
-      "root_cause": "dashboard.summary() and DashboardSummary schema omit storybook stories, component variants, showcase projects, and attribute evidence counts.",
-      "impact": "Dashboard metrics only reflect legacy counts; user cannot see 17,600 stories or 12,150 variants on the home dashboard.",
-      "resolution": "Expand dashboard.summary() and DashboardSummary schema with storybook_projects, storybook_stories, storybook_variants, and attribute_evidence.",
-      "status": "In Progress"
-    },
-    {
-      "id": "DEF-003",
-      "layer": "API Endpoint",
-      "category": "Component Details",
-      "severity": "Medium",
-      "root_cause": "Missing component-specific storybook endpoint (/components/{id}/storybook) or detail expansion.",
-      "impact": "728 linked storybook stories and component variants cannot be browsed directly on the component detail page.",
-      "resolution": "Add GET /components/{id}/storybook endpoint returning linked stories and CSF variants.",
-      "status": "In Progress"
-    },
-    {
-      "id": "DEF-004",
-      "layer": "API Endpoint",
-      "category": "Design System Details",
-      "severity": "Medium",
-      "root_cause": "Missing system-specific attribute evidence endpoint (/design-systems/{id}/evidence).",
-      "impact": "Field-level verified attribute evidence (312 records) cannot be accessed directly within the system detail view.",
-      "resolution": "Add GET /design-systems/{id}/evidence endpoint returning verified attribute evidence.",
-      "status": "In Progress"
-    },
-    {
-      "id": "DEF-005",
-      "layer": "API Routes",
-      "category": "Invitations & Access Control",
-      "severity": "Critical",
-      "root_cause": "Invitation endpoints not mounted in API router despite service layer implementation in backend/app/services/invitations.py.",
-      "impact": "Admin cannot create, list, resend, or revoke invitations via API; invited recipients cannot validate tokens, send codes, or accept invitations.",
-      "resolution": "Implement and mount /admin/invitations and /invitations routes in backend/app/api/v1/routes/administration.py and auth.py.",
-      "status": "In Progress"
-    },
-    {
-      "id": "DEF-006",
-      "layer": "Frontend Navigation",
-      "category": "Storybook Explorer",
-      "severity": "High",
-      "root_cause": "Storybook showcase projects, stories, and variants are not included in Platform Shell navigation.",
-      "impact": "103 projects, 17,600 stories, and 12,150 variants are undiscoverable via the platform UI.",
-      "resolution": "Add Storybook navigation entry in Shell.tsx and create /platform/storybook explorer page with projects, stories, and variants tabs.",
-      "status": "In Progress"
-    },
-    {
-      "id": "DEF-007",
-      "layer": "Frontend UI",
-      "category": "System Detail Page",
-      "severity": "Medium",
-      "root_cause": "System detail page lacks Official Docs / Verification tab and Storybook project links.",
-      "impact": "Verified attributes and official documentation evidence are hidden from users inspecting a design system.",
-      "resolution": "Add Official Evidence tab and Storybook link to src/app/platform/systems/[id]/page.tsx.",
-      "status": "In Progress"
-    },
-    {
-      "id": "DEF-008",
-      "layer": "Frontend UI",
-      "category": "Component Detail Page",
-      "severity": "Medium",
-      "root_cause": "Component detail page lacks Storybook stories and variants tab.",
-      "impact": "Component props from CSF stories, args, and variant matrices are invisible in the component detail view.",
-      "resolution": "Add Storybook & Variants tab to src/app/platform/components/[id]/page.tsx.",
-      "status": "In Progress"
-    },
-    {
-      "id": "DEF-009",
-      "layer": "Frontend UI",
-      "category": "Admin Invitations",
-      "severity": "High",
-      "root_cause": "Admin users page uses direct password creation instead of invite-only lifecycle.",
-      "impact": "No invitation management interface for generating single-use, expiring invites, tracking delivery status, or revoking tokens.",
-      "resolution": "Add Invitations tab to src/app/platform/admin/page.tsx with invite creation, status tracking, resend, and revoke controls.",
-      "status": "In Progress"
-    },
-    {
-      "id": "DEF-010",
-      "layer": "Frontend Route",
-      "category": "Invitation Acceptance",
-      "severity": "Critical",
-      "root_cause": "Missing /platform/invite acceptance page.",
-      "impact": "Recipients who click an invitation delivery link encounter a 404 or unauthenticated redirect.",
-      "resolution": "Build src/app/platform/invite/page.tsx with URL fragment token extraction (#token=...), 6-digit code verification, and password registration.",
-      "status": "In Progress"
-    },
-    {
-      "id": "DEF-011",
-      "layer": "Frontend & Edge Security",
-      "category": "Private Access Gate",
-      "severity": "Critical",
-      "root_cause": "Missing Next.js middleware route guard; public (atlas) static pages accessible without authentication.",
-      "impact": "Platform is not strictly private; unauthenticated visitors can view editorial design system catalogs.",
-      "resolution": "Implement src/middleware.ts enforcing session validation, redirecting unauthenticated requests to /platform/login, and gating all research routes.",
-      "status": "In Progress"
-    }
+  "root_causes_fixed": [
+    "designsystems.one gallery-only entries had no URLs (detail pages never read) \u2192 separate name-only catalog entries; adapter now reads detail pages",
+    "official-docs crawl following a redirect produced a new site key \u2192 duplicate system; sources registered for a system now bind to it",
+    "name-only collisions were never raised for review; now queued and decided by the evidence resolver (never merged on name alone)",
+    "63 Storybook projects had no system link (set only when a public index existed); relinked through their showcase listing on every build",
+    "merged systems were hard-deleted with no mapping; old keys/ids now resolve through system_aliases",
+    "administrator edits were overwritten by the next rebuild; edits are now stored as curation and re-applied",
+    "links lived in four loose columns without type, provenance or verification; now typed system_resources with evidence"
   ]
 }

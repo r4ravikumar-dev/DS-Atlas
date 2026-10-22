@@ -1,0 +1,15 @@
+# Background worker image (Vercel daemon `worker`): claims crawl/build/review/storybook/verify/export jobs from PostgreSQL.
+# Same code and dependencies as the API image, but no HTTP server and therefore no HTTP HEALTHCHECK.
+# Vercel sends SIGTERM on rollout; the worker stops claiming jobs and finishes running ones (jobs are idempotent and resumable).
+FROM python:3.12-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
+WORKDIR /app
+RUN useradd --create-home --uid 10001 app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY alembic.ini ./
+COPY app ./app
+COPY scripts ./scripts
+RUN mkdir -p /app/storage && chown -R app:app /app
+USER app
+CMD ["python", "-m", "app.workers.main"]

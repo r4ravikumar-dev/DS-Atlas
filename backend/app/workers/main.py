@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+import signal
 import socket
 import threading
 import time
@@ -108,7 +109,29 @@ def run_storybook_job(job: Job) -> None:
         jobsvc.finish(db, job.id, "succeeded", result=summary, records_extracted=n)
 
 
-HANDLERS = {"crawl": run_crawl, "build": run_build_job, "export": run_export_job, "review": run_review_job, "storybook": run_storybook_job}
+def run_verify_resources_job(job: Job) -> None:
+    from ..services import resources
+    deps = (job.params or {}).get("after") or []
+    with SessionLocal() as db:
+        if deps and db.scalar(select(Job.id).where(Job.id.in_(deps), Job.status.in_(jobsvc.ACTIVE)).limit(1)):
+            j = db.get(Job, job.id)  # wait for the preceding build without consuming an attempt
+            j.status, j.locked_by, j.phase, j.attempts = "queued", None, "waiting_for_build", max(0, j.attempts - 1)
+            j.run_after = datetime.now(timezone.utc) + timedelta(seconds=10)
+            db.commit()
+            return
+    with SessionLocal() as db:
+        def progress(n: int, total: int, msg: str) -> None:
+            with SessionLocal() as pdb:
+                jobsvc.add_event(pdb, job.id, f"[{n}/{total}] {msg}", phase="verifying")
+                jobsvc.heartbeat(pdb, job.id, phase="verifying", urls_processed=n, urls_discovered=total)
+        summary = resources.verify(db, system_ids=(job.params or {}).get("system_ids"), system_keys=(job.params or {}).get("system_keys"), progress=progress)
+        summary["approved_domains_added"] = _persist_hosts(db, job.id, "official pages of design systems (resource verification)")
+        db.commit()
+        jobsvc.finish(db, job.id, "succeeded", result=summary, records_extracted=summary["systems_checked"])
+
+
+HANDLERS = {"crawl": run_crawl, "build": run_build_job, "export": run_export_job, "review": run_review_job, "storybook": run_storybook_job,
+            "verify_resources": run_verify_resources_job}
 
 
 def execute(job_id) -> None:
@@ -151,7 +174,14 @@ def main(argv=None) -> None:
     lock = threading.Lock()
     log.info(f"worker {worker_id} started (concurrency={s.worker_concurrency})")
     idle_since = time.time()
-    while True:
+    stopping = threading.Event()
+
+    def _on_sigterm(signum, frame):  # platform rollout/scale-down: stop claiming, let running jobs finish (they are idempotent and resumable)
+        log.warning("SIGTERM received: finishing running jobs, claiming no new ones")
+        stopping.set()
+
+    signal.signal(signal.SIGTERM, _on_sigterm)
+    while not stopping.is_set():
         with lock:
             free = s.worker_concurrency - len(running)
         claimed = False
