@@ -30,7 +30,7 @@
       "root": "backend/",
       "entrypoint": "Dockerfile.worker",
       "instances": {
-        "iad1": 1
+        "syd1": 1
       },
       "terminationGracePeriodSeconds": 300
     }

@@ -7,8 +7,8 @@
 
 Steps (each idempotent; run one with `… <step>`):
   check    connect, report server version and whether the database is empty — prints hosts only, never credentials
-  data     restore the dump into an EMPTY Supabase database (refuses if app tables already exist)
-  schema   `alembic upgrade head` (creates the schema when you skip `data`) + Data API lockdown
+  schema   `alembic upgrade head` on Supabase (creates the tables) + Data API lockdown
+  data     copy all rows from the local database over TLS into the empty tables (refuses if any already has rows)
   bucket   create the private Storage bucket (refuses a public bucket)
   objects  upload local raw snapshots/exports (STORAGE_DIR/objects) to the bucket; existing objects are skipped
   verify   row counts vs the local database, anon/authenticated privileges and RLS, bucket privacy
@@ -38,12 +38,24 @@ def need(*names: str) -> None:
 def normalize(url: str) -> str:
     """Accept the URI exactly as Supabase's Connect panel shows it (postgresql://…), adding the driver and TLS requirement."""
     url = url.strip()
+    pw = os.environ.get("SUPABASE_DB_PASSWORD")
+    if pw and "[YOUR-PASSWORD]" in url:  # keep the URI exactly as copied; the password is percent-encoded here
+        from urllib.parse import quote
+        url = url.replace("[YOUR-PASSWORD]", quote(pw, safe=""))
     if "<" in url or ">" in url or "[YOUR-PASSWORD]" in url:
         sys.exit("MIGRATION_DATABASE_URL still contains a placeholder (<…> or [YOUR-PASSWORD]). Paste the Session pooler URI from "
                  "Supabase → Connect and put your database password in it.")
     for prefix in ("postgres://", "postgresql://"):
         if url.startswith(prefix):
             url = "postgresql+psycopg://" + url[len(prefix):]
+    # A raw password containing '@', ':' or '/' breaks URL parsing: the host starts after the LAST '@' of the authority.
+    scheme, _, rest = url.partition("://")
+    authority, slash, tail = rest.partition("/")
+    if authority.count("@") > 1 or ("@" in authority and any(ch in authority.rsplit("@", 1)[0].partition(":")[2] for ch in "/?#")):
+        from urllib.parse import quote, unquote
+        creds, host = authority.rsplit("@", 1)
+        user, _, pw = creds.partition(":")
+        url = f"{scheme}://{user}:{quote(unquote(pw), safe='')}@{host}{slash}{tail}"
     if "sslmode=" not in url:
         url += ("&" if "?" in url else "?") + "sslmode=require"
     return url
@@ -94,21 +106,43 @@ def step_check() -> None:
     print(f"connected to {safe(url)} — PostgreSQL {ver}; Supabase roles present: {roles == 2}; app tables present: {app_tables(url)}/{len(TABLES)}")
 
 
-def step_data(dump: str | None) -> None:
+def step_data(dump: str | None = None) -> None:
+    """Copy every table from the local database into the (migrated, empty) Supabase schema over TLS.
+    Uses the Python driver's COPY streaming, so no SSL-enabled pg_restore is needed. One transaction: all or nothing."""
+    import psycopg
+    from app.core.config import get_settings
+    from app.database.session import Base
+    import app.models  # noqa: F401  (register tables)
     url = mig_url()
-    if not dump or not Path(dump).exists():
-        sys.exit("--dump <file> is required for `data` (e.g. ../backups/dsrp-…-for-supabase.dump).")
-    n = app_tables(url)
-    if n:
-        print(f"skip data: the database already has {n} app tables (restore only into an empty project).")
-        return
-    cmd = [tool("pg_restore"), "--no-owner", "--no-privileges", "--no-comments", "--exit-on-error", "--single-transaction", "-d", libpq(url), dump]
-    print(f"restoring {Path(dump).name} into {safe(url)} …")
-    r = subprocess.run(cmd, capture_output=True, text=True)
-    if r.returncode != 0:
-        # pg_restore errors name objects, not credentials; still, strip the connection string if it appears.
-        sys.exit("pg_restore failed:\n" + r.stderr.replace(libpq(url), "<MIGRATION_DATABASE_URL>")[-3000:])
-    print("restore complete")
+    if app_tables(url) < len(TABLES):
+        sys.exit("Run the `schema` step first (it creates the tables on Supabase).")
+    src_url = libpq(get_settings().database_url)
+    order = [t.name for t in Base.metadata.sorted_tables]  # parents before children (foreign keys)
+    with psycopg.connect(src_url) as src, psycopg.connect(libpq(url), prepare_threshold=None, connect_timeout=15) as dst:
+        busy = [t for t in order if dst.execute(f'SELECT EXISTS (SELECT 1 FROM public."{t}")').fetchone()[0]]
+        if busy:
+            print(f"skip data: Supabase tables already contain rows ({', '.join(busy[:5])}{'…' if len(busy) > 5 else ''}).")
+            return
+        total = 0
+        for t in order:
+            cols = [r[0] for r in src.execute(
+                "SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name=%s "
+                "AND is_generated='NEVER' ORDER BY ordinal_position", (t,))]
+            collist = ", ".join(f'"{c}"' for c in cols)
+            n = 0
+            with src.cursor().copy(f'COPY public."{t}" ({collist}) TO STDOUT (FORMAT BINARY)') as out, \
+                    dst.cursor().copy(f'COPY public."{t}" ({collist}) FROM STDIN (FORMAT BINARY)') as inp:
+                for chunk in out:
+                    inp.write(chunk)
+            n = dst.execute(f'SELECT count(*) FROM public."{t}"').fetchone()[0]
+            total += n
+            print(f"  {t:<28}{n:>8}")
+        # serial / identity sequences continue after the copied ids
+        for t, c in dst.execute("""SELECT table_name, column_name FROM information_schema.columns
+                                   WHERE table_schema='public' AND (column_default LIKE 'nextval(%%' OR is_identity='YES')""").fetchall():
+            dst.execute(f"""SELECT setval(pg_get_serial_sequence('public."{t}"', %s), COALESCE((SELECT max("{c}") FROM public."{t}"), 0) + 1, false)""", (c,))
+        dst.commit()
+    print(f"copied {total} rows into {safe(url)}")
 
 
 def step_schema() -> None:
@@ -135,19 +169,24 @@ def step_bucket() -> None:
 
 
 def step_objects() -> None:
+    from concurrent.futures import ThreadPoolExecutor
     st = _supabase_storage()
     root = Path(os.environ.get("STORAGE_DIR") or BACKEND / "storage") / "objects"
     files = sorted(p for p in root.rglob("*") if p.is_file())
-    up = skip = 0
-    for i, f in enumerate(files, 1):
+
+    def one(f: Path) -> bool:
         key = f.relative_to(root).as_posix()
         if st.exists(key):
-            skip += 1
-        else:
-            st.put(key, f.read_bytes())
-            up += 1
-        if i % 200 == 0 or i == len(files):
-            print(f"  {i}/{len(files)} (uploaded {up}, already present {skip})")
+            return False
+        st.put(key, f.read_bytes())
+        return True
+
+    up = skip = 0
+    with ThreadPoolExecutor(max_workers=8) as ex:  # resumable: objects already in the bucket are skipped
+        for i, uploaded in enumerate(ex.map(one, files), 1):
+            up, skip = up + uploaded, skip + (not uploaded)
+            if i % 200 == 0 or i == len(files):
+                print(f"  {i}/{len(files)} (uploaded {up}, already present {skip})", flush=True)
     print(f"objects: {up} uploaded, {skip} already present, from {root}")
 
 
@@ -179,7 +218,7 @@ def step_verify() -> None:
 
 def _friendly(e: Exception) -> str:
     msg = str(getattr(e, "orig", None) or e).splitlines()[0]
-    for k in ("MIGRATION_DATABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"):
+    for k in ("MIGRATION_DATABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_DB_PASSWORD"):
         v = os.environ.get(k)
         if v:
             msg = msg.replace(v, f"<{k}>")
@@ -189,9 +228,9 @@ def _friendly(e: Exception) -> str:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("step", choices=["check", "data", "schema", "bucket", "objects", "verify", "all"])
-    ap.add_argument("--dump", help="pg_dump -Fc file to restore (step `data`)")
+    ap.add_argument("--dump", help="(unused; kept for compatibility — `data` copies from the local database)")
     a = ap.parse_args()
-    steps = ["check", "data", "schema", "bucket", "objects", "verify"] if a.step == "all" else [a.step]
+    steps = ["check", "schema", "data", "bucket", "objects", "verify"] if a.step == "all" else [a.step]
     from sqlalchemy.exc import OperationalError
     for s in steps:
         print(f"── {s}")
