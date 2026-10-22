@@ -4,93 +4,20 @@ import uuid
 
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy import func, select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from ....core.exceptions import Conflict, NotFound
 from ....database.session import get_db
 from ....models import AuditEvent, DuplicateGroup, Job, User
 from ....repositories import paginate
-from ....schemas import (AuditEventOut, ConfigOut, ConfigUpdate, InvitationCreate, InvitationOut, Item, Page, ReviewItemOut, ReviewResolve, UserOut, UserUpdate)
-from ....services import invitations as invsvc, settings_service
+from ....schemas import (AuditEventOut, ConfigOut, ConfigUpdate, DuplicateDecision, Item, Page, ReviewItemOut, ReviewResolve)
+from ....services import settings_service
 from ....services.audit import audit
 from ...deps import PageParams, Principal, page_params, require
 from ..common import ERRORS, page_out
 
 router = APIRouter(tags=["administration"], responses=ERRORS)
-
-
-@router.get("/admin/invitations", response_model=Page[InvitationOut], dependencies=[Depends(require("admin:users"))])
-def list_invitations_route(status_: str | None = Query(None, alias="status", pattern="^(pending|accepted|revoked|expired|all)$"),
-                          pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
-    filt = None if status_ == "all" else status_
-    items, total = invsvc.list_invitations(db, filt, pp.page, pp.page_size)
-    return page_out(items, total, pp.page, pp.page_size)
-
-
-@router.post("/admin/invitations", response_model=Item[InvitationOut], status_code=status.HTTP_201_CREATED)
-def create_invitation(body: InvitationCreate, p: Principal = Depends(require("admin:users")), db: Session = Depends(get_db)):
-    inv = invsvc.create(db, email=body.email, role=body.role, invited_by=p.id, ttl_hours=body.ttl_hours)
-    db.commit()
-    return {"data": invsvc.to_out(inv)}
-
-
-@router.post("/admin/invitations/{inv_id}/resend", response_model=Item[InvitationOut])
-def resend_invitation(inv_id: uuid.UUID, p: Principal = Depends(require("admin:users")), db: Session = Depends(get_db)):
-    inv = invsvc.resend(db, inv_id, p.id)
-    db.commit()
-    return {"data": invsvc.to_out(inv)}
-
-
-@router.post("/admin/invitations/{inv_id}/revoke", response_model=Item[InvitationOut])
-def revoke_invitation(inv_id: uuid.UUID, p: Principal = Depends(require("admin:users")), db: Session = Depends(get_db)):
-    inv = invsvc.revoke(db, inv_id, p.id)
-    db.commit()
-    return {"data": invsvc.to_out(inv)}
-
-
-@router.get("/admin/users", response_model=Page[UserOut], dependencies=[Depends(require("admin:users"))])
-def users(pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
-    rows, total = paginate(db, select(User).order_by(User.created_at), pp.page, pp.page_size)
-    return page_out([r[0] for r in rows], total, pp.page, pp.page_size)
-
-
-@router.patch("/admin/users/{user_id}", response_model=Item[UserOut])
-def update_user(user_id: uuid.UUID, body: UserUpdate, p: Principal = Depends(require("admin:users")), db: Session = Depends(get_db)):
-    u = db.get(User, user_id)
-    if not u:
-        raise NotFound("User not found.")
-    ch = body.model_dump(exclude_none=True)
-    if u.id == p.id and (ch.get("role", "admin") != "admin" or ch.get("is_active") is False):
-        raise Conflict("You cannot demote or deactivate your own account.")
-    privilege_change = ("role" in ch and ch["role"] != u.role) or ch.get("is_active") is False
-    for k, v in ch.items():
-        setattr(u, k, v)
-    if privilege_change:
-        u.session_version += 1  # existing sessions must re-authenticate under the new role / are cut off
-    audit(db, p.id, "user.update", "user", u.id, changes=ch, sessions_revoked=privilege_change)
-    db.commit()
-    return {"data": u}
-
-
-@router.post("/admin/users/{user_id}/revoke-sessions", response_model=Item[UserOut], summary="Sign a user out of every session")
-def revoke_sessions(user_id: uuid.UUID, p: Principal = Depends(require("admin:users")), db: Session = Depends(get_db)):
-    u = db.get(User, user_id)
-    if not u:
-        raise NotFound("User not found.")
-    u.session_version += 1
-    audit(db, p.id, "user.revoke_sessions", "user", u.id)
-    db.commit()
-    return {"data": u}
-
-
-@router.post("/admin/users/{user_id}/password-reset", response_model=Item[InvitationOut], summary="Email the user a single-use password-reset link")
-def password_reset(user_id: uuid.UUID, p: Principal = Depends(require("admin:users")), db: Session = Depends(get_db)):
-    u = db.get(User, user_id)
-    if not u or not u.is_active:
-        raise NotFound("Active user not found.")
-    inv = invsvc.create(db, email=u.email, role=u.role, invited_by=p.id, ttl_hours=2, kind="reset")
-    db.commit()
-    return {"data": invsvc.to_out(inv)}
 
 
 @router.get("/admin/audit-events", response_model=Page[AuditEventOut], dependencies=[Depends(require("admin:audit"))])
@@ -161,6 +88,42 @@ def decisions(item_id: int, db: Session = Depends(get_db)):
     rows = db.scalars(select(ReviewDecision).where(ReviewDecision.review_key == g.key).order_by(ReviewDecision.id.desc()).limit(20)).all()
     return {"data": [{"id": r.id, "decision": r.decision, "confidence": r.confidence, "method": r.method, "rationale": r.rationale, "evidence": r.evidence,
                       "canonical_key": r.canonical_key, "related_keys": r.related_keys, "decided_by": r.decided_by, "created_at": r.created_at} for r in rows]}
+
+
+@router.post("/review-queue/{item_id}/decide", response_model=Item[ReviewItemOut], summary="Merge or separate possible duplicates (then rebuild)")
+def decide(item_id: int, body: DuplicateDecision, p: Principal = Depends(require("review:resolve")), db: Session = Depends(get_db)):
+    from ....models import DesignSystem, IdentityLink, ReviewDecision
+    from ....services import jobs as jobsvc
+    g = db.get(DuplicateGroup, item_id)
+    if not g or g.kind != "possible_duplicate_system":
+        raise NotFound("Possible-duplicate review item not found.")
+    keys = [e["system_id"] for e in (g.details or {}).get("entities", [])]
+    existing = set(db.scalars(select(DesignSystem.key).where(DesignSystem.key.in_(keys))))
+    if len(existing) < 2:
+        raise Conflict("Fewer than two of these systems still exist; rebuild and re-check the queue.")
+    ev = [{"type": "admin_decision", "user_id": str(p.id), "note": body.note}]
+    if body.decision == "merge":
+        if body.canonical_key not in existing:
+            raise Conflict("canonical_key must be one of the systems in this item.")
+        for k in existing - {body.canonical_key}:
+            db.execute(insert(IdentityLink).values(from_key=k, to_key=body.canonical_key, relation="same_as", evidence=ev)
+                       .on_conflict_do_nothing(constraint="uq_identity_link"))
+    else:
+        ks = sorted(existing)
+        for i, a in enumerate(ks):
+            for b in ks[i + 1:]:
+                db.execute(insert(IdentityLink).values(from_key=a, to_key=b, relation="distinct_from", evidence=ev)
+                           .on_conflict_do_nothing(constraint="uq_identity_link"))
+    d = ReviewDecision(review_key=g.key, item_kind=g.kind, decision="duplicate_confirmed" if body.decision == "merge" else "distinct_system_confirmed",
+                       canonical_key=body.canonical_key, related_keys=sorted(existing), confidence="high", method="administrator review",
+                       rationale=body.note, evidence=ev, original_item=g.details, decided_by=str(p.id))
+    db.add(d)
+    db.flush()
+    g.review_status, g.resolution, g.decision_id, g.resolution_note, g.resolved_by = "resolved", d.decision, d.id, body.note, p.id
+    job = jobsvc.enqueue(db, "build", created_by=p.id, priority=150, params={"reason": f"review decision {d.id}"})
+    audit(db, p.id, "review.decide", "duplicate_group", g.id, decision=body.decision, canonical_key=body.canonical_key, systems=sorted(existing), build=str(job.id))
+    db.commit()
+    return {"data": g}
 
 
 @router.patch("/review-queue/{item_id}", response_model=Item[ReviewItemOut])

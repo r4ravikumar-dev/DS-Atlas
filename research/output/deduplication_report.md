@@ -1,48 +1,42 @@
-# Design Systems Review Queue & Deduplication Audit Report
+# Deduplication report
 
-**Generated:** 2026-10-21T11:06:17.263318+00:00  
-**Platform:** Design Systems Research Platform (DSRP)  
-**Status:** All 126 review queue items processed and resolved with verifiable evidence.
+Generated 2026-10-22T07:13:14+00:00 from the live database (`scripts/export_kb_reports.py`).
 
-## Executive Summary
+| | Before | After |
+|---|---:|---:|
+| Canonical design systems | 477 | 430 |
+| Same-name groups | 35 | 10 |
+| Rows in same-name groups | 76 | 22 |
+| Systems with neither docs nor repository URL | 102 | 28 |
 
-| Metric | Count | Description |
-|---|---|---|
-| **Initial Queue Size** | **126** | Total items in duplicate_groups / review_queue |
-| **Processed Count** | **126** | 100% of items evaluated with evidence |
-| **Duplicate Confirmed** | **82** | Entities confirmed as identical and merged to canonical keys |
-| **Resolved Existing System** | **32** | Discrepant directory URLs verified against official domains |
-| **Resources Linked** | **10** | Framework/component packages linked to parent design systems |
-| **Distinct Systems Confirmed** | **2** | Independent systems from same org preserved as separate |
-| **Remaining Open / Blocked** | **0** | Zero unhandled or pending items |
-| **Post-Resolution Systems** | **476** | Canonical unified design systems |
+Net reduction: **47** systems. Recorded alias rows (old key/ID → canonical): **7** (identity_decision: 7).
 
-## Deduplication Breakdown by Kind
+## How duplicates were found and decided
 
-| Item Kind | Total Items | Resolved Items | Primary Decision Pattern |
-|---|---|---|---|
-| `system_field_conflict` | 85 | 85 (100%) | Official URL resolution, organization normalization |
-| `possible_duplicate_system` | 40 | 40 (100%) | Cross-linking, repository matching, domain migration |
-| `same_source_component_duplicate` | 1 | 1 (100%) | Component record verification and distinct documentation |
+1. **URL identity (engine).** Records sharing a documentation site key or repository merge automatically. The designsystems.one adapter now reads each entry's detail page, so its 76 name-only entries carry the system's website/repository and merge on that evidence.
+2. **Bound sources.** A source registered for a system (official docs crawl, admin intake) always resolves to that system, even if the docs redirect to a new host (this removed the separate `shopify.dev` Polaris entry).
+3. **Name collisions → evidence resolver.** Same-name entities are queued as review items and decided with redirect, cross-link, shared repository/Storybook and organization evidence. Same name + different publishing organizations + no shared location ⇒ distinct. A name match alone never merges.
 
-## Key Deduplication Decisions & Evidence
+Identity links now: distinct_from 8, implementation_of 10, related_to 11, same_as 42. Latest decision per review item: distinct_system_confirmed 11, duplicate_confirmed 92, linked_resource 10, manual_review_required 5, resolved_existing_system 34. Decisions that rest on a written rationale rather than fetched HTTP evidence: 13.
 
-### 1. High-Profile System Duplicate Merges
-* **GitHub Primer:** `dsys:styleguide-github-comprimer` merged into canonical `dsys:primer-style` after HTTP check confirmed permanent redirect to `https://primer.style/`.
-* **Vercel / Geist:** `dsys:vercel-co` merged into `dsys:vercel-com` after HTTP redirect verification to `https://vercel.com/`.
-* **Braid Design System (SEEK):** Directory conflicts resolved; repository verified at `github.com/seek-oss/braid-design-system`.
-* **Wonderbly Design System:** `dsys:design-system-lostmy-name` merged into `dsys:design-system-wonderbly-com` confirming the 2017 corporate rebrand from Lost My Name to Wonderbly.
-* **Liferay Lexicon:** `dsys:lexicondesign-io` merged into `dsys:liferay-design` following domain migration to `https://liferay.design/lexicon/`.
-* **SAP Fiori:** `dsys:sap-com` merged into `dsys:experience-sap-com` with `fundamental-styles` linked as implementation library.
-* **Brainly Pencil:** `dsys:styleguide-brainly-com` and `dsys:design-brainly-com` unified under Pencil.
-* **Finastra:** FusionFabric platform and Finastra Design System unified to single canonical system.
-* **Pinterest Gestalt:** Unlinked directory stub in S01 merged into canonical `dsys:pinterest-github-iogestalt`.
+## Merged records (alias table)
 
-### 2. Linked Package & Implementation Relationships
-* **GitLab Pajamas & GitLab UI:** `dsys:gitlab-gitlab-ui` linked as `implementation_of` `dsys:design-gitlab-com` based on shared Storybook (`gitlab-org.gitlab.io/gitlab-ui/`).
-* **Audi UI & UI React:** `dsys:audi-ui-react` linked as `implementation_of` `dsys:audi-com` with Storybook `react.ui.audi`.
-* **Lonely Planet Rizzo & Backpack UI:** `dsys:lonely-planet-backpack-ui` linked as `implementation_of` `dsys:rizzo-lonelyplanet-com`.
-* **Airbnb DLS & React-Dates:** Linked as related open-source component package.
+| Old key | Old ID | Name | Canonical key | Reason |
+|---|---:|---|---|---|
+| `dsys:cisco-momentum-design` | 336 | Momentum Design | `dsys:momentum-design` | identity_decision |
+| `dsys:design-liferay-com` | 4268 | Lexicon | `dsys:lexicondesign-io` | identity_decision |
+| `dsys:eu-europa-component-library` | 246 | Europa Component Library | `dsys:eu-european-commission-europa-component-library` | identity_decision |
+| `dsys:priceline-github-io` | 387 | Priceline One Design System | `dsys:priceline-github-iodesign-system` | identity_decision |
+| `dsys:reshaped-reshaped` | 409 | Reshaped | `dsys:reshaped-so` | identity_decision |
+| `dsys:shopify-dev` | 3868 | Polaris | `dsys:polaris-shopify-com` | identity_decision |
+| `dsys:wix-wix-style-react` | 499 | Wix Style React | `dsys:wix-style-react-com` | identity_decision |
 
-### 3. Confirmed Distinct Systems Preserved
-* **Microsoft Fluent UI vs FAST:** `dsys:developer-microsoft-com` (Fluent 2) and `dsys:fast-design` (FAST Design Web Components) confirmed as distinct independent design systems published by Microsoft.
+## Still open (needs an administrator decision)
+
+- **Australian Government Design System, Australian Government Design System** (possible_duplicate_system): Australian Government Design System ↔ Australian Government Design System: manual_review_required (Same name but no redirect or cross-reference evidence; may be moved documentation or a fork.)
+- **Base Web, base, Base UI** (possible_duplicate_system): Base Web ↔ base: distinct_system_confirmed (Different publishing organizations (Uber vs Mapbox), different locations, no redirect or cross-reference.); Base Web ↔ Base UI: manual_review_required (Same name but no redirect or cross-reference evidence; may be moved documentation or a fork.); base ↔ Base UI: source_unavailable (At least one entity's resources could not be fetched; identity cannot be evaluated.)
+- **BLiP, Blip Design System** (possible_duplicate_system): BLiP ↔ Blip Design System: manual_review_required (Same name but no redirect or cross-reference evidence; may be moved documentation or a fork.)
+- **Foundation, foundation design system** (possible_duplicate_system): Foundation ↔ foundation design system: manual_review_required (Same name but no redirect or cross-reference evidence; may be moved documentation or a fork.)
+- **React95, React95** (possible_duplicate_system): React95 ↔ React95: manual_review_required (Same name but no redirect or cross-reference evidence; may be moved documentation or a fork.)
+
+Remaining same-name groups (distinct systems sharing a name, or awaiting review): australiangovernment, blip, canvas, components, foundation, orbit, react95, solar, styleguide, ui.

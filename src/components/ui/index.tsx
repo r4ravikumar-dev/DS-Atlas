@@ -55,11 +55,12 @@ export function prettyUrl(u: string) {
 }
 
 /* ───────────── Status & badges ───────────── */
-const VERIFY_LABEL: Record<string, string> = { verified: 'Verified', partially_verified: 'Partially verified', unverified: 'Unverified' }
+const VERIFY_LABEL: Record<string, string> = { verified: 'Verified', partially_verified: 'Partially verified', unverified: 'Unverified', invalid: 'Invalid' }
 const VERIFY_HINT: Record<string, string> = {
-  verified: 'Read from the official source.',
-  partially_verified: 'Corroborated by ≥2 independent sources, official docs not inspected.',
-  unverified: 'Single third-party claim.',
+  verified: 'Confirmed against the official source.',
+  partially_verified: 'Some required attributes are confirmed against official sources; others are not yet.',
+  unverified: 'Only third-party directory listings; not confirmed against the official source.',
+  invalid: 'Checked and unreachable (404/410/5xx), or flagged by the administrator.',
 }
 export function VerifyBadge({ status }: { status: VerificationStatus | string }) {
   return (

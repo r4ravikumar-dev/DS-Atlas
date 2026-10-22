@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ExternalLink, Layers, Play, Search } from 'lucide-react'
-import { can, useMe } from '@/features/auth/api'
+import { isAdmin, useMe } from '@/features/auth/api'
 import { useCrawlStorybook, useStorybookProjects, useStorybookStories, useStorybookVariants } from '@/features/storybook/api'
 import {
   Button,
@@ -93,7 +93,7 @@ function ProjectsView() {
       <Panel
         title="Showcase projects"
         actions={
-          can(me, 'researcher') && (
+          isAdmin(me) && (
             <Button
               icon={<Play size={14} />}
               loading={crawl.isPending}

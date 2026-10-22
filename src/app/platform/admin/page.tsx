@@ -2,25 +2,23 @@
 
 import { useEffect, useState } from 'react'
 import { ApiError } from '@/lib/api/client'
-import { can, useMe } from '@/features/auth/api'
-import { useAudit, useConfig, useJobHealth, useUpdateConfig, useUpdateUser, useUserAction, useUsers } from '@/features/administration/api'
-import { useCreateInvitation, useInvitations, useResendInvitation, useRevokeInvitation } from '@/features/invitations/api'
+import { isAdmin, useChangePassword, useMe } from '@/features/auth/api'
+import { useAudit, useConfig, useJobHealth, useUpdateConfig } from '@/features/administration/api'
 import { Button, ErrorState, Field, fmtDate, KV, PageHeader, Pagination, Panel, Select, Skeleton, Tabs, Tag } from '@/components/ui'
 import { DataTable } from '@/components/ui/DataTable'
 import s from '@/components/platform/page.module.scss'
 
-type Tab = 'users' | 'invitations' | 'config' | 'audit' | 'health'
+type Tab = 'config' | 'account' | 'audit' | 'health'
 
 export default function AdminPage() {
   const { data: me } = useMe()
-  const [tab, setTab] = useState<Tab>('users')
-  if (!can(me, 'admin')) return <ErrorState error={new ApiError(403, { code: 'FORBIDDEN', message: 'Administrator role required.', details: [] }, '')} />
+  const [tab, setTab] = useState<Tab>('config')
+  if (!isAdmin(me)) return <ErrorState error={new ApiError(403, { code: 'FORBIDDEN', message: 'Administrator role required.', details: [] }, '')} />
   return (
     <>
-      <PageHeader title="Administration" description="Users and roles, invitations, crawl configuration, approved domains, retention and export policy, audit trail and job health. Secrets are never shown here." />
-      <div style={{ marginBottom: 14 }}><Tabs<Tab> value={tab} onChange={setTab} tabs={[{ value: 'users', label: 'Users & roles' }, { value: 'invitations', label: 'Invitations' }, { value: 'config', label: 'Configuration' }, { value: 'audit', label: 'Audit trail' }, { value: 'health', label: 'Job health' }]} /></div>
-      {tab === 'users' && <Users myId={me!.id} onGoToInvites={() => setTab('invitations')} />}
-      {tab === 'invitations' && <Invitations />}
+      <PageHeader title="Administration" description="Crawl configuration, approved domains, retention and export policy, the administrator account, audit trail and job health. Secrets are never shown here." />
+      <div style={{ marginBottom: 14 }}><Tabs<Tab> value={tab} onChange={setTab} tabs={[{ value: 'config', label: 'Configuration' }, { value: 'account', label: 'Account' }, { value: 'audit', label: 'Audit trail' }, { value: 'health', label: 'Job health' }]} /></div>
+      {tab === 'account' && <Account email={me!.email} />}
       {tab === 'config' && <Config />}
       {tab === 'audit' && <Audit />}
       {tab === 'health' && <Health />}
@@ -28,130 +26,31 @@ export default function AdminPage() {
   )
 }
 
-function Users({ myId, onGoToInvites }: { myId: string; onGoToInvites: () => void }) {
-  const users = useUsers()
-  const update = useUpdateUser()
-  const action = useUserAction()
+function Account({ email }: { email: string }) {
+  const change = useChangePassword()
+  const [cur, setCur] = useState('')
+  const [next, setNext] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const mismatch = confirm.length > 0 && next !== confirm
   return (
     <div className={s.grid21}>
-      <Panel title="Users">
-        {users.error ? <ErrorState error={users.error} /> : (
-          <DataTable caption="Users" loading={users.isLoading} rows={users.data?.data} rowKey={(u) => u.id}
-            columns={[
-              { key: 'e', header: 'User', cell: (u) => <span className={s.cell}><strong>{u.name || u.email}</strong><small>{u.email}</small></span> },
-              { key: 'r', header: 'Role', cell: (u) => u.id === myId ? <Tag tone="accent">{u.role} (you)</Tag> : (
-                <Select label={`Role for ${u.email}`} value={u.role} onChange={(role) => update.mutate({ id: u.id, body: { role: role as never } })} options={['viewer', 'researcher', 'admin'].map((x) => ({ value: x, label: x }))} />) },
-              { key: 'a', header: 'Active', cell: (u) => u.id === myId ? 'yes' : <Button size="sm" variant="ghost" onClick={() => update.mutate({ id: u.id, body: { is_active: !u.is_active } })}>{u.is_active ? 'Deactivate' : 'Activate'}</Button> },
-              { key: 'l', header: 'Last sign-in', cell: (u) => fmtDate(u.last_login_at), hideBelow: 'md' },
-              { key: 's', header: 'Sessions', cell: (u) => u.id === myId ? '—' : (
-                <span style={{ display: 'flex', gap: 6 }}>
-                  <Button size="sm" variant="ghost" onClick={() => action.mutate({ id: u.id, action: 'revoke-sessions' })}>Sign out everywhere</Button>
-                  {u.is_active && <Button size="sm" variant="ghost" onClick={() => action.mutate({ id: u.id, action: 'password-reset' })}>Send reset link</Button>}
-                </span>) },
-            ]} />
-        )}
-        {update.error && <div className={s.pad}><ErrorState error={update.error} /></div>}
-        {action.error && <div className={s.pad}><ErrorState error={action.error} /></div>}
-        {action.isSuccess && <p className={s.pad} role="status">Done. Role changes and deactivation also sign the user out of every session.</p>}
-      </Panel>
-      <Panel title="Add user">
-        <div className={s.pad} style={{ display: 'grid', gap: 12 }}>
-          <p className={s.muted} style={{ fontSize: '0.84rem' }}>
-            To enforce single-use identity verification and eliminate unencrypted passwords, all new users must be registered via invitations.
-          </p>
-          <Button variant="primary" onClick={onGoToInvites}>Go to Invitations</Button>
-        </div>
-      </Panel>
-    </div>
-  )
-}
-
-function Invitations() {
-  const [page, setPage] = useState(1)
-  const [statusFilter, setStatusFilter] = useState<string>('')
-  const invQuery = useInvitations({ page, page_size: 20, ...(statusFilter ? { status: statusFilter } : {}) })
-  const createInv = useCreateInvitation()
-  const resendInv = useResendInvitation()
-  const revokeInv = useRevokeInvitation()
-  const [f, setF] = useState({ email: '', role: 'viewer' as 'viewer' | 'researcher' | 'admin', expires_in_days: 7 })
-  const [successMsg, setSuccessMsg] = useState<string | null>(null)
-
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault()
-    setSuccessMsg(null)
-    createInv.mutate(
-      {
-        email: f.email,
-        role: f.role,
-        ttl_hours: f.expires_in_days * 24,
-      },
-      {
-        onSuccess: (res) => {
-          setF({ email: '', role: 'viewer', expires_in_days: 7 })
-          setSuccessMsg(`Invitation dispatched to ${res.data.email} (${res.data.delivery_status}).`)
-        },
-      }
-    )
-  }
-
-  const err = createInv.error instanceof ApiError ? createInv.error : null
-
-  return (
-    <div className={s.grid21}>
-      <Panel title="Invitations" actions={
-        <Select label="Filter status" value={statusFilter} onChange={setStatusFilter} options={[
-          { value: '', label: 'All statuses' },
-          { value: 'pending', label: 'Pending' },
-          { value: 'accepted', label: 'Accepted' },
-          { value: 'revoked', label: 'Revoked' },
-          { value: 'expired', label: 'Expired' },
-        ]} />
-      }>
-        {invQuery.error ? <ErrorState error={invQuery.error} /> : (
-          <DataTable caption="Invitations" loading={invQuery.isLoading} rows={invQuery.data?.data} rowKey={(i) => i.id}
-            columns={[
-              { key: 'e', header: 'Recipient', cell: (i) => <span className={s.cell}><strong>{i.email}</strong><small>{i.role}</small></span> },
-              { key: 'st', header: 'Status', cell: (i) => (
-                <Tag tone={i.status === 'pending' ? 'accent' : 'muted'}>{i.status}</Tag>
-              ) },
-              { key: 'del', header: 'Delivery', cell: (i) => <Tag tone="muted">{i.delivery_status}</Tag>, hideBelow: 'md' },
-              { key: 'exp', header: 'Expires', cell: (i) => fmtDate(i.expires_at), hideBelow: 'md' },
-              { key: 'act', header: 'Actions', cell: (i) => i.status === 'pending' ? (
-                <div className={s.row} style={{ gap: 4 }}>
-                  <Button size="sm" variant="ghost" loading={resendInv.isPending} onClick={() => resendInv.mutate(i.id)}>Resend</Button>
-                  <Button size="sm" variant="ghost" loading={revokeInv.isPending} onClick={() => revokeInv.mutate(i.id)}>Revoke</Button>
-                </div>
-              ) : '—' },
-            ]} />
-        )}
-        {invQuery.data && <Pagination page={page} pageSize={20} total={invQuery.data.meta.total_items} totalPages={invQuery.data.meta.total_pages} onPage={setPage} />}
-      </Panel>
-      <Panel title="Issue invitation">
-        <form className={s.pad} style={{ display: 'grid', gap: 12 }} onSubmit={handleCreate}>
-          <p className={s.muted} style={{ fontSize: '0.84rem' }}>
-            All platform users must be invited. Invitations are single-use, identity-bound, and require two-step email verification code confirmation.
-          </p>
-          {successMsg && (
-            <div style={{ background: 'var(--panel-active)', border: '1px solid var(--accent)', borderRadius: 6, padding: 10, fontSize: '0.84rem' }}>
-              <strong style={{ color: 'var(--accent)' }}>Success:</strong> {successMsg}
-            </div>
-          )}
-          <Field label="Recipient Email" error={err?.details?.find((d) => d.field === 'email')?.reason}>
-            <input type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} placeholder="user@organization.org" required />
-          </Field>
-          <Field label="Role">
-            <select value={f.role} onChange={(e) => setF({ ...f, role: e.target.value as never })}>
-              <option value="viewer">viewer — read & search</option>
-              <option value="researcher">researcher — crawl, compare, export</option>
-              <option value="admin">admin — everything</option>
-            </select>
-          </Field>
-          <Field label="Validity (days)">
-            <input type="number" min={1} max={30} value={f.expires_in_days} onChange={(e) => setF({ ...f, expires_in_days: Number(e.target.value) })} />
-          </Field>
-          {err && <p role="alert" style={{ color: 'var(--coral)', fontSize: '0.84rem' }}>{err.message}</p>}
-          <Button type="submit" variant="primary" loading={createInv.isPending}>Send invitation</Button>
+      <Panel title="Administrator account">
+        <form className={s.pad} style={{ display: 'grid', gap: 12, maxWidth: 420 }}
+          onSubmit={(e) => (e.preventDefault(), change.mutate({ current_password: cur, new_password: next }, { onSuccess: () => (setCur(''), setNext(''), setConfirm('')) }))}>
+          <KV items={[['Signed in as', email]]} />
+          <Field label="Current password"><input type="password" autoComplete="current-password" value={cur} onChange={(e) => setCur(e.target.value)} required /></Field>
+          <Field label="New password" hint="At least 12 characters"><input type="password" autoComplete="new-password" minLength={12} value={next} onChange={(e) => setNext(e.target.value)} required /></Field>
+          <Field label="Confirm new password" hint={mismatch ? 'Passwords do not match' : undefined}><input type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required /></Field>
+          {change.error && <ErrorState error={change.error} />}
+          {change.isSuccess && <p role="status">Password changed. Every other session has been signed out.</p>}
+          <Button type="submit" variant="primary" loading={change.isPending} disabled={mismatch || next.length < 12}>Change password</Button>
         </form>
+      </Panel>
+      <Panel title="Access model">
+        <div className={s.pad} style={{ display: 'grid', gap: 8, fontSize: '0.86rem' }}>
+          <p>This workspace has a single administrator account. There is no public registration and no other roles.</p>
+          <p className={s.muted}>The first administrator is created once from the server shell (<code>manage.py bootstrap-admin</code>), which refuses to run when an administrator already exists. A forgotten password is reset from the server shell with <code>manage.py reset-admin-password</code>.</p>
+        </div>
       </Panel>
     </div>
   )

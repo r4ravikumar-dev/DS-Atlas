@@ -31,6 +31,10 @@ def norm_name(name: str | None, org: str | None = None) -> str:
     return " ".join(w for w in words if w not in GENERIC and w not in orgw)
 
 
+def norm_org(org: str | None) -> str:
+    return " ".join(w for w in re.findall(r"[a-z0-9]+", (org or "").lower()) if w not in {"inc", "llc", "ltd", "the", "co", "com", "net", "io"})
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
@@ -156,8 +160,9 @@ def _pair(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str, str, list]:
     if cross:
         ev.append({"type": "cross_link", "links": cross[:6]})
     na, nb = norm_name(a["name"], a["organization"]), norm_name(b["name"], b["organization"])
-    generic = not na or not nb
-    name_equal = (na == nb) and not generic
+    ra, rb = norm_name(a["name"]), norm_name(b["name"])  # without stripping organization words (product named after its company)
+    generic = (not na or not nb) and not (ra and ra == rb)
+    name_equal = ((na == nb) and bool(na)) or (bool(ra) and ra == rb)
     ev.append({"type": "names", "a": a["name"], "b": b["name"], "normalized": [na, nb]})
     reach_a = any(p.get("ok") for p in a["pages"].values())
     reach_b = any(p.get("ok") for p in b["pages"].values())
@@ -227,6 +232,10 @@ def _pair(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str, str, list]:
         ),
     }
 
+    oa, ob = norm_org(a.get("organization")), norm_org(b.get("organization"))
+    org_same = bool(oa) and oa == ob
+    org_conflict = bool(oa) and bool(ob) and oa != ob and oa not in ob and ob not in oa
+
     pair_key = frozenset({a["key"], b["key"]})
     if pair_key in curated_map:
         dec, conf, why = curated_map[pair_key]
@@ -249,11 +258,18 @@ def _pair(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str, str, list]:
             return "duplicate_confirmed", "high", f"Both entries share the same Storybook showcase URL ({sb_a}).", ev
         return "linked_resource", "high", f"Different package names sharing the same Storybook deployment ({sb_a}).", ev
 
-    # Cross-reference between documentation and storybook
-    if (a["urls"].get("storybook") and b["urls"].get("storybook") and a["urls"]["storybook"] == b["urls"]["storybook"]) or \
-       (a["urls"].get("docs") and b["urls"].get("storybook") and host_path(a["urls"]["docs"], 1) == host_path(b["urls"]["storybook"], 1)):
-        ev.append({"type": "storybook_reference", "url": b["urls"].get("storybook")})
-        return "linked_resource", "high", "Component library Storybook directly cross-referenced by the system's official resources.", ev
+    # Cross-reference between documentation and storybook (either direction)
+    for x, y in ((a, b), (b, a)):
+        if x["urls"].get("docs") and y["urls"].get("storybook") and host_path(x["urls"]["docs"], 1) == host_path(y["urls"]["storybook"], 1):
+            ev.append({"type": "storybook_reference", "docs": x["urls"]["docs"], "storybook": y["urls"]["storybook"]})
+            if name_equal and not org_conflict:
+                return "duplicate_confirmed", "high", "Same name, and one entry's Storybook is served from the other's documentation location.", ev
+            return "linked_resource", "high", "Component library Storybook directly cross-referenced by the system's official resources.", ev
+
+    # Same name published by different organizations, with no shared location or cross-reference: separate systems
+    if org_conflict and not same_target and not cross:
+        return ("distinct_system_confirmed", "medium",
+                f"Different publishing organizations ({a['organization']} vs {b['organization']}), different locations, no redirect or cross-reference.", ev)
 
     # Directory stub resolution (entry with no direct URLs matches a canonical entity from the same org)
     has_urls_a = any(a["urls"].values())
@@ -262,7 +278,8 @@ def _pair(a: dict[str, Any], b: dict[str, Any]) -> tuple[str, str, str, list]:
         stub, canonical = (a, b) if not has_urls_a else (b, a)
         n_stub = norm_name(stub["name"], stub["organization"])
         n_canon = norm_name(canonical["name"], canonical["organization"])
-        if (n_stub == n_canon and not generic) or (not n_stub or n_stub in GENERIC):
+        # a generic-named stub only resolves within the same organization; a named stub must not belong to another organization
+        if (n_stub == n_canon and not generic and not org_conflict) or (org_same and (not n_stub or n_stub in GENERIC)):
             ev.append({"type": "directory_stub_match", "stub": stub["key"], "canonical": canonical["key"]})
             return "duplicate_confirmed", "medium", f"Directory entry '{stub['name']}' from '{stub['organization']}' matches canonical system '{canonical['name']}'.", ev
 

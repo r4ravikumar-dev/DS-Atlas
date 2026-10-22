@@ -3,16 +3,23 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { BarChart3, BookOpen, Boxes, ClipboardCheck, Columns3, Database, FileText, Gauge, Layers, LogOut, Menu, Moon, Palette, Search, Settings, Sun, Workflow, X } from 'lucide-react'
+import { BarChart3, BookOpen, Boxes, ClipboardCheck, Columns3, Database, FileText, Gauge, Layers, LogOut, Menu, Moon, Palette, PlusCircle, Search, Settings, ShieldCheck, Sun, Workflow, X } from 'lucide-react'
 import { ApiError } from '@/lib/api/client'
-import { can, useLogout, useMe } from '@/features/auth/api'
+import { isAdmin, useLogout, useMe } from '@/features/auth/api'
 import { useApp } from '../Providers'
 import { Skeleton } from '../ui'
 import s from './Shell.module.scss'
 
 const NAV = [
   { group: 'Overview', items: [{ href: '/platform', label: 'Dashboard', icon: Gauge, exact: true }] },
-  { group: 'Collection', items: [{ href: '/platform/sources', label: 'Sources', icon: Database }, { href: '/platform/jobs', label: 'Crawl jobs', icon: Workflow }] },
+  {
+    group: 'Collection',
+    items: [
+      { href: '/platform/add', label: 'Add source', icon: PlusCircle },
+      { href: '/platform/sources', label: 'Sources', icon: Database },
+      { href: '/platform/jobs', label: 'Crawl jobs', icon: Workflow },
+    ],
+  },
   {
     group: 'Knowledge',
     items: [
@@ -28,6 +35,7 @@ const NAV = [
     items: [
       { href: '/platform/compare', label: 'Compare', icon: Columns3 },
       { href: '/platform/reports', label: 'Reports & exports', icon: FileText },
+      { href: '/platform/quality', label: 'Data quality', icon: ShieldCheck },
       { href: '/platform/review', label: 'Review queue', icon: BarChart3 },
     ],
   },
@@ -36,7 +44,7 @@ const NAV = [
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const isPublicAuth = pathname === '/platform/login' || pathname.startsWith('/platform/invite')
+  const isPublicAuth = pathname === '/platform/login'
   const me = useMe()
   const logout = useLogout()
   const { theme, toggleTheme } = useApp()
@@ -55,7 +63,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className={s.shell}>
       <aside className={s.side} data-open={navOpen || undefined} aria-label="Platform navigation">
-        <Link href="/" className={s.brand}>
+        <Link href="/platform" className={s.brand}>
           <span className={s.mark} aria-hidden>
             <i />
             <i />
@@ -79,19 +87,16 @@ export function Shell({ children }: { children: React.ReactNode }) {
               })}
             </div>
           ))}
-          {can(user, 'admin') && (
+          {isAdmin(user) && (
             <div className={s.group}>
               <p>Administration</p>
               <Link href="/platform/admin" aria-current={pathname.startsWith('/platform/admin') ? 'page' : undefined}>
                 <Settings size={16} aria-hidden />
-                Settings & users
+                Settings & account
               </Link>
             </div>
           )}
         </nav>
-        <Link href="/" className={s.back}>
-          ← Editorial Atlas
-        </Link>
       </aside>
       {navOpen && <div className={s.scrim} onClick={() => setNavOpen(false)} />}
 
@@ -122,7 +127,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <>
                 <span>
                   {user.name || user.email}
-                  <small>{user.role}</small>
+                  <small>administrator</small>
                 </span>
                 <button
                   className={s.icon}

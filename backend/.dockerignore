@@ -1,0 +1,10 @@
+# Keep image build contexts small and secret-free.
+.env
+.env.*
+.venv/
+.pgdata/
+storage/
+.pytest_cache/
+**/__pycache__/
+**/*.pyc
+tests/

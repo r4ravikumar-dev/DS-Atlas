@@ -7,7 +7,7 @@ import { DataTable } from './DataTable'
 describe('status badges', () => {
   it('labels verification and job states distinctly', () => {
     render(<><VerifyBadge status="partially_verified" /><JobBadge status="partially_succeeded" /><JobBadge status="failed" /></>)
-    expect(screen.getByText('Partially verified')).toHaveAttribute('title', expect.stringContaining('≥2 independent sources'))
+    expect(screen.getByText('Partially verified')).toHaveAttribute('title', expect.stringContaining('confirmed against official sources'))
     expect(screen.getByText('Partial')).toBeInTheDocument()
     expect(screen.getByText('Failed')).toBeInTheDocument()
   })

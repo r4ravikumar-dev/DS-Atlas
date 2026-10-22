@@ -33,7 +33,13 @@ export function useLogout() {
   })
 }
 
-const RANK = { viewer: 1, researcher: 2, admin: 3 } as const
-export function can(user: User | undefined, min: keyof typeof RANK) {
-  return !!user && RANK[user.role] >= RANK[min]
+/** Single-administrator model: the backend only issues sessions to administrators and enforces this on every endpoint. */
+export function isAdmin(user: User | undefined) {
+  return !!user && user.role === 'admin'
+}
+
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (body: { current_password: string; new_password: string }) => api<Item<User>>('/auth/password', { method: 'POST', body }),
+  })
 }

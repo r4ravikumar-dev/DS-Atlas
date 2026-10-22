@@ -13,7 +13,8 @@ const nextConfig: NextConfig = {
   },
   async rewrites() {
     if (!backend) {
-      console.warn('[next.config] BACKEND_URL is not set — /api/v1 requests will 404. Configure it per environment.')
+      // On Vercel (services mode) the top-level rewrite in vercel.json routes /api/* to the backend service before Next.js runs.
+      if (!process.env.VERCEL) console.warn('[next.config] BACKEND_URL is not set — /api/v1 requests will 404. Configure it per environment.')
       return []
     }
     return [{ source: '/api/v1/:path*', destination: `${backend.replace(/\/$/, '')}/api/v1/:path*` }]

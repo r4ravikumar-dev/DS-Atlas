@@ -1,26 +1,14 @@
-"""Role-based permissions, enforced in the backend regardless of frontend visibility."""
+"""Single-administrator model: every protected capability requires an active administrator session.
+The capability names document what each endpoint does; they all resolve to the admin role and are enforced in the backend."""
 from __future__ import annotations
 
-ROLE_RANK = {"viewer": 1, "researcher": 2, "admin": 3}
-
-PERMISSIONS: dict[str, str] = {
-    "read": "viewer",
-    "search": "viewer",
-    "source:create": "researcher",
-    "source:update": "researcher",
-    "crawl:start": "researcher",
-    "job:cancel": "researcher",
-    "job:retry": "researcher",
-    "comparison:write": "researcher",
-    "export:create": "researcher",
-    "review:resolve": "researcher",
-    "system:write": "researcher",
-    "admin:users": "admin",
-    "admin:config": "admin",
-    "admin:audit": "admin",
-}
+PERMISSIONS = frozenset({
+    "read", "search", "source:create", "source:update", "crawl:start", "job:cancel", "job:retry", "comparison:write",
+    "export:create", "review:resolve", "system:write", "admin:config", "admin:audit",
+})
 
 
 def has_permission(role: str | None, permission: str) -> bool:
-    need = PERMISSIONS[permission]
-    return ROLE_RANK.get(role or "", 0) >= ROLE_RANK[need]
+    if permission not in PERMISSIONS:
+        raise KeyError(permission)
+    return role == "admin"

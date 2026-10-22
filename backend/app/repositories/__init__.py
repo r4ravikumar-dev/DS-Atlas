@@ -80,8 +80,28 @@ def list_jobs(db: Session, *, kinds: list[str], status=None, source_id=None, pag
 
 # ───────────────────────────── systems ─────────────────────────────
 def list_systems(db: Session, *, q=None, framework=None, verification=None, source=None, min_sources=None, has_repo=None,
-                 has_storybook=None, sort=None, page=1, page_size=25):
+                 has_storybook=None, platform=None, resource=None, verified_resource=None, missing_resource=None, component=None,
+                 sort=None, page=1, page_size=25):
+    from ..models import SystemResource
     stmt = select(DesignSystem)
+
+    def has_res(rtypes: list[str], verified: bool = False):
+        cond = [SystemResource.system_id == DesignSystem.id, SystemResource.resource_type.in_(rtypes)]
+        cond.append(SystemResource.verification_status == "verified" if verified else SystemResource.verification_status != "invalid")
+        return select(SystemResource.id).where(*cond).exists()
+
+    for t in resource or []:
+        stmt = stmt.where(has_res([t]))
+    for t in verified_resource or []:
+        stmt = stmt.where(has_res([t], verified=True))
+    if missing_resource:
+        types = ["official_website", "official_documentation"] if missing_resource == "official" else [missing_resource]
+        stmt = stmt.where(~has_res(types))
+    if platform:
+        stmt = stmt.where(_json_contains_any(DesignSystem.platforms, platform))
+    if component:
+        pat = f"%{component.replace('%', '').replace('_', '')[:100]}%"
+        stmt = stmt.where(select(Component.id).where(Component.system_id == DesignSystem.id, Component.name.ilike(pat)).exists())
     f = _text_filter(q, DesignSystem.search_vector, DesignSystem.name, DesignSystem.organization)
     if f is not None:
         stmt = stmt.where(f)
@@ -107,8 +127,12 @@ def system_facets(db: Session) -> dict[str, list[dict[str, Any]]]:
     fw = db.execute(text("SELECT f, count(*) FROM design_systems, jsonb_array_elements_text(frameworks) f GROUP BY f ORDER BY 2 DESC LIMIT 30")).all()
     src = db.execute(text("SELECT s, count(*) FROM design_systems, jsonb_array_elements_text(source_keys) s GROUP BY s ORDER BY s")).all()
     ver = db.execute(select(DesignSystem.verification_status, func.count()).group_by(DesignSystem.verification_status)).all()
+    plat = db.execute(text("SELECT p, count(*) FROM design_systems, jsonb_array_elements_text(platforms) p GROUP BY p ORDER BY 2 DESC LIMIT 30")).all()
+    res = db.execute(text("""SELECT resource_type, count(DISTINCT system_id), count(DISTINCT system_id) FILTER (WHERE verification_status = 'verified')
+                             FROM system_resources WHERE system_id IS NOT NULL AND verification_status <> 'invalid' GROUP BY 1 ORDER BY 1""")).all()
     return {"frameworks": [{"value": a, "count": b} for a, b in fw], "sources": [{"value": a, "count": b} for a, b in src],
-            "verification_status": [{"value": a, "count": b} for a, b in ver]}
+            "verification_status": [{"value": a, "count": b} for a, b in ver], "platforms": [{"value": a, "count": b} for a, b in plat],
+            "resources": [{"value": a, "count": b, "verified": c} for a, b, c in res]}
 
 
 # ───────────────────────────── components ─────────────────────────────

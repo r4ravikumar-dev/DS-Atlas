@@ -43,6 +43,17 @@ def summary(db: Session) -> dict[str, Any]:
         "storybook_variants": c(select(func.count()).select_from(StorybookVariant)),
         "attribute_evidence": c(select(func.count()).select_from(AttributeEvidence)),
         "review_open": c(select(func.count()).select_from(DuplicateGroup).where(DuplicateGroup.review_status == "open")),
+        "source_references": c(select(func.count()).select_from(Record).where(Record.is_stale.is_(False), Record.record_type.in_(("system", "tool")))),
+        "systems_verified": c(select(func.count()).select_from(DesignSystem).where(DesignSystem.verification_status == "verified")),
+        "systems_partially_verified": c(select(func.count()).select_from(DesignSystem).where(DesignSystem.verification_status == "partially_verified")),
+        "systems_missing_official_link": c(text("""SELECT count(*) FROM design_systems d WHERE NOT EXISTS (SELECT 1 FROM system_resources r
+            WHERE r.system_id = d.id AND r.resource_type IN ('official_website','official_documentation') AND r.verification_status <> 'invalid')""")),
+        "resources": c(text("SELECT count(*) FROM system_resources WHERE system_id IS NOT NULL AND verification_status <> 'invalid'")),
+        "resources_verified": c(text("SELECT count(*) FROM system_resources WHERE system_id IS NOT NULL AND verification_status = 'verified'")),
+        "systems_with_figma": c(text("SELECT count(DISTINCT system_id) FROM system_resources WHERE resource_type = 'figma_file' AND verification_status <> 'invalid'")),
+        "systems_with_github": c(text("SELECT count(DISTINCT system_id) FROM system_resources WHERE resource_type = 'github_repository' AND verification_status <> 'invalid'")),
+        "extraction_errors": c(select(func.count()).select_from(Job).where(Job.status == "failed", Job.created_at >= datetime.now(timezone.utc) - timedelta(days=30)))
+                             + c(text("SELECT count(*) FROM storybook_projects WHERE status <> 'indexed'")),
         "stale_records": c(select(func.count()).select_from(Record).where(Record.is_stale.is_(True))),
         "jobs_running": c(select(func.count()).select_from(Job).where(Job.status.in_(("running", "queued")))),
         "last_crawl_at": db.scalar(select(func.max(Source.last_attempted_at))),

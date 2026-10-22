@@ -4,7 +4,7 @@ import { Fragment, useState } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { Lightbulb, RefreshCw, Trash2 } from 'lucide-react'
-import { can, useMe } from '@/features/auth/api'
+import { isAdmin, useMe } from '@/features/auth/api'
 import { useComparison, useDeleteComparison, useRegenerate } from '@/features/comparisons/api'
 import { Button, ConfirmDialog, ErrorState, ExtLink, fmtDate, PageHeader, Panel, Skeleton, VerifyBadge } from '@/components/ui'
 import s from '@/components/platform/page.module.scss'
@@ -36,7 +36,7 @@ export default function ComparisonPage() {
     <>
       <PageHeader crumbs={[{ href: '/platform/compare', label: 'Compare' }]} title={d ? d.name : <Skeleton w={300} h={30} />}
         description={d && `${d.kind} · generated ${fmtDate(d.generated_at)} from current records`}
-        actions={d && can(me, 'researcher') && (<>
+        actions={d && isAdmin(me) && (<>
           <Button icon={<RefreshCw size={14} />} loading={regen.isPending} onClick={() => regen.mutate()}>Regenerate</Button>
           <Button variant="ghost" icon={<Trash2 size={14} />} onClick={() => setConfirm(true)}>Delete</Button>
         </>)} />

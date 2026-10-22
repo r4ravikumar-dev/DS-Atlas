@@ -1,0 +1,16 @@
+# Never upload local secrets, the embedded dev database, caches or bulky local data.
+.env
+.env.local
+.env.*.local
+backend/.env
+backend/.venv/
+backend/.pgdata/
+backend/storage/
+backend/.pytest_cache/
+**/__pycache__/
+**/*.pyc
+backups/
+research/
+node_modules/
+.next/
+coverage/

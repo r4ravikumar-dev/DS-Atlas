@@ -2,7 +2,9 @@
 
     python scripts/manage.py seed                 # register the 20 seed sources (idempotent)
     python scripts/manage.py bootstrap-admin      # one-shot: first admin from ADMIN_EMAIL / ADMIN_PASSWORD; refuses once any admin exists
-    python scripts/manage.py issue-reset <email>  # email a single-use password-reset link to an existing user
+    python scripts/manage.py reset-admin-password <email>  # shell-only recovery; password via ADMIN_PASSWORD or hidden prompt
+    python scripts/manage.py setup-storage        # Supabase: create the private storage bucket (idempotent)
+    python scripts/manage.py supabase-lockdown    # Supabase: revoke Data API access + enable RLS on all tables (idempotent)
     python scripts/manage.py openapi out.json     # write the OpenAPI document
     python scripts/manage.py import-cache <dir>   # copy an existing engine HTTP cache (e.g. research/data/cache/http)
 """
@@ -43,26 +45,45 @@ def main() -> None:
         from app.services.audit import audit
         with session_scope() as db:
             if db.scalar(select(User.id).where(User.role == "admin").limit(1)):
-                sys.exit("An administrator already exists; bootstrap is disabled. Invite users from the admin UI, "
-                         "or use `manage.py issue-reset <email>` to recover an admin account.")
+                sys.exit("An administrator already exists; bootstrap is disabled. "
+                         "Use `manage.py reset-admin-password <email>` to recover the account.")
             if db.scalar(select(User.id).where(func.lower(User.email) == email.lower())):
-                sys.exit("A non-admin user with this email exists; promote them from an admin session instead.")
+                sys.exit("A deactivated account with this email exists; resolve it before bootstrapping.")
             u = User(email=email.lower(), name="Administrator", password_hash=hash_password(pw), role="admin",
                      email_verified_at=datetime.now(timezone.utc))
             db.add(u)
             db.flush()
             audit(db, None, "admin.bootstrap", "user", u.id)
         print(f"bootstrap admin created: {email}")
-    elif cmd == "issue-reset":
-        # Recovery path: emails a single-use, 2-hour reset link (+ verification code) to an existing active user.
-        from app.services import invitations
-        target = sys.argv[2].lower() if len(sys.argv) > 2 else sys.exit("usage: manage.py issue-reset <email>")
+    elif cmd == "reset-admin-password":
+        # Recovery from the server shell only. The new password is read from ADMIN_PASSWORD or typed (not echoed); never a CLI argument.
+        import getpass
+        from app.services.audit import audit
+        target = (sys.argv[2] if len(sys.argv) > 2 else os.environ.get("ADMIN_EMAIL") or "").lower()
+        pw = os.environ.get("ADMIN_PASSWORD") or getpass.getpass("New administrator password (>=12 chars): ")
+        if not target or len(pw) < 12:
+            sys.exit("usage: manage.py reset-admin-password <admin-email>  (password >=12 chars via ADMIN_PASSWORD or prompt)")
         with session_scope() as db:
-            u = db.scalar(select(User).where(func.lower(User.email) == target, User.is_active.is_(True)))
+            u = db.scalar(select(User).where(func.lower(User.email) == target, User.role == "admin"))
             if not u:
-                sys.exit("No active user with that email.")
-            inv = invitations.create(db, email=u.email, role=u.role, invited_by=None, ttl_hours=2, kind="reset")
-            print(f"reset invitation {inv.id}: delivery={inv.delivery_status}")
+                sys.exit("No administrator with that email.")
+            u.password_hash, u.is_active = hash_password(pw), True
+            u.session_version += 1  # sign out every existing session
+            audit(db, None, "admin.password_reset_cli", "user", u.id)
+        print(f"password reset for {target}; all sessions signed out")
+    elif cmd == "setup-storage":
+        # Supabase Storage: create the private bucket used for raw snapshots and exports (idempotent).
+        from app.services.storage import SupabaseStorage, storage
+        st = storage()
+        if not isinstance(st, SupabaseStorage):
+            sys.exit("STORAGE_BACKEND is not 'supabase'; local storage needs no setup.")
+        print(f"bucket {st.bucket}: {st.ensure_bucket()} (private)")
+    elif cmd == "supabase-lockdown":
+        # Re-apply the Data API lockdown without a migration (it also runs after every `alembic upgrade`).
+        from app.database.session import get_engine
+        from app.database.supabase import lockdown
+        with get_engine().begin() as conn:
+            print(f"locked down {lockdown(conn)['tables']} table(s)")
     elif cmd == "openapi":
         from app.main import app
         Path(sys.argv[2]).write_text(json.dumps(app.openapi(), indent=2))

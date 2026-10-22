@@ -3,7 +3,7 @@
 import { Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { Hammer } from 'lucide-react'
-import { can, useMe } from '@/features/auth/api'
+import { isAdmin, useMe } from '@/features/auth/api'
 import { useJobs, useRebuild } from '@/features/crawl-jobs/api'
 import { useUrlState } from '@/hooks/useUrlState'
 import { Button, ErrorState, fmtDate, fmtDuration, JobBadge, PageHeader, Pagination, Panel, Select } from '@/components/ui'
@@ -22,7 +22,7 @@ function JobsInner() {
       <PageHeader
         title="Crawl jobs"
         description="Durable background jobs persisted in PostgreSQL. Lists auto-refresh while any job is queued or running."
-        actions={can(me, 'researcher') && <Button icon={<Hammer size={15} />} loading={rebuild.isPending} onClick={() => rebuild.mutate(undefined, { onSuccess: (r) => router.push(`/platform/jobs/${r.data.job_ids[0]}`) })}>Rebuild knowledge base</Button>}
+        actions={isAdmin(me) && <Button icon={<Hammer size={15} />} loading={rebuild.isPending} onClick={() => rebuild.mutate(undefined, { onSuccess: (r) => router.push(`/platform/jobs/${r.data.job_ids[0]}`) })}>Rebuild knowledge base</Button>}
       />
       <div className={s.filters}>
         <Select label="Kind" value={u.get('kind')} onChange={(v) => u.set({ kind: v })} options={[{ value: '', label: 'Crawl + build' }, { value: 'crawl', label: 'Crawl' }, { value: 'build', label: 'Build' }]} />

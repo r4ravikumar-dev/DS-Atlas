@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { X } from 'lucide-react'
 import { ApiError } from '@/lib/api/client'
-import { can, useMe } from '@/features/auth/api'
+import { isAdmin, useMe } from '@/features/auth/api'
 import { useComparisons, useCreateComparison } from '@/features/comparisons/api'
 import { useComponents } from '@/features/components/api'
 import { useSystems } from '@/features/design-systems/api'
@@ -33,7 +33,7 @@ function CompareInner() {
   const options = kind === 'systems' ? sys.data?.data.map((x) => ({ id: x.id, label: x.name, sub: `${x.organization ?? ''} · ${x.source_count} sources` }))
     : comps.data?.data.map((x) => ({ id: x.id, label: `${x.name}`, sub: `${x.library} · ${x.props_count} props` }))
   const err = create.error instanceof ApiError ? create.error : null
-  const canWrite = can(me, 'researcher')
+  const canWrite = isAdmin(me)
 
   return (
     <>

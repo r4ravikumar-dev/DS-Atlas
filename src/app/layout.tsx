@@ -9,11 +9,11 @@ const serif = Instrument_Serif({ subsets: ['latin'], weight: '400', style: ['ita
 
 export const metadata: Metadata = {
   title: {
-    default: 'DS Atlas — Design systems research',
-    template: '%s · DS Atlas',
+    default: 'Design Systems Knowledge Base',
+    template: '%s · DS Knowledge Base',
   },
-  description:
-    'Explore 120+ public design systems, curated directories, token tooling, code foundations, a resource library and an interactive design system checklist.',
+  description: 'Private administrator workspace.',
+  robots: { index: false, follow: false, nocache: true, googleBot: { index: false, follow: false } },
 }
 
 export const viewport: Viewport = {
@@ -23,8 +23,8 @@ export const viewport: Viewport = {
   ],
 }
 
-// Runs before paint: restores theme and flags JS so reveal animations can hide content first.
-const bootScript = `(function(){try{var t=localStorage.getItem('dsa-theme');if(!t){t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.dataset.theme=t}catch(e){document.documentElement.dataset.theme='dark'}document.documentElement.classList.add('js')})()`
+// Runs before paint: restores the saved theme.
+const bootScript = `(function(){try{var t=localStorage.getItem('dsa-theme');if(!t){t=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.dataset.theme=t}catch(e){document.documentElement.dataset.theme='dark'}})()`
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -34,7 +34,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <Providers>{children}</Providers>
-        <div className="grain" aria-hidden />
       </body>
     </html>
   )

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { Pause, Play, RefreshCw } from 'lucide-react'
-import { can, useMe } from '@/features/auth/api'
+import { isAdmin, useMe } from '@/features/auth/api'
 import { isActive } from '@/features/crawl-jobs/api'
 import { useSource, useSourceCoverage, useSourceDocuments, useSourceJobs, useStartCrawl, useUpdateSource } from '@/features/sources/api'
 import { Button, ConfirmDialog, ErrorState, ExtLink, fmtAgo, fmtDate, fmtDuration, JobBadge, KV, PageHeader, Pagination, Panel, SearchInput, Select, Skeleton, SourceStatusBadge, Tabs, Tag, Toggle } from '@/components/ui'
@@ -36,7 +36,7 @@ export default function SourceDetailPage() {
         title={d ? <>{d.name} <span className={s.mono} style={{ color: 'var(--faint)' }}>{d.key}</span></> : <Skeleton w={300} h={30} />}
         description={d && <ExtLink href={d.url} />}
         actions={
-          d && can(me, 'researcher') && (
+          d && isAdmin(me) && (
             <>
               <Button icon={d.is_paused ? <Play size={15} /> : <Pause size={15} />} loading={update.isPending} onClick={() => update.mutate({ is_paused: !d.is_paused })}>
                 {d.is_paused ? 'Resume' : 'Pause'}

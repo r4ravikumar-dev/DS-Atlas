@@ -419,6 +419,51 @@ def host_ok(u: Optional[str]) -> bool:
 
 
 # ═════════════════════════════ S20 Design Systems One ═════════════════════════════
+_SOCIAL = re.compile(r"(^|\.)(linkedin\.com|twitter\.com|x\.com|facebook\.com|instagram\.com|youtube\.com|buymeacoffee\.com|medium\.com|dribbble\.com|fontshare\.com|googleapis\.com|gstatic\.com)$")
+
+
+def _dsone_detail_links(slugs: List[str], seed, cov) -> Dict[str, Dict[str, str]]:
+    """Gallery-only entries have no API breakdown; their public detail pages link the system's own website/repository.
+    Links repeated on most pages (site chrome: fonts, author profiles) are discarded before classification."""
+    if not slugs:
+        return {}
+    pages = fetch_many([(f"https://www.designsystems.one/design-systems/{s_}", seed["url"], 2) for s_ in slugs], "S20", cov)
+    per: Dict[str, List[str]] = {}
+    for s_ in slugs:
+        r = pages.get(f"https://www.designsystems.one/design-systems/{s_}")
+        if r is None or not r.ok:
+            continue
+        links = []
+        for a in soup_of(r.text).find_all("a", href=True):
+            h = a["href"].strip()
+            host = (urlparse(h).hostname or "").lower()
+            if h.startswith("http") and host and not host.endswith("designsystems.one") and h not in links:
+                links.append(h)
+        per[s_] = links
+    freq: Dict[str, int] = {}
+    for links in per.values():
+        for h in set(links):
+            freq[h] = freq.get(h, 0) + 1
+    chrome = {h for h, n in freq.items() if len(per) >= 3 and n >= max(3, len(per) // 2)}
+    out: Dict[str, Dict[str, str]] = {}
+    for s_, links in per.items():
+        d: Dict[str, str] = {}
+        for h in links:
+            host = (urlparse(h).hostname or "").lower().removeprefix("www.")
+            if h in chrome or _SOCIAL.search(host):
+                continue
+            if re.search(r"(^|\.)(github\.com|gitlab\.com)$", host):
+                d.setdefault("repository", h)
+            elif host.endswith("figma.com"):
+                d.setdefault("figma", h)
+            elif "storybook" in host or host.endswith("chromatic.com"):
+                d.setdefault("storybook", h)
+            else:
+                d.setdefault("website", h)
+        out[s_] = d
+    return out
+
+
 def run_dsone(seed):
     cov = new_coverage(seed)
     cov["extraction_method"] = "html gallery + documented public JSON API (advertised in llms.txt)"
@@ -445,6 +490,8 @@ def run_dsone(seed):
     cov["pages_ok"] += int(bool(api and api.ok)) + int(bool(ai and ai.ok))
     details = fetch_many([(f"https://www.designsystems.one/api/design-systems/{slug}", seed["url"], 2) for slug in rich], "S20", cov)
     slugs = set(rich) | {h.rsplit("/", 1)[-1] for h in seen}
+    page_links = _dsone_detail_links([s_ for s_ in sorted(slugs) if not (details.get(f"https://www.designsystems.one/api/design-systems/{s_}") or None)
+                                      or not details[f"https://www.designsystems.one/api/design-systems/{s_}"].ok], seed, cov)
     for slug in sorted(slugs):
         page = f"https://www.designsystems.one/design-systems/{slug}"
         base = rich.get(slug, {})
@@ -455,9 +502,10 @@ def run_dsone(seed):
         org = base.get("company") or det.get("company") or (parts[1] if len(parts) > 1 else None)
         ext = det.get("externalLinks") or []
         repo_link = next((l["href"] for l in ext if isinstance(l, dict) and re.search(r"github\.com|gitlab\.com", l.get("href", ""))), None)
+        pl = page_links.get(slug, {})
         rec = system_record("S20", slug, name, organization=org, evidence_url=page, method="api" if det else "html",
-                            docs_url=base.get("url") or det.get("url"),
-                            repo_url=repo_link,
+                            docs_url=base.get("url") or det.get("url") or pl.get("website"),
+                            repo_url=repo_link or pl.get("repository"), figma_url=pl.get("figma"), storybook_url=pl.get("storybook"),
                             description=base.get("tagline") or det.get("tagline") or (" ".join(parts[2:]) if len(parts) > 2 else None),
                             attributes={"gallery_card_text": parts, "rich_breakdown": bool(det), "breakdown": det or None,
                                         "ai_ready": ai_items.get(slug)})
@@ -493,6 +541,7 @@ def run_dsone(seed):
                                         "known_for": det.get("knownFor"), "watch_outs": det.get("watchOutsFor"),
                                         "evaluation_guidance": det.get("evaluationGuidance")}
             gr["notes"].append("Third-party editorial assessment by DesignSystems.one.")
+            gr["relationships"] = [{"type": "documented_by_system", "target": rec["record_id"]}]
             records.append(gr)
     # AI-ready signals as guideline/evidence records
     for slug, it in ai_items.items():
@@ -504,6 +553,8 @@ def run_dsone(seed):
             gr["normalized_content"] = {"kind": "ai_readiness_signal", **sig}
             gr["license"] = ai_data.get("license")
             gr["confidence"] = "medium" if sig.get("source") else "low"
+            if slug in slugs:  # the signal describes that system's entry
+                gr["relationships"] = [{"type": "documented_by_system", "target": f"sys:s20:{slugify(slug, 120)}"}]
             records.append(gr)
     cov["items_found"] = len(slugs)
     cov["version_context"] = {"ai_index_audited_at": ai_data.get("auditedAt"), "ai_index_license": ai_data.get("license")}

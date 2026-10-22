@@ -2,7 +2,9 @@
 
 * `same_as` links merge the `from` entity into the `to` entity (the `to` key stays stable).
 * `implementation_of` / `related_to` links are attached to both entities as `related_systems`.
-* `entity_curation` rows override display fields (official docs URL, organization) with evidence.
+* Sources registered *for* an existing system (official-docs crawls, admin-added sources) bind their records to that
+  system, so a crawl can never spawn a duplicate catalog entry because the docs redirected to a new host.
+* `entity_curation` rows override display fields with evidence (resolver decisions) or as audited administrator edits.
 * Field-level verification coverage is computed from `attribute_evidence`."""
 from __future__ import annotations
 
@@ -41,6 +43,7 @@ def _merge(into: dict[str, Any], other: dict[str, Any], evidence: list) -> None:
     for f, srcs in (other.get("framework_evidence") or {}).items():
         fe[f] = sorted(set(fe.get(f, [])) | set(srcs))
     into["supported_frameworks"] = sorted(fe)
+    into["supported_platforms"] = sorted(set(into.get("supported_platforms") or []) | set(other.get("supported_platforms") or []))
     into["aliases"] = sorted(set(into.get("aliases") or [into["name"]]) | set(other.get("aliases") or [other["name"]]) - {into["name"]} | {into["name"]})
     rel = into.setdefault("related_urls", [])
     for u in [other.get("documentation_url"), other.get("storybook_url"), other.get("repository_url")] + list(other.get("related_urls") or []):
@@ -51,11 +54,33 @@ def _merge(into: dict[str, Any], other: dict[str, Any], evidence: list) -> None:
         into["deprecated_flag"] = True
 
 
+CURATABLE = {"name", "description", "organization", "organization_aliases", "official_docs_url", "related_urls", "frameworks", "platforms",
+             "styling_strategy", "repository_url", "storybook_url", "design_resource_url"}
+
+
+def bound_sources(db: Session) -> dict[str, str]:
+    """source key → system key, for sources registered for a specific system."""
+    from ..models import Source
+    return {k: sk for k, sk in db.execute(select(Source.key, Source.system_key).where(Source.system_key.is_not(None)))}
+
+
 def apply(db: Session, entities: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, str]]:
     """Returns (entities_after_merges, merged_key_map from_key → to_key)."""
     by_key = {e["system_id"]: e for e in entities}
     links = db.scalars(select(IdentityLink).order_by(IdentityLink.id)).all()
     merged: dict[str, str] = {}
+    # Records of sources bound to a system belong to that system (only when the entity has no other, independent sources).
+    bound = bound_sources(db)
+    for k in list(by_key):
+        e = by_key[k]
+        targets = {bound.get(s_) for s_ in e.get("sources") or []}
+        if e.get("sources") and None not in targets and len(targets) == 1:
+            dst = targets.pop()
+            if dst != k and dst in by_key:
+                _merge(by_key[dst], e, [{"type": "bound_source", "sources": e["sources"], "system_key": dst,
+                                         "rationale": "Source was registered for this system; its documentation host differs (redirect or move)."}])
+                merged[k] = dst
+                del by_key[k]
 
     def resolve(k: str) -> str:
         seen = set()
@@ -94,6 +119,12 @@ def apply(db: Session, entities: list[dict[str, Any]]) -> tuple[list[dict[str, A
         elif c.field == "related_urls" and c.value:
             rel = e.setdefault("related_urls", [])
             rel.extend(u for u in c.value if u not in rel)
+        elif c.field == "frameworks" and c.value is not None:
+            e["supported_frameworks"] = list(c.value)
+        elif c.field == "platforms" and c.value is not None:
+            e["supported_platforms"] = list(c.value)
+        elif c.field in ("name", "description", "styling_strategy", "repository_url", "storybook_url", "design_resource_url") and c.value:
+            e[c.field] = c.value
         e.setdefault("curated_fields", {})[c.field] = {"value": c.value, "evidence": (c.evidence or [])[:3]}
 
     # field-level verification coverage
@@ -123,3 +154,26 @@ def apply(db: Session, entities: list[dict[str, Any]]) -> tuple[list[dict[str, A
             e["verification_status"] = "partially_verified"
             e["verification_basis"] = "official documentation inspected; field-level evidence not yet recorded"
     return list(by_key.values()), merged
+
+
+def name_collisions(entities: list[dict[str, Any]], db: Session) -> list[dict[str, Any]]:
+    """Canonical entities sharing a non-generic normalized name that no identity decision covers yet.
+    Emitted as review items for the evidence resolver; never merged on the name alone."""
+    from .review_resolver import norm_name
+    decided = {frozenset((l.from_key, l.to_key)) for l in db.scalars(select(IdentityLink))}
+    groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for e in entities:
+        n = norm_name(e.get("name"))
+        if n:
+            groups[n].append(e)
+    out = []
+    for n, es in sorted(groups.items()):
+        if len(es) < 2:
+            continue
+        keys = [e["system_id"] for e in es]
+        if all(frozenset((a, b)) in decided for i, a in enumerate(keys) for b in keys[i + 1:]):
+            continue
+        out.append({"type": "possible_duplicate_system", "group": f"name:{n}", "organization": None,
+                    "entities": [{"system_id": e["system_id"], "name": e["name"], "organization": e.get("organization"), "site": e.get("site_key")} for e in es],
+                    "reason": "Same normalized name across canonical entities; evaluated with redirect/cross-link/organization evidence before any merge."})
+    return out

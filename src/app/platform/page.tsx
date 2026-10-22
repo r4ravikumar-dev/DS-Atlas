@@ -17,26 +17,27 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader
-        title="Research overview"
-        description={d ? `All figures are computed by the backend from persisted records. Last crawl ${fmtAgo(d.last_crawl_at)}.` : 'Loading live metrics from the API…'}
+        title="Knowledge base overview"
+        description={d ? `Live figures computed by the backend from the canonical dataset. Last crawl ${fmtAgo(d.last_crawl_at)}.` : 'Loading live metrics from the API…'}
       />
       {sum.error ? (
         <ErrorState error={sum.error} onRetry={() => sum.refetch()} />
       ) : (
         <div className={s.stats}>
-          <Stat label="Registered sources" value={n(d?.sources_total)} href="/platform/sources" hint={d && `${d.sources_inspected} inspected · ${d.sources_never_crawled} never crawled`} />
-          <Stat label="Failed / unavailable sources" value={n(d?.sources_failed)} tone={d && d.sources_failed > 0 ? 'bad' : undefined} href="/platform/sources?status=unavailable_seed__substitute_extracted" />
-          <Stat label="Discovered URLs" value={n(d?.urls_discovered)} hint={d && `${d.pages_processed.toLocaleString()} processed successfully`} />
-          <Stat label="Design systems" value={n(d?.design_systems)} href="/platform/systems" hint={d && `${d.systems_multi_source} corroborated by ≥2 sources`} />
-          <Stat label="Component records" value={n(d?.components)} href="/platform/components" hint={d && `${d.components_with_api} with structured APIs`} />
-          <Stat label="Storybook projects" value={n(d?.storybook_projects)} href="/platform/storybook" hint="showcase component libraries" />
-          <Stat label="Storybook stories" value={n(d?.storybook_stories)} href="/platform/storybook?tab=stories" hint={d && `${n(d.storybook_variants)} variants extracted`} />
-          <Stat label="Verified attributes" value={n(d?.attribute_evidence)} href="/platform/systems" hint="official docs verification" />
+          <Stat label="Canonical design systems" value={n(d?.design_systems)} href="/platform/systems" hint={d && `${d.systems_multi_source} corroborated by ≥2 sources`} />
+          <Stat label="Source references" value={n(d?.source_references)} href="/platform/sources" hint={d && `directory & official listings from ${d.sources_total} sources`} />
+          <Stat label="Verified systems" value={n(d?.systems_verified)} href="/platform/systems?verification=verified" hint={d && `${d.systems_partially_verified} partially verified`} tone={d && d.systems_verified > 0 ? 'good' : undefined} />
+          <Stat label="Partially verified" value={n(d?.systems_partially_verified)} href="/platform/systems?verification=partially_verified" hint="some required attributes confirmed officially" />
+          <Stat label="Components" value={n(d?.components)} href="/platform/components" hint={d && `${d.components_with_api} with structured APIs`} />
+          <Stat label="Storybook stories" value={n(d?.storybook_stories)} href="/platform/storybook?tab=stories" hint={d && `${d.storybook_projects} projects`} />
+          <Stat label="Component variants" value={n(d?.storybook_variants)} href="/platform/storybook?tab=variants" hint="from story args & argTypes" />
           <Stat label="Design tokens" value={n(d?.tokens)} href="/platform/tokens" />
-          <Stat label="Guidelines & specs" value={n(d?.guidelines)} href="/platform/guidelines" hint={d && `${d.patterns} patterns`} />
-          <Stat label="Review queue" value={n(d?.review_open)} tone={d && d.review_open > 0 ? 'warn' : 'good'} href="/platform/review" hint="duplicates & conflicts" />
-          <Stat label="Stale records" value={n(d?.stale_records)} hint="not seen in the latest crawl" tone={d && d.stale_records > 0 ? 'warn' : undefined} />
-          <Stat label="Jobs active" value={n(d?.jobs_running)} href="/platform/jobs" />
+          <Stat label="Guidelines & patterns" value={n(d && d.guidelines + d.patterns)} href="/platform/guidelines" hint={d && `${d.guidelines} guidelines · ${d.patterns} patterns`} />
+          <Stat label="Resource links" value={n(d?.resources)} href="/platform/quality" hint={d && `${d.resources_verified} verified · GitHub on ${d.systems_with_github} · Figma on ${d.systems_with_figma} systems`} />
+          <Stat label="Missing official link" value={n(d?.systems_missing_official_link)} href="/platform/systems?missing_resource=official" tone={d && d.systems_missing_official_link > 0 ? 'warn' : 'good'} hint="no website or documentation recorded" />
+          <Stat label="Awaiting review" value={n(d?.review_open)} tone={d && d.review_open > 0 ? 'warn' : 'good'} href="/platform/review" hint="possible duplicates & conflicts" />
+          <Stat label="Extraction errors" value={n(d?.extraction_errors)} tone={d && d.extraction_errors > 0 ? 'bad' : 'good'} href="/platform/quality?kind=extraction_failures" hint="failed jobs (30 days) + Storybook projects not indexed" />
+          <Stat label="Jobs active" value={n(d?.jobs_running)} href="/platform/jobs" hint={d && `last crawl ${fmtAgo(d.last_crawl_at)}`} />
         </div>
       )}
 

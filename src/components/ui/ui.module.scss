@@ -40,6 +40,7 @@
 .v_verified, .j_succeeded { --c: var(--mint); border-color: color-mix(in oklab, var(--mint) 40%, transparent); }
 .v_partially_verified, .j_partially_succeeded { --c: var(--amber); border-color: color-mix(in oklab, var(--amber) 40%, transparent); }
 .v_unverified { --c: var(--faint); }
+.v_invalid { --c: var(--coral); border-color: color-mix(in oklab, var(--coral) 40%, transparent); }
 .j_failed { --c: var(--coral); border-color: color-mix(in oklab, var(--coral) 45%, transparent); color: var(--coral); }
 .j_running { --c: var(--sky); border-color: color-mix(in oklab, var(--sky) 45%, transparent); svg { color: var(--sky); } }
 .j_queued { --c: var(--violet); }

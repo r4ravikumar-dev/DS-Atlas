@@ -9,7 +9,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from .api.v1.routes import (administration, auth, comparisons, components, crawl_jobs, dashboard, documents, exports, guidelines, health,
-                            reports, search, sources, storybook, systems, tokens, verification)
+                            quality, reports, search, sources, storybook, systems, tokens, verification)
 from .core.config import get_settings
 from .core.exceptions import install_handlers
 from .core.logging import configure_logging, request_id_var
@@ -20,6 +20,7 @@ TAGS = [
     {"name": "health", "description": "Liveness, readiness, metadata"},
     {"name": "auth", "description": "Session sign-in (httpOnly cookie + CSRF) or Bearer tokens"},
     {"name": "dashboard", "description": "Server-side aggregates"},
+    {"name": "data-quality", "description": "Data-quality issues and the add-a-source workflow"},
     {"name": "sources", "description": "Source registry, coverage, URL queue, crawl initiation"},
     {"name": "crawl-jobs", "description": "Durable background jobs (crawl/build)"},
     {"name": "design-systems", "description": "Canonical, entity-resolved design systems"},
@@ -77,8 +78,9 @@ def create_app() -> FastAPI:
         return response
 
     for r in (health, auth, dashboard, sources, crawl_jobs, systems, components, tokens, guidelines, search, comparisons, reports, exports,
-              documents, administration, verification, storybook):
+              documents, administration, verification, storybook, quality):
         app.include_router(r.router, prefix=s.api_prefix)
+    app.include_router(systems.resource_router, prefix=s.api_prefix)
     return app
 
 

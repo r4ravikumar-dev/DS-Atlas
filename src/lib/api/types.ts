@@ -46,15 +46,8 @@ export type ReviewItem = S['ReviewItemOut']
 export type AuditEvent = S['AuditEventOut']
 export type Config = S['ConfigOut']
 export type ConfigUpdate = S['ConfigUpdate']
-export type UserUpdate = S['UserUpdate']
 export type VerificationStatus = System['verification_status']
 
-export type Invitation = S['InvitationOut']
-export type InvitationCreate = S['InvitationCreate']
-export type InvitationValidateRequest = S['InvitationValidateRequest']
-export type InvitationValidateOut = S['InvitationValidateOut']
-export type InvitationSendCodeRequest = S['InvitationSendCodeRequest']
-export type InvitationAcceptRequest = S['InvitationAcceptRequest']
 export type AttributeEvidence = S['AttributeEvidenceOut']
 export type ComponentStorybook = S['ComponentStorybookOut']
 
@@ -123,3 +116,11 @@ export interface Facet {
   count: number
 }
 
+export type ResourceOut = S['ResourceOut']
+export type ResourceLink = S['ResourceLink']
+export type ResourceType = ResourceOut['resource_type']
+export type ResourceCreate = S['ResourceCreate']
+export type ResourceUpdate = S['ResourceUpdate']
+export type IntakeCheckOut = S['IntakeCheckOut']
+export type IntakeRequest = S['IntakeRequest']
+export type IntakeOut = S['IntakeOut']

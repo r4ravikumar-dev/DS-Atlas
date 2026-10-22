@@ -545,27 +545,45 @@ class ApiUsage(Base):
     ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
 
 
-class Invitation(Base):
-    """Identity-bound, expiring, single-use access grant. Only an HMAC digest of the token is stored.
-    kind=access creates a membership; kind=reset re-keys an existing account's password."""
-    __tablename__ = "invitations"
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=_uuid)
-    kind: Mapped[str] = mapped_column(String(10), nullable=False, default="access")
-    email: Mapped[str] = mapped_column(String(320), nullable=False, index=True)
-    role: Mapped[str] = mapped_column(String(20), nullable=False)
-    token_digest: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
-    invited_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+RESOURCE_TYPES = ("official_website", "official_documentation", "github_repository", "figma_file", "storybook", "additional_resource")
+
+
+class SystemResource(Base):
+    """A typed link of a canonical design system, with provenance and verification.
+    Keyed by system_key (stable across rebuilds); system_id is re-resolved by every build.
+    verification_status: verified = ownership evidence (linked from the official site/docs, official crawl, or admin-confirmed);
+    unverified = listed by a third-party directory only; invalid = checked and unreachable."""
+    __tablename__ = "system_resources"
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    system_key: Mapped[str] = mapped_column(String(300), nullable=False, index=True)
+    system_id: Mapped[int | None] = mapped_column(ForeignKey("design_systems.id", ondelete="SET NULL"), index=True)
+    resource_type: Mapped[str] = mapped_column(String(40), nullable=False, index=True)
+    url: Mapped[str] = mapped_column(Text, nullable=False)
+    canonical_url: Mapped[str] = mapped_column(Text, nullable=False)
+    label: Mapped[str | None] = mapped_column(String(300))
+    origin: Mapped[str] = mapped_column(String(30), nullable=False)  # directory | official_docs | official_site | storybook_showcase | manual
+    source_keys: Mapped[list] = mapped_column(JSONB, nullable=False, default=list)
+    verification_status: Mapped[str] = mapped_column(String(20), nullable=False, default="unverified", index=True)
+    verification_method: Mapped[str | None] = mapped_column(String(80))
+    evidence_url: Mapped[str | None] = mapped_column(Text)
+    evidence_note: Mapped[str | None] = mapped_column(Text)
+    http_status: Mapped[int | None] = mapped_column(Integer)
+    access_note: Mapped[str | None] = mapped_column(Text)
+    is_primary: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    last_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    accepted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    accepted_user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
-    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    revoked_by: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
-    delivery_status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")  # pending | sent | failed | not_configured
-    delivery_error: Mapped[str | None] = mapped_column(Text)
-    send_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    last_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    code_digest: Mapped[str | None] = mapped_column(String(64))
-    code_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    code_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    code_sent_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    __table_args__ = (UniqueConstraint("system_key", "resource_type", "canonical_url", name="uq_system_resource"),)
+
+
+class SystemAlias(Base):
+    """Former canonical keys/IDs that were merged into another system. Lets old links and IDs resolve; never deleted."""
+    __tablename__ = "system_aliases"
+    alias_key: Mapped[str] = mapped_column(String(300), primary_key=True)
+    alias_id: Mapped[int | None] = mapped_column(Integer, index=True)
+    alias_name: Mapped[str | None] = mapped_column(String(300))
+    canonical_key: Mapped[str] = mapped_column(String(300), nullable=False, index=True)
+    reason: Mapped[str] = mapped_column(String(60), nullable=False)
+    evidence: Mapped[Any] = mapped_column(JSONB, nullable=False, default=list)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

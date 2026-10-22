@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { RotateCcw, Square } from 'lucide-react'
-import { can, useMe } from '@/features/auth/api'
+import { isAdmin, useMe } from '@/features/auth/api'
 import { isActive, useCancelJob, useJob, useJobEvents, useRetryJob } from '@/features/crawl-jobs/api'
 import { Button, ConfirmDialog, ErrorState, fmtDate, fmtDuration, JobBadge, KV, PageHeader, Panel, Skeleton, Stat } from '@/components/ui'
 import s from '@/components/platform/page.module.scss'
@@ -28,7 +28,7 @@ export default function JobDetailPage() {
         crumbs={[{ href: '/platform/jobs', label: 'Crawl jobs' }]}
         title={j ? <>{j.kind === 'build' ? 'Knowledge-base build' : `Crawl · ${j.source_name ?? j.source_key}`} <JobBadge status={j.status} /></> : <Skeleton w={280} h={30} />}
         description={j && <>Job <span className={s.mono}>{j.id}</span>{j.retry_of && <> · retry of <Link href={`/platform/jobs/${j.retry_of}`}>{j.retry_of.slice(0, 8)}</Link></>}</>}
-        actions={j && can(me, 'researcher') && (
+        actions={j && isAdmin(me) && (
           <>
             {active && <Button variant="danger" icon={<Square size={14} />} onClick={() => setConfirm(true)} disabled={j.cancel_requested}>{j.cancel_requested ? 'Cancelling…' : 'Cancel'}</Button>}
             {['failed', 'partially_succeeded', 'cancelled'].includes(j.status) && (

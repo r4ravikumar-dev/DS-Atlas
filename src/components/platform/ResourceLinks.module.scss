@@ -1,0 +1,10 @@
+.links { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.link {
+  display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px; border-radius: 999px;
+  font-size: 0.74rem; border: 1px solid var(--line-strong); color: var(--text); background: var(--surface, transparent);
+  &:hover { border-color: var(--accent); color: var(--accent-text); }
+  &[data-verified] { border-color: color-mix(in oklab, var(--mint) 45%, transparent); }
+  svg { flex: none; }
+}
+.check { color: var(--mint); }
+.unv { font-size: 0.66rem; color: var(--faint); }

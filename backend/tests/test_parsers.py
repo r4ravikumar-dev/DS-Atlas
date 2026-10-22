@@ -45,3 +45,16 @@ def test_family_normalisation():
     assert family_of("AlertDialog") == "Dialog"
     assert family_of("ComboBox") == "Combobox"
     assert family_of("Totally Unknown Widget") is None
+
+
+def test_corrupt_http_cache_entry_is_a_miss_not_a_crash(tmp_path, monkeypatch):
+    from app.scrapers.dskb import core
+    monkeypatch.setattr(core, "CACHE", tmp_path)
+    (tmp_path / "http").mkdir()
+    f = core.Fetcher.__new__(core.Fetcher)
+    body, meta = f._cache_paths("https://fixture.example/page")
+    body.write_bytes(b"<html></html>")
+    meta.write_text('{"status": 200}{"status": 200}')  # two concurrent writers concatenated
+    assert f._cached("https://fixture.example/page") is None
+    core.Fetcher._atomic_write(meta, b'{"status": 200}')
+    assert f._cached("https://fixture.example/page")[0] == {"status": 200}

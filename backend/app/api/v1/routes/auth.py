@@ -8,13 +8,10 @@ from sqlalchemy.orm import Session
 
 from ....core.config import get_settings
 from ....core.exceptions import AppError, Unauthorized
-from ....core.security import CSRF_COOKIE, SESSION_COOKIE, create_session_token, new_csrf_token, verify_password
+from ....core.security import CSRF_COOKIE, SESSION_COOKIE, create_session_token, hash_password, new_csrf_token, verify_password
 from ....database.session import get_db
 from ....models import User
-from ....schemas import (
-    InvitationAcceptRequest, InvitationSendCodeRequest, InvitationValidateOut,
-    InvitationValidateRequest, Item, LoginRequest, SessionOut, UserOut
-)
+from ....schemas import Item, LoginRequest, PasswordChange, SessionOut, UserOut
 from ....services.audit import audit
 from ...deps import Principal, get_principal
 from ..common import ERRORS
@@ -54,7 +51,7 @@ def login(body: LoginRequest, request: Request, response: Response, db: Session 
     key = body.email.lower()
     _rate_limit(key)
     user = db.scalar(select(User).where(func.lower(User.email) == key))
-    if not user or not user.is_active or not verify_password(body.password, user.password_hash):
+    if not user or not user.is_active or user.role != "admin" or not verify_password(body.password, user.password_hash):
         _FAILS.setdefault(key, []).append(time.time())
         raise Unauthorized("Invalid email or password.")
     s = get_settings()
@@ -85,35 +82,20 @@ def me(p: Principal = Depends(get_principal)):
     return {"data": p.user}
 
 
-@router.post("/invitations/validate", response_model=Item[InvitationValidateOut], summary="Validate invitation token without consuming it")
-def validate_invitation(body: InvitationValidateRequest, request: Request, db: Session = Depends(get_db)):
-    _ip_limit(request, "invite-validate", 30)
-    from ....services import invitations as invsvc
-    res = invsvc.validate(db, body.token)
-    return {"data": res}
-
-
-@router.post("/invitations/send-code", summary="Send 6-digit email verification code for invitation")
-def send_invitation_code(body: InvitationSendCodeRequest, request: Request, db: Session = Depends(get_db)):
-    _ip_limit(request, "invite-code", 10)
-    from ....services import invitations as invsvc
-    res = invsvc.send_code(db, body.token)
-    db.commit()
-    return {"data": res}
-
-
-@router.post("/invitations/accept", response_model=Item[SessionOut], summary="Atomically accept invitation, set password and sign in")
-def accept_invitation(body: InvitationAcceptRequest, request: Request, response: Response, db: Session = Depends(get_db)):
-    _ip_limit(request, "invite-accept", 20)
-    from ....services import invitations as invsvc
-    user = invsvc.accept(db, token=body.token, code=body.code, name=body.name, password=body.password)
+@router.post("/password", response_model=Item[UserOut], summary="Change the administrator password (signs out every other session)")
+def change_password(body: PasswordChange, request: Request, response: Response, p: Principal = Depends(get_principal), db: Session = Depends(get_db)):
+    if p.user is None:
+        raise Unauthorized("Not signed in.")
+    _ip_limit(request, "password", 10)
+    if not verify_password(body.current_password, p.user.password_hash):
+        raise AppError("Current password is incorrect.", code="INVALID_PASSWORD", status_code=400)
+    u = p.user
+    u.password_hash = hash_password(body.new_password)
+    u.session_version += 1
     s = get_settings()
-    token = create_session_token(str(user.id), user.role, user.session_version)
-    csrf = new_csrf_token()
     max_age = s.session_ttl_minutes * 60
-    response.set_cookie(SESSION_COOKIE, token, httponly=True, secure=s.cookie_secure, samesite="lax", max_age=max_age, path="/", domain=s.cookie_domain)
-    response.set_cookie(CSRF_COOKIE, csrf, httponly=False, secure=s.cookie_secure, samesite="lax", max_age=max_age, path="/", domain=s.cookie_domain)
-    user.last_login_at = datetime.now(timezone.utc)
+    response.set_cookie(SESSION_COOKIE, create_session_token(str(u.id), u.role, u.session_version), httponly=True, secure=s.cookie_secure,
+                        samesite="lax", max_age=max_age, path="/", domain=s.cookie_domain)
+    audit(db, u.id, "auth.password_change", "user", u.id)
     db.commit()
-    return {"data": {"user": user, "csrf_token": csrf, "expires_in_seconds": max_age}}
-
+    return {"data": u}
