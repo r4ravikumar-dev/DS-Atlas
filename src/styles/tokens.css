@@ -1,0 +1,150 @@
+/*
+ * Design tokens — the single source for colour, type, space, radius, elevation and motion.
+ *
+ * Layers:
+ *   1. primitives (--ink-*, --paper-*, --lime-*, …): raw values, never used directly in components
+ *   2. semantic tokens (--bg, --surface, --text, --accent, …): what components consume
+ *   3. Tailwind theme (src/styles/tailwind.css) maps the semantic tokens to utilities (bg-surface, text-muted, …)
+ *
+ * The admin area (SCSS modules) and the public directory (Tailwind) read the same semantic tokens.
+ */
+
+:root {
+  /* ── primitives ── */
+  --ink-950: #08080a;
+  --ink-900: #0d0d10;
+  --ink-850: #121215;
+  --ink-800: #18181c;
+  --ink-700: #222227;
+  --paper-50: #f6f5ef;
+  --paper-100: #efede5;
+  --paper-200: #e5e3d9;
+  --stone-300: #b9b8b0;
+  --stone-400: #9a9993;
+  --stone-500: #8f8e88;
+  --stone-600: #5f5e59;
+  --lime-400: #d4ff3a;
+  --lime-500: #c8f520;
+  --lime-800: #4a6400;
+  --violet-400: #9b8cff;
+  --violet-600: #5a45ff;
+  --sky-400: #5ec8ff;
+  --sky-600: #0369a1;
+  --mint-400: #4ff0b4;
+  --mint-600: #047857;
+  --amber-400: #ffc24b;
+  --amber-600: #8a5d00;
+  --coral-400: #ff7a59;
+  --coral-600: #b93a17;
+  --pink-400: #ff6fb5;
+  --pink-600: #b3266a;
+
+  /* ── semantic: dark (default). Light-theme -600 primitives are chosen for ≥4.5:1 on paper and white. ── */
+  --bg: var(--ink-950);
+  --bg-2: var(--ink-900);
+  --surface: var(--ink-850);
+  --surface-2: var(--ink-800);
+  --surface-3: var(--ink-700);
+  --line: rgb(255 255 255 / 0.08);
+  --line-strong: rgb(255 255 255 / 0.16);
+  --text: #f2f1ec;
+  --text-2: #d6d5cf;
+  --muted: var(--stone-400);
+  --faint: #84837d; /* ≥4.5:1 on bg/surface — still quieter than --muted */
+  --accent: var(--lime-400);
+  --accent-ink: var(--ink-950);
+  --accent-text: var(--lime-400);
+  --accent-soft: rgb(212 255 58 / 0.12);
+  --violet: var(--violet-400);
+  --coral: var(--coral-400);
+  --sky: var(--sky-400);
+  --mint: var(--mint-400);
+  --amber: var(--amber-400);
+  --pink: var(--pink-400);
+  --success: var(--mint-400);
+  --warning: var(--amber-400);
+  --danger: var(--coral-400);
+  --info: var(--sky-400);
+  --overlay: rgb(4 4 6 / 0.72);
+  --glass: rgb(13 13 16 / 0.72);
+
+  /* ── shape & elevation ── */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 22px;
+  --shadow-1: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 10px 30px -12px rgb(0 0 0 / 0.6);
+  --shadow-2: 0 30px 80px -20px rgb(0 0 0 / 0.75);
+
+  /* ── layout ── */
+  --gutter: clamp(16px, 4vw, 48px);
+  --header-h: 64px;
+  --measure: 68ch;
+
+  /* ── typography (fonts come from next/font in the root layout) ── */
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, 'SFMono-Regular', monospace;
+  --font-serif: var(--font-instrument), Georgia, serif;
+  --type-display: clamp(2.75rem, 1.6rem + 5.2vw, 6.25rem);
+  --type-title: clamp(2.1rem, 1.5rem + 2.6vw, 3.6rem);
+  --type-section: clamp(1.55rem, 1.25rem + 1.2vw, 2.25rem);
+  --type-card: 1.15rem;
+  --type-body: 1rem;
+  --type-meta: 0.8125rem;
+  --type-code: 0.8125rem;
+  --type-caption: 0.6875rem;
+
+  /* ── motion (mirrored in src/lib/motion/tokens.ts) ── */
+  --dur-instant: 120ms;
+  --dur-fast: 200ms;
+  --dur-base: 320ms;
+  --dur-slow: 600ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --bg: var(--paper-100);
+  --bg-2: var(--paper-200);
+  --surface: #ffffff;
+  --surface-2: var(--paper-50);
+  --surface-3: var(--paper-200);
+  --line: rgb(10 10 11 / 0.09);
+  --line-strong: rgb(10 10 11 / 0.18);
+  --text: #111112;
+  --text-2: #2c2c2e;
+  --muted: var(--stone-600);
+  --faint: #6b6a65;
+  --accent: var(--lime-500);
+  --accent-ink: var(--ink-950);
+  --accent-text: var(--lime-800);
+  --accent-soft: rgb(200 245 32 / 0.22);
+  --violet: var(--violet-600);
+  --coral: var(--coral-600);
+  --sky: var(--sky-600);
+  --mint: var(--mint-600);
+  --amber: var(--amber-600);
+  --pink: var(--pink-600);
+  --success: var(--mint-600);
+  --warning: var(--amber-600);
+  --danger: var(--coral-600);
+  --info: var(--sky-600);
+  --overlay: rgb(20 20 16 / 0.45);
+  --glass: rgb(239 237 229 / 0.78);
+  --shadow-1: 0 1px 0 rgb(255 255 255 / 0.6) inset, 0 10px 30px -14px rgb(20 20 10 / 0.2);
+  --shadow-2: 0 30px 80px -24px rgb(20 20 10 / 0.3);
+  color-scheme: light;
+}
+
+/* User-chosen reduced motion (footer toggle) behaves exactly like the OS preference. */
+:root[data-motion='reduce'] *,
+:root[data-motion='reduce'] *::before,
+:root[data-motion='reduce'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

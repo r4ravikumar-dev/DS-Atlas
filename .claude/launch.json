@@ -1,7 +1,37 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "ds-atlas", "runtimeExecutable": "npm", "runtimeArgs": ["run", "dev"], "port": 3000 },
-    { "name": "api", "runtimeExecutable": "backend/.venv/bin/uvicorn", "runtimeArgs": ["app.main:app", "--app-dir", "backend", "--port", "8000"], "port": 8000 }
+    {
+      "name": "ds-atlas",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "backend/.venv/bin/uvicorn",
+      "runtimeArgs": [
+        "app.main:app",
+        "--app-dir",
+        "backend",
+        "--port",
+        "8000"
+      ],
+      "port": 8000
+    },
+    {
+      "name": "ds-atlas-prod",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "next",
+        "start",
+        "-p",
+        "3001"
+      ],
+      "port": 3001
+    }
   ]
 }

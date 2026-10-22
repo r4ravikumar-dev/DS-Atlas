@@ -5,6 +5,8 @@
   h3 { font-size: 1.02rem; margin: 22px 0 8px; }
   p, ul, ol { margin: 0 0 12px; }
   ul, ol { padding-left: 20px; }
+  ul { list-style: disc; }
+  ol { list-style: decimal; }
   li { margin: 3px 0; }
   a { color: var(--accent-text); text-decoration: underline; text-underline-offset: 2px; }
   code { font-family: var(--font-mono); font-size: 0.82em; padding: 1px 5px; border-radius: 5px; background: var(--surface-2); }

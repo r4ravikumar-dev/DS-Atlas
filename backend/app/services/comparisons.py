@@ -1,5 +1,6 @@
 """Comparison generation from persisted records. Every cell carries a status:
-documented (value from a cited source) | not_documented (field empty in inspected sources) | not_applicable.
+documented (value from a cited source) | not_documented (field empty in inspected sources) |
+not_inspected (the official page was never parsed, so absence means nothing) | not_applicable.
 Analytical observations are returned separately under `interpretation`."""
 from __future__ import annotations
 
@@ -20,11 +21,13 @@ STATE_PROP = re.compile(r"^(default)?(open|opened|value|checked|selected|selecte
 HANDLER = re.compile(r"^on((Open|Value|Checked|Pressed|Selection|Expanded|Active|Input)?Change|Close|Cancel|Ok)$")
 
 
-def cell(value: Any, evidence: list[str] | None = None, na: bool = False) -> dict[str, Any]:
+def cell(value: Any, evidence: list[str] | None = None, na: bool = False, inspected: bool = True) -> dict[str, Any]:
     if na:
         return {"status": "not_applicable", "value": None, "evidence": []}
     empty = value in (None, "", [], {}, 0)
-    return {"status": "not_documented" if empty else "documented", "value": None if empty else value, "evidence": (evidence or [])[:5]}
+    if empty:
+        return {"status": "not_documented" if inspected else "not_inspected", "value": None, "evidence": []}
+    return {"status": "documented", "value": value, "evidence": (evidence or [])[:5]}
 
 
 def _systems(db: Session, ids: list[int], dims: list[str]) -> dict[str, Any]:
@@ -85,20 +88,22 @@ def _components(db: Session, ids: list[int], dims: list[str]) -> dict[str, Any]:
         prop_sets[i] = set(names)
         ev = [rec.source_url] + ([c.documentation_url] if c.documentation_url else [])
         headless = c.library in ("Radix Primitives", "Base UI", "React Aria")
+        # directory-level records only prove the component exists at a URL; their docs were not parsed
+        seen = c.detail_level in ("api", "doc")
         cols.append({"id": i, "name": c.name, "library": c.library, "family": c.family, "verification_status": c.verification_status})
         data = {
             "overview": {"Library": cell(c.library, ev), "Kind": cell(c.kind), "Detail level": cell(c.detail_level), "Description": cell(c.description, ev),
                          "Version inspected": cell(c.source_version)},
-            "api": {"Documented props": cell(len(names), ev), "Subcomponents": cell([s.get("name") for s in nc.get("subcomponents", [])], ev),
-                    "Variants (from source)": cell(nc.get("variants_from_source"), ev)},
-            "state": {"State props": cell(sorted({n for n in names if STATE_PROP.match(n)}), ev),
-                      "Change handlers": cell(sorted({n for n in names if HANDLER.match(n)}), ev)},
-            "keyboard": {"Keyboard entries": cell([f"{k.get('keys')}: {k.get('description')}" for k in (nc.get("keyboard") or [])][:12], ev)},
-            "accessibility": {"Accessibility notes": cell([a.get("section") for a in (nc.get("accessibility_notes") or [])], ev),
-                              "ARIA pattern links": cell(nc.get("aria_pattern_links"), ev)},
-            "structure": {"Anatomy documented": cell(bool(nc.get("has_anatomy_section")) or None, ev), "Data attributes": cell(len(nc.get("data_attributes") or []) or None),
-                          "CSS variables": cell([v.get("variable") for v in (nc.get("css_variables") or [])][:10], ev, na=False),
-                          "Styling tokens": cell(None, na=headless) if headless else cell(len(nc.get("styles_api") or []) or None, ev)},
+            "api": {"Documented props": cell(len(names), ev, inspected=seen), "Subcomponents": cell([s.get("name") for s in nc.get("subcomponents", [])], ev, inspected=seen),
+                    "Variants (from source)": cell(nc.get("variants_from_source"), ev, inspected=seen)},
+            "state": {"State props": cell(sorted({n for n in names if STATE_PROP.match(n)}), ev, inspected=seen),
+                      "Change handlers": cell(sorted({n for n in names if HANDLER.match(n)}), ev, inspected=seen)},
+            "keyboard": {"Keyboard entries": cell([f"{k.get('keys')}: {k.get('description')}" for k in (nc.get("keyboard") or [])][:12], ev, inspected=seen)},
+            "accessibility": {"Accessibility notes": cell([a.get("section") for a in (nc.get("accessibility_notes") or [])], ev, inspected=seen),
+                              "ARIA pattern links": cell(nc.get("aria_pattern_links"), ev, inspected=seen)},
+            "structure": {"Anatomy documented": cell(bool(nc.get("has_anatomy_section")) or None, ev, inspected=seen), "Data attributes": cell(len(nc.get("data_attributes") or []) or None, inspected=seen),
+                          "CSS variables": cell([v.get("variable") for v in (nc.get("css_variables") or [])][:10], ev, inspected=seen),
+                          "Styling tokens": cell(None, na=headless) if headless else cell(len(nc.get("styles_api") or []) or None, ev, inspected=seen)},
             "evidence": {"Source URL": cell(rec.source_url), "Documentation URL": cell(c.documentation_url)},
         }
         for d in dims:
@@ -125,7 +130,16 @@ def compute(db: Session, kind: str, ids: list[int], dims: list[str] | None = Non
     bad = [d for d in dims if d not in allowed]
     if bad:
         raise AppError(f"Unsupported dimensions: {bad}", code="VALIDATION_ERROR", status_code=422, details=[{"field": "dimensions", "reason": f"allowed: {allowed}"}])
-    return {"kind": kind, "dimensions": dims, "result": (_systems if kind == "systems" else _components)(db, ids, dims)}
+    result = (_systems if kind == "systems" else _components)(db, ids, dims)
+    for d in result["rows"].values():  # public view: research content only, no internal processing rows
+        for label in INTERNAL_ROWS:
+            d.pop(label, None)
+    result["dimensions"] = [d for d in result["dimensions"] if result["rows"].get(d)]
+    return {"kind": kind, "dimensions": result["dimensions"], "result": result}
+
+
+# Rows that describe ingestion/verification state rather than the systems themselves (kept in admin comparisons).
+INTERNAL_ROWS = ("Source IDs", "Verification", "Conflicts", "Last verified", "AI-readiness score", "Detail level")
 
 
 def generate(db: Session, comp: Comparison) -> Comparison:

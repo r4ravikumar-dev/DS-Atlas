@@ -29,7 +29,18 @@ def list_(q: str | None = Query(None, max_length=200), family: list[str] | None 
           library: list[str] | None = Depends(csv_list("library")), framework: list[str] | None = Depends(csv_list("framework")),
           detail_level: list[str] | None = Depends(csv_list("detail_level")), source: list[str] | None = Depends(csv_list("source")),
           has_keyboard: bool | None = None, has_props: bool | None = None, system_id: int | None = None, sort: str | None = Query(None, max_length=30),
+          playground: str | None = Query(None, pattern="^(live|adapter|any)$", description="only components with an interactive preview"),
           pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
+    if playground:
+        from ....repositories import paginate
+        from ....services import playground as pgsvc
+        reg = pgsvc.registry()
+        pairs = [f"{r['library']}||{r['component']}" for r in reg["components"] if playground == "any" or reg["libraries"][r["library"]]["tier"] == playground]
+        stmt = (select(Component, Source.key).join(Source, Source.id == Component.source_id)
+                .where(func.concat(Component.library, "||", Component.name).in_(pairs or ["-"]), Component.detail_level.in_(pgsvc.PREVIEWABLE_LEVELS))
+                .order_by(Component.library, Component.name))
+        rows, total = paginate(db, stmt, pp.page, pp.page_size)
+        return page_out([component_out(c, k) for c, k in rows], total, pp.page, pp.page_size)
     rows, total = list_components(db, q=q, family=family, library=library, framework=framework, detail_level=detail_level, has_keyboard=has_keyboard,
                                   has_props=has_props, system_id=system_id, source_key=source, sort=sort, page=pp.page, page_size=pp.page_size)
     return page_out([component_out(c, k) for c, k in rows], total, pp.page, pp.page_size)
@@ -42,6 +53,17 @@ def facets(db: Session = Depends(get_db)):
 
 @router.get("/{component_id}", response_model=Item[ComponentDetail])
 def get(component_id: int, db: Session = Depends(get_db)):
+    return {"data": detail(db, component_id)}
+
+
+@router.get("/{component_id}/playground-schema", summary="Interactive preview tier, property controls (with default provenance) and limitations")
+def playground_schema(component_id: int, db: Session = Depends(get_db)):
+    from ....services import playground
+    c, _, _ = _get(db, component_id)
+    return {"data": {**playground.schema(db, c), "system_slug": c.system.slug if c.system else None, "slug": c.slug}}
+
+
+def detail(db: Session, component_id: int) -> dict:
     c, rec, key = _get(db, component_id)
     nc = rec.content or {}
     props = db.scalars(select(ComponentProp).where(ComponentProp.component_id == c.id).order_by(ComponentProp.position).limit(1500)).all()
@@ -52,7 +74,7 @@ def get(component_id: int, db: Session = Depends(get_db)):
              keyboard=(nc.get("keyboard") or [])[:100], accessibility_notes=(nc.get("accessibility_notes") or [])[:20], examples=(nc.get("examples") or [])[:60],
              variants=nc.get("variants_from_source"), data_attributes=(nc.get("data_attributes") or [])[:60], css_variables=(nc.get("css_variables") or [])[:60],
              anatomy=nc.get("anatomy"), section_outline=(nc.get("section_outline") or [])[:80], notes=((rec.extra or {}).get("notes") or [])[:10])
-    return {"data": d}
+    return d
 
 
 @router.get("/{component_id}/evidence", response_model=Page[EvidenceOut])

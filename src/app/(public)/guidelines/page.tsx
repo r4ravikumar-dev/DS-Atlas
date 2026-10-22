@@ -1,8 +1,6 @@
-'use client'
+import { permanentRedirect } from 'next/navigation'
 
-import { Suspense } from 'react'
-import { GuidelineList } from './GuidelineList'
-
-export default function GuidelinesPage() {
-  return <Suspense><GuidelineList kind="guidelines" /></Suspense>
+/** Guidelines and patterns are one library now, organised by design system and cross-system research. */
+export default function GuidelinesIndex() {
+  permanentRedirect('/patterns')
 }

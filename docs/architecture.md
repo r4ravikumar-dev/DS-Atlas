@@ -138,11 +138,61 @@ Full contract: `backend/openapi.json` (served at `/api/v1/openapi.json`, docs at
   * `tests/test_access_control.py` sweeps every endpoint in the OpenAPI document, both anonymously and as a non-admin.
   * Public responses carry `Cache-Control: public, s-maxage=300` so a CDN can absorb traffic; admin responses are `no-store`.
   * Anonymous API traffic is rate-limited per client.
-* **Frontend.** `src/app/(public)` holds the directory; `src/app/admin` holds the administration area.
-  * The shared detail pages show editing controls only to a signed-in administrator. This is a UI hint; the API refuses writes from anyone else.
+* **Frontend.** `src/app/(public)` holds the directory (Server Components reading the backend directly, Tailwind + Radix + Motion, see `docs/design-system.md`); `src/app/admin` holds the administration area.
+  * Management views of a system or component live at `/admin/systems/[id]` and `/admin/components/[id]`; the public pages only show a signed-in administrator a link to them. This is a UI hint; the API refuses writes from anyone else.
   * `proxy.ts` redirects anonymous `/admin/*` visits to `/admin/login`, and marks the admin area `noindex`.
-  * `robots.txt` disallows `/admin` and `/api/`.
+  * `robots.txt` disallows `/admin`, `/api/` and `/search`; `sitemap.xml` lists public pages generated from backend records.
+  * After a build that changed content, `services/frontend_cache.py` posts the affected cache tags to the site's `/revalidate` (bearer `REVALIDATE_SECRET`); a no-change sync posts nothing.
 * **Daily synchronization.** See `docs/operations.md` → *Daily synchronization*.
   * `services/sync.py` handles the schedule, run orchestration and finalize step.
   * `services/ingest.py` handles record fingerprints, the change log and safe staling.
   * `services/build.py` provides the `_Guarded` fingerprint upserts, plus diff-based relationship and token-reference updates.
+
+## System hierarchy, playgrounds and visual assets
+
+**Hierarchy.** Design system → foundations → component families → components → props and variants → playground. Every system also owns its tokens, patterns, guidance and resources. Every component and token already references its canonical system (`system_id`). Records with the same name in different systems are never merged.
+
+* **Stable slugs.** These columns hold slugs: `design_systems.slug`, `components.slug` (unique within a system), `design_tokens.slug` (unique within a system; a duplicate path in another theme gets a theme suffix) and `guidelines.slug`. `services/catalog.refresh` assigns slugs after every build (also available as `manage.py refresh-catalog`). It never rewrites an existing slug, so URLs stay stable through daily syncs. Old numeric URLs redirect permanently to the slug URLs.
+* **Families.** `component_families` holds the normalised taxonomy: 51 families in 9 categories (Actions, Forms and input, Navigation, Feedback and status, Overlays and floating interfaces, Data display, Data visualization, Layout and composition, Content and media). Components keep their source-native names, and `components.family` names the family.
+* **Token groups.** `design_tokens.category` holds colour, typography, spacing, sizing, border, radius, shadow, motion, breakpoint, z-index, opacity or other. `design_tokens.tier` is `primitive`, `semantic` (an alias) or `component`. Both are recomputed deterministically, and written only when they differ.
+* **Scoped API.** Everything resolves a system by id or slug, and returns 404 when a record belongs to another system:
+  * `GET /design-systems/{ref}` with `/components[/{ref}]`, `/component-families`, `/tokens[/{ref}]`, `/token-groups`, `/patterns[/{ref}]`, `/pattern-groups`, `/playgrounds` and `/resources`;
+  * `GET /components/{id}/playground-schema`;
+  * `GET /pattern-library/{systems,research,facets}`.
+  * Cross-system research guidance (checklists, specifications) has `system_id = NULL` and is listed separately.
+* **Search.** Hits link to the record inside its own system, for example `/systems/{system}/components/{component}`, with the system name and family in the subtitle.
+
+**Playgrounds (three tiers)**, driven by `backend/app/data/playground.json`, which both the backend and the frontend read:
+
+| Tier | When | How |
+|---|---|---|
+| `live` | The system's own package can be installed at the documented version: Mantine 9.7.3, Ant Design 6.6.7, React Aria Components 1.22.1, Base UI 1.9.0, Radix Primitives 1.8.1 | `src/playground/libs/<library>.tsx` renders the real component |
+| `adapter` | The system ships copy-paste source (shadcn/ui) | A labelled platform preview built from the published recipe, coloured with that system's stored theme tokens |
+| `docs` | Anything else | API, values, examples and official links only; no preview |
+
+* **Controls.**
+  * Controls come from documented props that are booleans, literal unions, numbers or strings, limited to the registry's allowlist.
+  * Props the package accepts, but the docs don't type as literals, are labelled `implementation`.
+  * Sample text is labelled `preview`.
+  * Every control's default keeps its provenance: documented, implementation or preview.
+  * Handlers, render props and object types stay metadata only.
+* **Isolation.** Previews run in `/playground-frame`. The frame:
+  * is same-origin and sandboxed (`allow-scripts allow-same-origin`, no forms, popups or top navigation);
+  * may only be framed by this site (`X-Frame-Options: SAMEORIGIN` and `frame-ancestors 'self'`);
+  * loads only the one library it needs, so each library's global CSS stays inside the frame.
+* **Messages.**
+  * The playground page sends configurations with `postMessage`.
+  * The frame checks each message's origin and source, then re-validates it against the schema it fetched itself.
+  * Messages carry values only, never code.
+
+**Visual assets (`system_assets`).**
+* **Collection.** `services/assets.collect` reads each system's official page through the polite fetcher and takes only what that page declares: an icon (SVG, apple-touch or PNG) and its og:image. It validates each image by fetching it (type sniffing, a 2 MB cap, intrinsic size) and stores provenance: the page, host, organisation, attribution and hash.
+* **No copying.** Assets are not mirrored. The public site references the original URL with `referrerpolicy=no-referrer`. A broken image falls back to the monogram.
+* **Licences.** A licence is recorded only when the source states one.
+* **Idempotence.** An unchanged asset only gets `checked_at` refreshed. A previously good asset that now fails is kept and marked `broken`.
+* **Triggers.** Collection runs via `manage.py collect-assets`, or the admin "Re-collect" action, which queues the `collect_assets` job. Its diagnostics show only in the admin system view.
+
+**Public presentation model (`api/public_projection.py`).**
+* **Who gets what.** `require("public:read")` marks every non-admin request. The middleware then removes verification, confidence, review/deduplication state, crawl and extraction diagnostics, link-check details and internal source keys from the JSON. It also drops links that no longer work.
+* **Admins.** An administrator session gets the full response, marked `Cache-Control: private, no-store`. Public responses send `Vary: Cookie, Authorization`.
+* **Comparisons.** The public comparison also omits ingestion rows such as source IDs, the verification basis and conflicts.

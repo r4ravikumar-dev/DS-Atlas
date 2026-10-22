@@ -9,8 +9,6 @@ import { useCrawlStorybook, useStorybookProjects, useStorybookStories, useStoryb
 import {
   Button,
   Drawer,
-  EmptyState,
-  ErrorState,
   ExtLink,
   Field,
   fmtDate,
@@ -25,6 +23,7 @@ import {
   Tabs,
   Tag,
 } from '@/components/ui'
+import { ErrorNotice } from '@/components/kit/states'
 import { DataTable } from '@/components/ui/DataTable'
 import type { StorybookProject, StorybookStory, StorybookVariant } from '@/lib/api/types'
 import s from '@/components/platform/page.module.scss'
@@ -114,22 +113,6 @@ function ProjectsView() {
             placeholder="Search projects by title, org or slug…"
           />
           <Select
-            label="Filter status"
-            value={status}
-            onChange={(v) => {
-              setStatus(v)
-              setPage(1)
-            }}
-            options={[
-              { value: '', label: 'All statuses' },
-              { value: 'public_index_extracted', label: 'Public index extracted' },
-              { value: 'public_index_available', label: 'Index available' },
-              { value: 'private_or_restricted', label: 'Private / restricted' },
-              { value: 'build_index_missing', label: 'Build index missing' },
-              { value: 'unreachable', label: 'Unreachable' },
-            ]}
-          />
-          <Select
             label="Sort by"
             value={sort}
             onChange={(v) => {
@@ -145,7 +128,7 @@ function ProjectsView() {
         </div>
 
         {projects.error ? (
-          <ErrorState error={projects.error} onRetry={() => projects.refetch()} />
+          <ErrorNotice title="Storybook data could not be loaded" onRetry={() => projects.refetch()} />
         ) : (
           <>
             <DataTable
@@ -163,15 +146,6 @@ function ProjectsView() {
                       <strong>{r.title}</strong>
                       <small>{r.organization || r.slug}</small>
                     </span>
-                  ),
-                },
-                {
-                  key: 'st',
-                  header: 'Status',
-                  cell: (r) => (
-                    <Tag tone={r.status.startsWith('public') ? 'accent' : 'muted'}>
-                      {r.status.replace(/_/g, ' ')}
-                    </Tag>
                   ),
                 },
                 {
@@ -235,7 +209,6 @@ function ProjectsView() {
             <p className={s.muted} style={{ fontSize: '0.84rem' }}>Project slug: {selected.slug}</p>
             <KV
               items={[
-                ['Status', <Tag key="st">{selected.status.replace(/_/g, ' ')}</Tag>],
                 ['Framework', selected.framework],
                 ['Storybook version', selected.storybook_version],
                 ['Index kind', selected.index_kind],
@@ -244,7 +217,6 @@ function ProjectsView() {
                 ['Documentation entries', selected.docs_entries.toLocaleString()],
                 ['Variants extracted', selected.variants_extracted.toLocaleString()],
                 ['Source files parsed', selected.source_files_parsed.toLocaleString()],
-                ['Last inspected', fmtDate(selected.last_checked_at)],
                 [
                   'Storybook URL',
                   selected.resolved_url || selected.storybook_url ? (
@@ -257,13 +229,6 @@ function ProjectsView() {
                 ],
               ]}
             />
-            {selected.limitation && (
-              <Panel title="Crawl limitation notes">
-                <p className={s.pad} style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-                  {selected.limitation}
-                </p>
-              </Panel>
-            )}
           </div>
         </Drawer>
       )}
@@ -317,24 +282,10 @@ function StoriesView() {
               { value: 'autodocs', label: 'Autodocs' },
             ]}
           />
-          <Select
-            label="Resolution status"
-            value={resolution}
-            onChange={(v) => {
-              setResolution(v)
-              setPage(1)
-            }}
-            options={[
-              { value: '', label: 'All resolutions' },
-              { value: 'linked', label: 'Linked to canonical component' },
-              { value: 'unresolved', label: 'Unresolved' },
-              { value: 'not_applicable', label: 'Not applicable' },
-            ]}
-          />
         </div>
 
         {stories.error ? (
-          <ErrorState error={stories.error} onRetry={() => stories.refetch()} />
+          <ErrorNotice title="Storybook data could not be loaded" onRetry={() => stories.refetch()} />
         ) : (
           <>
             <DataTable
@@ -370,16 +321,6 @@ function StoriesView() {
                   key: 'type',
                   header: 'Type',
                   cell: (r) => <Tag>{r.entry_type}</Tag>,
-                  hideBelow: 'md',
-                },
-                {
-                  key: 'res',
-                  header: 'Resolution',
-                  cell: (r) => (
-                    <Tag tone={r.resolution_status === 'linked' ? 'accent' : undefined}>
-                      {r.resolution_status}
-                    </Tag>
-                  ),
                   hideBelow: 'md',
                 },
                 {
@@ -426,7 +367,6 @@ function StoriesView() {
                     selected.component_name
                   ),
                 ],
-                ['Resolution', selected.resolution_status],
                 ['Import path', selected.import_path],
                 ['Story URL', <ExtLink key="url" href={selected.story_url} />],
                 [
@@ -494,24 +434,10 @@ function VariantsView() {
             }}
             placeholder="Search variants by label or component…"
           />
-          <Select
-            label="Extraction method"
-            value={method}
-            onChange={(v) => {
-              setMethod(v)
-              setPage(1)
-            }}
-            options={[
-              { value: '', label: 'All extraction methods' },
-              { value: 'story_args', label: 'Story args (direct)' },
-              { value: 'arg_types_options', label: 'ArgTypes options' },
-              { value: 'story_name_inference', label: 'Story name inference' },
-            ]}
-          />
         </div>
 
         {variants.error ? (
-          <ErrorState error={variants.error} onRetry={() => variants.refetch()} />
+          <ErrorNotice title="Storybook data could not be loaded" onRetry={() => variants.refetch()} />
         ) : (
           <>
             <DataTable
@@ -537,18 +463,6 @@ function VariantsView() {
                     ) : (
                       <span>{r.component_name || '—'}</span>
                     ),
-                },
-                {
-                  key: 'm',
-                  header: 'Method',
-                  cell: (r) => <Tag>{r.method.replace(/_/g, ' ')}</Tag>,
-                  hideBelow: 'md',
-                },
-                {
-                  key: 'c',
-                  header: 'Confidence',
-                  cell: (r) => <Tag tone={r.confidence === 'high' ? 'accent' : undefined}>{r.confidence}</Tag>,
-                  hideBelow: 'md',
                 },
                 {
                   key: 'props',
@@ -599,8 +513,6 @@ function VariantsView() {
                     selected.component_name
                   ),
                 ],
-                ['Extraction method', selected.method],
-                ['Confidence', selected.confidence],
               ]}
             />
             <Panel title="Variant properties (JSON)">

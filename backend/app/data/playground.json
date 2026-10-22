@@ -1,0 +1,1518 @@
+{
+ "_doc": "Playground registry shared by the backend (schema endpoint) and the frontend (renderers). 'props' are documented prop names exposed as controls when their documented type is boolean, a literal union, number or string. 'extra' are props the installed implementation accepts but the collected docs do not type as literals; they are labelled as implementation-provided. 'content' are preview-only text inputs (labels, titles). Nothing here is used as research data.",
+ "libraries": {
+  "Mantine": {
+   "key": "mantine",
+   "package": "@mantine/core",
+   "version": "9.7.3",
+   "tier": "live",
+   "themes": [
+    "light",
+    "dark"
+   ],
+   "styling": "Mantine's own stylesheet and default theme."
+  },
+  "Ant Design": {
+   "key": "antd",
+   "package": "antd",
+   "version": "6.6.7",
+   "tier": "live",
+   "themes": [
+    "light",
+    "dark"
+   ],
+   "styling": "Ant Design's CSS-in-JS with its default and dark algorithms."
+  },
+  "React Aria": {
+   "key": "react-aria",
+   "package": "react-aria-components",
+   "version": "1.22.1",
+   "tier": "live",
+   "themes": [
+    "light",
+    "dark"
+   ],
+   "headless": true,
+   "styling": "React Aria Components ship no visual styles; neutral platform styles are applied to make states visible."
+  },
+  "Base UI": {
+   "key": "base-ui",
+   "package": "@base-ui/react",
+   "version": "1.9.0",
+   "tier": "live",
+   "themes": [
+    "light",
+    "dark"
+   ],
+   "headless": true,
+   "styling": "Base UI ships unstyled components; neutral platform styles are applied to make states visible."
+  },
+  "Radix Primitives": {
+   "key": "radix",
+   "package": "radix-ui",
+   "version": "1.8.1",
+   "tier": "live",
+   "themes": [
+    "light",
+    "dark"
+   ],
+   "headless": true,
+   "styling": "Radix Primitives are unstyled; neutral platform styles are applied to make states visible."
+  },
+  "shadcn/ui": {
+   "key": "shadcn",
+   "package": null,
+   "version": null,
+   "tier": "adapter",
+   "themes": [
+    "light",
+    "dark"
+   ],
+   "styling": "Platform-rendered from shadcn/ui's published component recipes, coloured with the shadcn/ui theme tokens stored for this system."
+  }
+ },
+ "components": [
+  {
+   "library": "Mantine",
+   "component": "Button",
+   "impl": "Button",
+   "props": [
+    "disabled",
+    "loading",
+    "fullWidth",
+    "autoContrast"
+   ],
+   "extra": {
+    "variant": {
+     "type": "enum",
+     "options": [
+      "filled",
+      "light",
+      "outline",
+      "subtle",
+      "transparent",
+      "white",
+      "default"
+     ],
+     "default": "filled",
+     "description": "Visual variant."
+    },
+    "size": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "sm",
+     "description": "Size from the Mantine theme scale."
+    },
+    "color": {
+     "type": "enum",
+     "options": [
+      "blue",
+      "cyan",
+      "teal",
+      "green",
+      "lime",
+      "yellow",
+      "orange",
+      "red",
+      "pink",
+      "grape",
+      "violet",
+      "indigo",
+      "gray",
+      "dark"
+     ],
+     "default": "blue",
+     "description": "Key of the Mantine theme colour palette (default theme)."
+    },
+    "radius": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "sm",
+     "description": "Radius from the Mantine theme scale."
+    }
+   },
+   "content": {
+    "children": "Button"
+   }
+  },
+  {
+   "library": "Mantine",
+   "component": "Badge",
+   "impl": "Badge",
+   "props": [
+    "circle",
+    "fullWidth",
+    "autoContrast"
+   ],
+   "extra": {
+    "variant": {
+     "type": "enum",
+     "options": [
+      "filled",
+      "light",
+      "outline",
+      "dot",
+      "transparent",
+      "white",
+      "default"
+     ],
+     "default": "filled",
+     "description": "Visual variant."
+    },
+    "size": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "md",
+     "description": "Size from the Mantine theme scale."
+    },
+    "color": {
+     "type": "enum",
+     "options": [
+      "blue",
+      "cyan",
+      "teal",
+      "green",
+      "lime",
+      "yellow",
+      "orange",
+      "red",
+      "pink",
+      "grape",
+      "violet",
+      "indigo",
+      "gray",
+      "dark"
+     ],
+     "default": "blue",
+     "description": "Key of the Mantine theme colour palette (default theme)."
+    },
+    "radius": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "xl",
+     "description": "Radius from the Mantine theme scale."
+    }
+   },
+   "content": {
+    "children": "Badge"
+   }
+  },
+  {
+   "library": "Mantine",
+   "component": "Switch",
+   "impl": "Switch",
+   "props": [
+    "labelPosition",
+    "withThumbIndicator"
+   ],
+   "extra": {
+    "disabled": {
+     "type": "boolean",
+     "default": false,
+     "description": "Disables the switch."
+    },
+    "size": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "sm",
+     "description": "Size from the Mantine theme scale."
+    },
+    "color": {
+     "type": "enum",
+     "options": [
+      "blue",
+      "cyan",
+      "teal",
+      "green",
+      "lime",
+      "yellow",
+      "orange",
+      "red",
+      "pink",
+      "grape",
+      "violet",
+      "indigo",
+      "gray",
+      "dark"
+     ],
+     "default": "blue",
+     "description": "Key of the Mantine theme colour palette (default theme)."
+    },
+    "radius": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "xl",
+     "description": "Radius from the Mantine theme scale."
+    }
+   },
+   "content": {
+    "label": "Email notifications"
+   },
+   "states": [
+    "toggle"
+   ]
+  },
+  {
+   "library": "Mantine",
+   "component": "Checkbox",
+   "impl": "Checkbox",
+   "props": [
+    "disabled",
+    "indeterminate",
+    "labelPosition",
+    "withErrorStyles"
+   ],
+   "extra": {
+    "size": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "sm",
+     "description": "Size from the Mantine theme scale."
+    },
+    "color": {
+     "type": "enum",
+     "options": [
+      "blue",
+      "cyan",
+      "teal",
+      "green",
+      "lime",
+      "yellow",
+      "orange",
+      "red",
+      "pink",
+      "grape",
+      "violet",
+      "indigo",
+      "gray",
+      "dark"
+     ],
+     "default": "blue",
+     "description": "Key of the Mantine theme colour palette (default theme)."
+    },
+    "radius": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "sm",
+     "description": "Radius from the Mantine theme scale."
+    }
+   },
+   "content": {
+    "label": "I agree to the terms"
+   },
+   "states": [
+    "toggle"
+   ]
+  },
+  {
+   "library": "Mantine",
+   "component": "Slider",
+   "impl": "Slider",
+   "props": [
+    "disabled",
+    "inverted",
+    "labelAlwaysOn",
+    "showLabelOnHover",
+    "min",
+    "max",
+    "step"
+   ],
+   "extra": {
+    "size": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "md",
+     "description": "Size from the Mantine theme scale."
+    },
+    "color": {
+     "type": "enum",
+     "options": [
+      "blue",
+      "cyan",
+      "teal",
+      "green",
+      "lime",
+      "yellow",
+      "orange",
+      "red",
+      "pink",
+      "grape",
+      "violet",
+      "indigo",
+      "gray",
+      "dark"
+     ],
+     "default": "blue",
+     "description": "Key of the Mantine theme colour palette (default theme)."
+    },
+    "radius": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "xl",
+     "description": "Radius from the Mantine theme scale."
+    }
+   },
+   "preview": {
+    "min": 0,
+    "max": 100,
+    "step": 1
+   },
+   "states": [
+    "drag"
+   ]
+  },
+  {
+   "library": "Mantine",
+   "component": "Progress",
+   "impl": "Progress",
+   "props": [
+    "animated",
+    "striped"
+   ],
+   "extra": {
+    "value": {
+     "type": "number",
+     "min": 0,
+     "max": 100,
+     "default": 60,
+     "description": "Progress value (0\u2013100)."
+    },
+    "size": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "md",
+     "description": "Size from the Mantine theme scale."
+    },
+    "color": {
+     "type": "enum",
+     "options": [
+      "blue",
+      "cyan",
+      "teal",
+      "green",
+      "lime",
+      "yellow",
+      "orange",
+      "red",
+      "pink",
+      "grape",
+      "violet",
+      "indigo",
+      "gray",
+      "dark"
+     ],
+     "default": "blue",
+     "description": "Key of the Mantine theme colour palette (default theme)."
+    },
+    "radius": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "sm",
+     "description": "Radius from the Mantine theme scale."
+    }
+   }
+  },
+  {
+   "library": "Mantine",
+   "component": "Alert",
+   "impl": "Alert",
+   "props": [
+    "withCloseButton"
+   ],
+   "extra": {
+    "variant": {
+     "type": "enum",
+     "options": [
+      "light",
+      "filled",
+      "outline",
+      "default",
+      "transparent",
+      "white"
+     ],
+     "default": "light",
+     "description": "Visual variant."
+    },
+    "color": {
+     "type": "enum",
+     "options": [
+      "blue",
+      "cyan",
+      "teal",
+      "green",
+      "lime",
+      "yellow",
+      "orange",
+      "red",
+      "pink",
+      "grape",
+      "violet",
+      "indigo",
+      "gray",
+      "dark"
+     ],
+     "default": "blue",
+     "description": "Key of the Mantine theme colour palette (default theme)."
+    },
+    "radius": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "sm",
+     "description": "Radius from the Mantine theme scale."
+    }
+   },
+   "content": {
+    "title": "Heads up",
+    "children": "Something happened that you should know about."
+   }
+  },
+  {
+   "library": "Mantine",
+   "component": "SegmentedControl",
+   "impl": "SegmentedControl",
+   "props": [
+    "disabled",
+    "fullWidth",
+    "readOnly",
+    "withItemsBorders",
+    "orientation"
+   ],
+   "extra": {
+    "size": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "sm",
+     "description": "Size from the Mantine theme scale."
+    },
+    "color": {
+     "type": "enum",
+     "options": [
+      "blue",
+      "cyan",
+      "teal",
+      "green",
+      "lime",
+      "yellow",
+      "orange",
+      "red",
+      "pink",
+      "grape",
+      "violet",
+      "indigo",
+      "gray",
+      "dark"
+     ],
+     "default": null,
+     "description": "Key of the Mantine theme colour palette (default theme)."
+    },
+    "radius": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "sm",
+     "description": "Radius from the Mantine theme scale."
+    }
+   },
+   "states": [
+    "select"
+   ]
+  },
+  {
+   "library": "Mantine",
+   "component": "Rating",
+   "impl": "Rating",
+   "props": [
+    "count",
+    "fractions",
+    "readOnly",
+    "highlightSelectedOnly"
+   ],
+   "extra": {
+    "size": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "sm",
+     "description": "Size from the Mantine theme scale."
+    },
+    "color": {
+     "type": "enum",
+     "options": [
+      "yellow",
+      "orange",
+      "red",
+      "pink",
+      "grape",
+      "violet",
+      "blue",
+      "teal",
+      "green"
+     ],
+     "default": "yellow",
+     "description": "Key of the Mantine theme colour palette (default theme)."
+    }
+   },
+   "preview": {
+    "count": 5,
+    "fractions": 1
+   },
+   "states": [
+    "select"
+   ]
+  },
+  {
+   "library": "Mantine",
+   "component": "Tabs",
+   "impl": "Tabs",
+   "props": [
+    "inverted",
+    "grow",
+    "loop",
+    "activateTabWithKeyboard",
+    "orientation"
+   ],
+   "extra": {
+    "variant": {
+     "type": "enum",
+     "options": [
+      "default",
+      "outline",
+      "pills"
+     ],
+     "default": "default",
+     "description": "Visual variant."
+    },
+    "color": {
+     "type": "enum",
+     "options": [
+      "blue",
+      "cyan",
+      "teal",
+      "green",
+      "lime",
+      "yellow",
+      "orange",
+      "red",
+      "pink",
+      "grape",
+      "violet",
+      "indigo",
+      "gray",
+      "dark"
+     ],
+     "default": "blue",
+     "description": "Key of the Mantine theme colour palette (default theme)."
+    },
+    "radius": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "sm",
+     "description": "Radius from the Mantine theme scale."
+    }
+   },
+   "states": [
+    "select"
+   ]
+  },
+  {
+   "library": "Mantine",
+   "component": "Modal",
+   "impl": "Modal",
+   "props": [
+    "centered",
+    "fullScreen",
+    "withCloseButton",
+    "withOverlay",
+    "closeOnClickOutside",
+    "closeOnEscape",
+    "trapFocus"
+   ],
+   "extra": {
+    "size": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "md",
+     "description": "Size from the Mantine theme scale."
+    },
+    "radius": {
+     "type": "enum",
+     "options": [
+      "xs",
+      "sm",
+      "md",
+      "lg",
+      "xl"
+     ],
+     "default": "sm",
+     "description": "Radius from the Mantine theme scale."
+    }
+   },
+   "content": {
+    "title": "Delete project",
+    "children": "This permanently deletes the project and its history."
+   },
+   "states": [
+    "open"
+   ]
+  },
+  {
+   "library": "Ant Design",
+   "component": "Button",
+   "impl": "Button",
+   "props": [
+    "type",
+    "variant",
+    "color",
+    "size",
+    "shape",
+    "danger",
+    "ghost",
+    "disabled",
+    "loading",
+    "block",
+    "iconPlacement"
+   ],
+   "content": {
+    "children": "Button"
+   }
+  },
+  {
+   "library": "Ant Design",
+   "component": "Tag",
+   "impl": "Tag",
+   "props": [
+    "disabled"
+   ],
+   "extra": {
+    "color": {
+     "type": "enum",
+     "options": [
+      "default",
+      "success",
+      "processing",
+      "error",
+      "warning",
+      "magenta",
+      "red",
+      "volcano",
+      "orange",
+      "gold",
+      "lime",
+      "green",
+      "cyan",
+      "blue",
+      "geekblue",
+      "purple"
+     ],
+     "default": "default",
+     "description": "Preset or status colour."
+    },
+    "variant": {
+     "type": "enum",
+     "options": [
+      "filled",
+      "solid",
+      "outlined"
+     ],
+     "default": "filled",
+     "description": "Visual variant."
+    }
+   },
+   "content": {
+    "children": "Tag"
+   }
+  },
+  {
+   "library": "Ant Design",
+   "component": "Switch",
+   "impl": "Switch",
+   "props": [
+    "disabled",
+    "loading",
+    "size"
+   ],
+   "states": [
+    "toggle"
+   ]
+  },
+  {
+   "library": "Ant Design",
+   "component": "Checkbox",
+   "impl": "Checkbox",
+   "props": [
+    "disabled",
+    "indeterminate"
+   ],
+   "content": {
+    "children": "Remember me"
+   },
+   "states": [
+    "toggle"
+   ]
+  },
+  {
+   "library": "Ant Design",
+   "component": "Slider",
+   "impl": "Slider",
+   "props": [
+    "disabled",
+    "dots",
+    "included",
+    "reverse",
+    "keyboard",
+    "min",
+    "max",
+    "step"
+   ],
+   "preview": {
+    "min": 0,
+    "max": 100,
+    "step": 1
+   },
+   "states": [
+    "drag"
+   ]
+  },
+  {
+   "library": "Ant Design",
+   "component": "Progress",
+   "impl": "Progress",
+   "props": [
+    "percent",
+    "showInfo",
+    "strokeLinecap",
+    "steps"
+   ],
+   "extra": {
+    "type": {
+     "type": "enum",
+     "options": [
+      "line",
+      "circle",
+      "dashboard"
+     ],
+     "default": "line",
+     "description": "Progress type."
+    },
+    "status": {
+     "type": "enum",
+     "options": [
+      "normal",
+      "active",
+      "success",
+      "exception"
+     ],
+     "default": "normal",
+     "description": "Progress status."
+    }
+   },
+   "preview": {
+    "percent": 60
+   }
+  },
+  {
+   "library": "Ant Design",
+   "component": "Alert",
+   "impl": "Alert",
+   "props": [
+    "banner",
+    "closable",
+    "showIcon",
+    "variant"
+   ],
+   "extra": {
+    "type": {
+     "type": "enum",
+     "options": [
+      "success",
+      "info",
+      "warning",
+      "error"
+     ],
+     "default": "info",
+     "description": "Alert type."
+    }
+   },
+   "content": {
+    "title": "Heads up",
+    "description": "Something happened that you should know about."
+   }
+  },
+  {
+   "library": "Ant Design",
+   "component": "Rate",
+   "impl": "Rate",
+   "props": [
+    "allowClear",
+    "allowHalf",
+    "count",
+    "disabled",
+    "keyboard"
+   ],
+   "preview": {
+    "count": 5
+   },
+   "states": [
+    "select"
+   ]
+  },
+  {
+   "library": "Ant Design",
+   "component": "Segmented",
+   "impl": "Segmented",
+   "props": [
+    "block",
+    "disabled",
+    "shape",
+    "size"
+   ],
+   "states": [
+    "select"
+   ]
+  },
+  {
+   "library": "Ant Design",
+   "component": "Spin",
+   "impl": "Spin",
+   "props": [
+    "spinning"
+   ],
+   "extra": {
+    "size": {
+     "type": "enum",
+     "options": [
+      "small",
+      "medium",
+      "large"
+     ],
+     "default": "medium",
+     "description": "Indicator size."
+    }
+   }
+  },
+  {
+   "library": "Ant Design",
+   "component": "Avatar",
+   "impl": "Avatar",
+   "props": [
+    "shape",
+    "size"
+   ],
+   "content": {
+    "children": "AD"
+   }
+  },
+  {
+   "library": "Ant Design",
+   "component": "Tabs",
+   "impl": "Tabs",
+   "props": [
+    "centered",
+    "size",
+    "tabPlacement",
+    "type"
+   ],
+   "states": [
+    "select"
+   ]
+  },
+  {
+   "library": "Ant Design",
+   "component": "Modal",
+   "impl": "Modal",
+   "props": [
+    "centered",
+    "closable",
+    "confirmLoading",
+    "keyboard",
+    "mask",
+    "width"
+   ],
+   "content": {
+    "title": "Delete project",
+    "children": "This permanently deletes the project and its history."
+   },
+   "states": [
+    "open"
+   ]
+  },
+  {
+   "library": "React Aria",
+   "component": "Button",
+   "impl": "Button",
+   "props": [
+    "isDisabled",
+    "isPending"
+   ],
+   "content": {
+    "children": "Save changes"
+   }
+  },
+  {
+   "library": "React Aria",
+   "component": "Switch",
+   "impl": "Switch",
+   "props": [
+    "isDisabled",
+    "isReadOnly"
+   ],
+   "content": {
+    "children": "Wi-Fi"
+   },
+   "states": [
+    "toggle"
+   ]
+  },
+  {
+   "library": "React Aria",
+   "component": "Checkbox",
+   "impl": "Checkbox",
+   "props": [
+    "isDisabled",
+    "isIndeterminate",
+    "isInvalid",
+    "isReadOnly"
+   ],
+   "content": {
+    "children": "Subscribe"
+   },
+   "states": [
+    "toggle"
+   ]
+  },
+  {
+   "library": "React Aria",
+   "component": "Slider",
+   "impl": "Slider",
+   "props": [
+    "isDisabled",
+    "minValue",
+    "maxValue",
+    "step"
+   ],
+   "content": {
+    "label": "Opacity"
+   },
+   "preview": {
+    "minValue": 0,
+    "maxValue": 100,
+    "step": 1
+   },
+   "states": [
+    "drag"
+   ]
+  },
+  {
+   "library": "React Aria",
+   "component": "ProgressBar",
+   "impl": "ProgressBar",
+   "props": [
+    "isIndeterminate",
+    "minValue",
+    "maxValue",
+    "value"
+   ],
+   "content": {
+    "label": "Loading\u2026"
+   },
+   "preview": {
+    "value": 40,
+    "minValue": 0,
+    "maxValue": 100
+   }
+  },
+  {
+   "library": "React Aria",
+   "component": "Meter",
+   "impl": "Meter",
+   "props": [
+    "minValue",
+    "maxValue",
+    "value"
+   ],
+   "content": {
+    "label": "Storage space"
+   },
+   "preview": {
+    "value": 72,
+    "minValue": 0,
+    "maxValue": 100
+   }
+  },
+  {
+   "library": "React Aria",
+   "component": "ToggleButton",
+   "impl": "ToggleButton",
+   "props": [
+    "isDisabled"
+   ],
+   "content": {
+    "children": "Pin"
+   },
+   "states": [
+    "toggle"
+   ]
+  },
+  {
+   "library": "React Aria",
+   "component": "TextField",
+   "impl": "TextField",
+   "props": [
+    "isDisabled",
+    "isInvalid",
+    "isReadOnly",
+    "isRequired",
+    "type",
+    "maxLength"
+   ],
+   "content": {
+    "label": "Email",
+    "placeholder": "you@example.com"
+   }
+  },
+  {
+   "library": "React Aria",
+   "component": "Tabs",
+   "impl": "Tabs",
+   "props": [
+    "keyboardActivation",
+    "isDisabled"
+   ],
+   "states": [
+    "select"
+   ]
+  },
+  {
+   "library": "React Aria",
+   "component": "Disclosure",
+   "impl": "Disclosure",
+   "props": [
+    "isDisabled",
+    "defaultExpanded"
+   ],
+   "content": {
+    "title": "System requirements",
+    "children": "Details that are hidden until the disclosure is expanded."
+   },
+   "states": [
+    "expand"
+   ]
+  },
+  {
+   "library": "Base UI",
+   "component": "Switch",
+   "impl": "Switch",
+   "props": [
+    "disabled",
+    "readOnly",
+    "defaultChecked"
+   ],
+   "states": [
+    "toggle"
+   ]
+  },
+  {
+   "library": "Base UI",
+   "component": "Checkbox",
+   "impl": "Checkbox",
+   "props": [
+    "disabled",
+    "indeterminate",
+    "readOnly"
+   ],
+   "content": {
+    "label": "Enable notifications"
+   },
+   "states": [
+    "toggle"
+   ]
+  },
+  {
+   "library": "Base UI",
+   "component": "Slider",
+   "impl": "Slider",
+   "props": [
+    "disabled",
+    "min",
+    "max",
+    "step",
+    "largeStep"
+   ],
+   "preview": {
+    "min": 0,
+    "max": 100,
+    "step": 1
+   },
+   "states": [
+    "drag"
+   ]
+  },
+  {
+   "library": "Base UI",
+   "component": "Toggle",
+   "impl": "Toggle",
+   "props": [
+    "disabled",
+    "defaultPressed"
+   ],
+   "content": {
+    "children": "Bold"
+   },
+   "states": [
+    "toggle"
+   ]
+  },
+  {
+   "library": "Base UI",
+   "component": "Progress",
+   "impl": "Progress",
+   "props": [
+    "min",
+    "max"
+   ],
+   "extra": {
+    "value": {
+     "type": "number",
+     "min": 0,
+     "max": 100,
+     "default": 40,
+     "description": "Current value."
+    }
+   },
+   "preview": {
+    "min": 0,
+    "max": 100
+   }
+  },
+  {
+   "library": "Base UI",
+   "component": "Tabs",
+   "impl": "Tabs",
+   "props": [
+    "activateOnFocus",
+    "loopFocus"
+   ],
+   "states": [
+    "select"
+   ]
+  },
+  {
+   "library": "Base UI",
+   "component": "Collapsible",
+   "impl": "Collapsible",
+   "props": [
+    "disabled",
+    "defaultOpen"
+   ],
+   "content": {
+    "title": "Recovery keys",
+    "children": "alien-bean-pasta \u00b7 wild-irish-burrito"
+   },
+   "states": [
+    "expand"
+   ]
+  },
+  {
+   "library": "Base UI",
+   "component": "Dialog",
+   "impl": "Dialog",
+   "props": [
+    "modal",
+    "disablePointerDismissal"
+   ],
+   "content": {
+    "title": "Notifications",
+    "children": "You are all caught up."
+   },
+   "states": [
+    "open"
+   ]
+  },
+  {
+   "library": "Radix Primitives",
+   "component": "Switch",
+   "impl": "Switch",
+   "props": [
+    "disabled",
+    "required",
+    "defaultChecked"
+   ],
+   "states": [
+    "toggle"
+   ]
+  },
+  {
+   "library": "Radix Primitives",
+   "component": "Checkbox",
+   "impl": "Checkbox",
+   "props": [
+    "disabled",
+    "required"
+   ],
+   "content": {
+    "label": "Accept terms and conditions"
+   },
+   "states": [
+    "toggle"
+   ]
+  },
+  {
+   "library": "Radix Primitives",
+   "component": "Slider",
+   "impl": "Slider",
+   "props": [
+    "disabled",
+    "inverted",
+    "min",
+    "max",
+    "step",
+    "orientation"
+   ],
+   "preview": {
+    "min": 0,
+    "max": 100,
+    "step": 1
+   },
+   "states": [
+    "drag"
+   ]
+  },
+  {
+   "library": "Radix Primitives",
+   "component": "Progress",
+   "impl": "Progress",
+   "props": [
+    "max"
+   ],
+   "extra": {
+    "value": {
+     "type": "number",
+     "min": 0,
+     "max": 100,
+     "default": 66,
+     "description": "Current value."
+    }
+   },
+   "preview": {
+    "max": 100
+   }
+  },
+  {
+   "library": "Radix Primitives",
+   "component": "Toggle",
+   "impl": "Toggle",
+   "props": [
+    "disabled",
+    "defaultPressed"
+   ],
+   "content": {
+    "children": "Italic"
+   },
+   "states": [
+    "toggle"
+   ]
+  },
+  {
+   "library": "Radix Primitives",
+   "component": "Tabs",
+   "impl": "Tabs",
+   "props": [
+    "activationMode",
+    "loop",
+    "orientation"
+   ],
+   "states": [
+    "select"
+   ]
+  },
+  {
+   "library": "Radix Primitives",
+   "component": "Accordion",
+   "impl": "Accordion",
+   "props": [
+    "type",
+    "collapsible",
+    "disabled",
+    "orientation"
+   ],
+   "preview": {
+    "type": "single"
+   },
+   "states": [
+    "expand"
+   ]
+  },
+  {
+   "library": "Radix Primitives",
+   "component": "Collapsible",
+   "impl": "Collapsible",
+   "props": [
+    "disabled",
+    "defaultOpen"
+   ],
+   "content": {
+    "title": "3 starred repositories",
+    "children": "@radix-ui/primitives \u00b7 @radix-ui/colors \u00b7 @stitches/react"
+   },
+   "states": [
+    "expand"
+   ]
+  },
+  {
+   "library": "Radix Primitives",
+   "component": "Dialog",
+   "impl": "Dialog",
+   "props": [
+    "modal"
+   ],
+   "content": {
+    "title": "Edit profile",
+    "children": "Make changes to your profile here."
+   },
+   "states": [
+    "open"
+   ]
+  },
+  {
+   "library": "shadcn/ui",
+   "component": "Button",
+   "impl": "Button",
+   "props": [
+    "variant",
+    "size"
+   ],
+   "content": {
+    "children": "Button"
+   }
+  },
+  {
+   "library": "shadcn/ui",
+   "component": "Badge",
+   "impl": "Badge",
+   "props": [
+    "variant"
+   ],
+   "content": {
+    "children": "Badge"
+   }
+  },
+  {
+   "library": "shadcn/ui",
+   "component": "Alert",
+   "impl": "Alert",
+   "props": [
+    "variant"
+   ],
+   "content": {
+    "title": "Heads up!",
+    "description": "You can add components to your app using the CLI."
+   }
+  }
+ ]
+}

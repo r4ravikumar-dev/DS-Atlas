@@ -23,6 +23,7 @@ const NAV = [
   {
     group: 'Data',
     items: [
+      { href: '/admin/systems', label: 'Systems (manage)', icon: Boxes },
       { href: '/admin/quality', label: 'Data quality', icon: ShieldCheck },
       { href: '/admin/review', label: 'Review queue', icon: BarChart3 },
       { href: '/admin/reports', label: 'Reports & exports', icon: FileText },
@@ -31,7 +32,7 @@ const NAV = [
   {
     group: 'Public directory',
     items: [
-      { href: '/', label: 'Design systems', icon: Boxes, exact: true },
+      { href: '/systems', label: 'Design systems', icon: Boxes },
       { href: '/components', label: 'Components', icon: BookOpen },
       { href: '/storybook', label: 'Storybook', icon: Layers },
       { href: '/tokens', label: 'Tokens', icon: Palette },

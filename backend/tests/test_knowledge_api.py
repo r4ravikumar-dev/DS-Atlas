@@ -64,7 +64,7 @@ def test_comparisons(client, as_admin, as_viewer, built_kb):
     assert r.status_code == 201
     res = r.json()["data"]["result"]
     assert res["rows"]["state"]["State props"][0]["status"] == "documented"
-    assert {c["status"] for row in res["rows"].values() for cells in row.values() for c in cells} <= {"documented", "not_documented", "not_applicable"}
+    assert {c["status"] for row in res["rows"].values() for cells in row.values() for c in cells} <= {"documented", "not_documented", "not_inspected", "not_applicable"}
     bad = client.post("/api/v1/comparisons", json={**body, "dimensions": ["nope"]}, headers=as_admin)
     assert bad.status_code == 422
     missing = client.post("/api/v1/comparisons", json={"name": "x", "kind": "systems", "item_ids": [sys_id, 99999999]}, headers=as_admin)

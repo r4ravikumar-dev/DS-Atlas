@@ -81,7 +81,7 @@ def list_jobs(db: Session, *, kinds: list[str], status=None, source_id=None, pag
 # ───────────────────────────── systems ─────────────────────────────
 def list_systems(db: Session, *, q=None, framework=None, verification=None, source=None, min_sources=None, has_repo=None,
                  has_storybook=None, platform=None, resource=None, verified_resource=None, missing_resource=None, component=None,
-                 sort=None, page=1, page_size=25):
+                 has_components=None, has_tokens=None, sort=None, page=1, page_size=25):
     from ..models import SystemResource
     stmt = select(DesignSystem)
 
@@ -117,6 +117,10 @@ def list_systems(db: Session, *, q=None, framework=None, verification=None, sour
         stmt = stmt.where(DesignSystem.repository_url.is_not(None))
     if has_storybook:
         stmt = stmt.where(DesignSystem.storybook_url.is_not(None))
+    if has_components:
+        stmt = stmt.where(DesignSystem.component_count > 0)
+    if has_tokens:
+        stmt = stmt.where(DesignSystem.token_count > 0)
     stmt = _sort(stmt, sort, {"name": DesignSystem.name, "sources": DesignSystem.source_count, "components": DesignSystem.component_count,
                               "tokens": DesignSystem.token_count, "updated": DesignSystem.updated_at}, [DesignSystem.source_count.desc(), DesignSystem.name])
     rows, total = paginate(db, stmt, page, page_size)

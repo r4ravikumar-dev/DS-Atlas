@@ -1,103 +1,95 @@
-'use client'
+import type { Metadata } from 'next'
+import { getItem, getPage, optional } from '@/lib/api/server'
+import type { Facet, System } from '@/lib/api/types'
+import { hrefWith, parseParams, type RawParams } from '@/lib/validation/params'
+import { PageIntro } from '@/components/layout/PageIntro'
+import { FilterBar, FacetPanel, type FilterGroup, type FilterToggle } from '@/components/catalog/FilterBar'
+import { FilterRoot, Results } from '@/components/catalog/FilterState'
+import { SystemCard } from '@/components/catalog/SystemCard'
+import { RESOURCE_META } from '@/components/catalog/resources'
+import { Stagger, StaggerItem } from '@/components/motion/Reveal'
+import { EmptyState, ErrorNotice, RecoveryLink } from '@/components/kit/states'
+import { Pagination } from '@/components/kit/pagination'
 
-import { Suspense } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useSystemFacets, useSystems } from '@/features/design-systems/api'
-import { useUrlState } from '@/hooks/useUrlState'
-import { EmptyState, ErrorState, FacetFilter, Missing, PageHeader, Pagination, Panel, SearchInput, Select, SkeletonRows, Tabs, Tag, VerifyBadge } from '@/components/ui'
-import { DataTable } from '@/components/ui/DataTable'
-import { RESOURCE_LABEL, ResourceLinks } from '@/components/platform/ResourceLinks'
-import type { ResourceType } from '@/lib/api/types'
-import s from '@/components/platform/page.module.scss'
-
-const PAGE = 24
-const RESOURCE_OPTIONS: ResourceType[] = ['official_website', 'official_documentation', 'github_repository', 'figma_file', 'storybook']
-
-function SystemsInner() {
-  const u = useUrlState()
-  const router = useRouter()
-  const view = (u.get('view') || 'grid') as 'grid' | 'table'
-  const page = u.getNum('page', 1)
-  const q = {
-    q: u.get('q'), component: u.get('component'), framework: u.getAll('framework'), platform: u.getAll('platform'), source: u.getAll('source'),
-    resource: u.getAll('resource'), verified_resource: u.getAll('verified_resource'), missing_resource: u.get('missing_resource'),
-    verification: u.get('verification'), min_sources: u.get('min_sources'), sort: u.get('sort'), page, page_size: PAGE,
-  }
-  const list = useSystems(q)
-  const facets = useSystemFacets()
-  const rows = list.data?.data
-  const resFacets = (facets.data?.resources ?? []).filter((f) => RESOURCE_OPTIONS.includes(f.value as ResourceType))
-  const filtered = Object.entries(q).some(([k, v]) => !['page', 'page_size', 'sort'].includes(k) && (Array.isArray(v) ? v.length > 0 : !!v))
-  return (
-    <>
-      <PageHeader title="Design systems" description="One record per design system, consolidated from every source that lists it. Verified links were confirmed on the system's official pages; others are directory-listed." />
-      <div className={s.filters}>
-        <SearchInput value={u.get('q')} onChange={(v) => u.set({ q: v })} placeholder="Search name, organization, description…" />
-        <SearchInput value={u.get('component')} onChange={(v) => u.set({ component: v })} placeholder="Has component… (e.g. Date picker)" />
-        <FacetFilter label="Technology" facets={facets.data?.frameworks} selected={u.getAll('framework')} onChange={(v) => u.set({ framework: v })} />
-        <FacetFilter label="Platform" facets={facets.data?.platforms} selected={u.getAll('platform')} onChange={(v) => u.set({ platform: v })} />
-        <FacetFilter label="Has resource" facets={resFacets} format={(v) => RESOURCE_LABEL[v as ResourceType]} selected={u.getAll('resource')} onChange={(v) => u.set({ resource: v })} />
-        <FacetFilter label="Verified resource" facets={resFacets.map((f) => ({ value: f.value, count: f.verified }))} format={(v) => RESOURCE_LABEL[v as ResourceType]} selected={u.getAll('verified_resource')} onChange={(v) => u.set({ verified_resource: v })} />
-        <Select label="Missing resource" value={u.get('missing_resource')} onChange={(v) => u.set({ missing_resource: v })} options={[{ value: '', label: 'Any resources' }, { value: 'official', label: 'Missing official link' }, ...RESOURCE_OPTIONS.map((t) => ({ value: t, label: `Missing ${RESOURCE_LABEL[t].toLowerCase()}` }))]} />
-        <FacetFilter label="Listed by source" facets={facets.data?.sources} selected={u.getAll('source')} onChange={(v) => u.set({ source: v })} />
-        <Select label="Verification" value={u.get('verification')} onChange={(v) => u.set({ verification: v })} options={[{ value: '', label: 'Any verification' }, { value: 'verified', label: 'Verified' }, { value: 'partially_verified', label: 'Partially verified' }, { value: 'unverified', label: 'Unverified' }]} />
-        <Select label="Sort" value={u.get('sort')} onChange={(v) => u.set({ sort: v })} options={[{ value: '', label: 'Most corroborated' }, { value: 'name', label: 'Name A–Z' }, { value: '-components', label: 'Most components' }, { value: '-tokens', label: 'Most tokens' }, { value: '-updated', label: 'Recently updated' }]} />
-        <Tabs value={view} onChange={(v) => u.set({ view: v === 'grid' ? null : v }, { resetPage: false })} tabs={[{ value: 'grid', label: 'Grid' }, { value: 'table', label: 'Table' }]} />
-        <span className={s.filterMeta} aria-live="polite">{list.data && `${list.data.meta.total_items.toLocaleString()} systems`}</span>
-      </div>
-      {list.error ? <ErrorState error={list.error} onRetry={() => list.refetch()} /> : !rows ? <SkeletonRows rows={6} cols={3} /> : rows.length === 0 ? (
-        <EmptyState title={filtered ? 'No systems match these filters' : 'No design systems in the database yet'}>
-          {filtered ? 'Clear a filter to widen the search.' : 'The directory is empty right now.'}
-        </EmptyState>
-      ) : view === 'grid' ? (
-        <div className={s.cards} style={{ opacity: list.isFetching ? 0.6 : 1 }}>
-          {rows.map((d) => (
-            <article key={d.id} className={s.card} data-testid="system-card">
-              <span className={s.org}>{d.organization ?? 'Organization not recorded'}</span>
-              <h3><Link href={`/systems/${d.id}`}>{d.name}</Link></h3>
-              {d.description ? <p>{d.description}</p> : <Missing label="No description collected" />}
-              <ResourceLinks links={d.links} compact />
-              <div className={s.counts}>
-                <span><b>{d.component_count}</b> components</span>
-                <span><b>{d.token_count}</b> tokens</span>
-                <span><b>{d.resource_count}</b> links</span>
-                <span><b>{d.source_count}</b> sources</span>
-              </div>
-              <footer>
-                <VerifyBadge status={d.verification_status} />
-                {d.frameworks.slice(0, 3).map((f) => <Tag key={f}>{f}</Tag>)}
-              </footer>
-            </article>
-          ))}
-        </div>
-      ) : (
-        <Panel>
-          <DataTable
-            caption="Design systems"
-            loading={list.isFetching}
-            rows={rows}
-            rowKey={(r) => r.id}
-            onRowClick={(r) => router.push(`/systems/${r.id}`)}
-            sort={u.get('sort')}
-            onSort={(k) => u.set({ sort: k })}
-            columns={[
-              { key: 'name', header: 'System', sortKey: 'name', cell: (r) => <span className={s.cell}><strong>{r.name}</strong><small>{r.organization}</small></span> },
-              { key: 'links', header: 'Resources', cell: (r) => <ResourceLinks links={r.links} compact />, hideBelow: 'lg' },
-              { key: 'fw', header: 'Technologies', cell: (r) => (r.frameworks.length ? r.frameworks.slice(0, 3).join(', ') : <Missing />), hideBelow: 'md' },
-              { key: 'comp', header: 'Components', sortKey: 'components', cell: (r) => r.component_count, align: 'right', hideBelow: 'md' },
-              { key: 'tok', header: 'Tokens', sortKey: 'tokens', cell: (r) => r.token_count, align: 'right', hideBelow: 'md' },
-              { key: 'src', header: 'Sources', sortKey: 'sources', cell: (r) => r.source_count, align: 'right' },
-              { key: 'ver', header: 'Verification', cell: (r) => <VerifyBadge status={r.verification_status} /> },
-            ]}
-          />
-        </Panel>
-      )}
-      {list.data && list.data.meta.total_items > 0 && <Pagination page={page} pageSize={PAGE} total={list.data.meta.total_items} totalPages={list.data.meta.total_pages} onPage={(p) => u.set({ page: p }, { resetPage: false })} />}
-    </>
-  )
+export const metadata: Metadata = {
+  title: 'Design systems',
+  description: 'Browse and filter every indexed design system by framework, official resources, and component and token coverage.',
+  alternates: { canonical: '/systems' },
 }
 
-export default function SystemsPage() {
-  return <Suspense><SystemsInner /></Suspense>
+const SORTS = [
+  { value: '', label: 'Most referenced' },
+  { value: 'name', label: 'Name A–Z' },
+  { value: '-components', label: 'Most components' },
+  { value: '-tokens', label: 'Most tokens' },
+  { value: '-updated', label: 'Recently updated' },
+] as const
+
+const PAGE_SIZE = 24
+
+interface SystemFacets { frameworks: Facet[]; verification_status: Facet[]; platforms: Facet[]; resources: (Facet & { verified: number })[] }
+
+export default async function SystemsDirectory({ searchParams }: { searchParams: Promise<RawParams> }) {
+  const raw = await searchParams
+  const p = parseParams(raw, { lists: ['framework', 'resource', 'platform'], singles: ['view'], flags: ['has_tokens', 'has_components'], sorts: SORTS.map((s) => s.value).filter(Boolean) })
+  const [list, facets] = await Promise.all([
+    getPage<System>('/design-systems', { query: { ...p, view: undefined, page_size: PAGE_SIZE }, tags: ['systems'] }).catch((e: Error) => e),
+    optional(getItem<SystemFacets>('/design-systems/facets', { tags: ['systems'] })),
+  ])
+
+  const groups: FilterGroup[] = [
+    { param: 'resource', label: 'Official resources', options: (facets?.resources ?? []).filter((r) => r.value !== 'additional_resource').map((r) => ({ value: r.value, label: RESOURCE_META[r.value as keyof typeof RESOURCE_META]?.label ?? r.value, count: r.count })) },
+    { param: 'framework', label: 'Framework', options: (facets?.frameworks ?? []).map((f) => ({ value: f.value, count: f.count })) },
+    { param: 'platform', label: 'Platform', options: (facets?.platforms ?? []).map((f) => ({ value: f.value, count: f.count })) },
+  ]
+  const toggles: FilterToggle[] = [
+    { param: 'has_components', label: 'Has collected components' },
+    { param: 'has_tokens', label: 'Has collected design tokens' },
+  ]
+  const view = raw.view === 'list' ? 'list' : 'grid'
+
+  return (
+    <FilterRoot>
+      <PageIntro
+        eyebrow="Directory"
+        title="Design systems"
+        accent="in the index."
+        description="Every system collected from public directories and official documentation. Filter by what each one actually publishes — official resources, components and tokens."
+        aside={!(list instanceof Error) && (
+          <p className="shrink-0 font-mono text-meta text-muted" aria-live="polite">
+            <span className="block text-section font-medium text-text tabular-nums">{list.meta.total_items.toLocaleString()}</span>
+            {list.meta.total_items === 1 ? 'system' : 'systems'} match
+          </p>
+        )}
+      />
+      <div className="container-page grid gap-10 pt-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
+        <aside className="hidden lg:block" aria-label="Filters">
+          <div className="sticky top-[calc(var(--header-h)+1.5rem)] max-h-[calc(100svh-var(--header-h)-3rem)] overflow-y-auto pr-2 pb-8">
+            <FacetPanel groups={groups} toggles={toggles} />
+          </div>
+        </aside>
+        <div className="flex min-w-0 flex-col gap-8">
+          <FilterBar searchPlaceholder="Search by name or organisation" groups={groups} toggles={toggles} sorts={[...SORTS]} view />
+          <Results>
+            {list instanceof Error ? (
+              <ErrorNotice title="Design systems could not be loaded" message={list.message} retryHref={hrefWith('/systems', raw, {})} />
+            ) : list.data.length === 0 ? (
+              <EmptyState title="No design systems match these filters" action={<RecoveryLink href="/systems">Clear filters</RecoveryLink>}>Try removing a filter, or search for a broader term.</EmptyState>
+            ) : view === 'list' ? (
+              <ul className="border-t border-line">
+                {list.data.map((s, i) => <li key={s.id}><SystemCard system={s} variant="list" index={(list.meta.page - 1) * PAGE_SIZE + i + 1} /></li>)}
+              </ul>
+            ) : (
+              <Stagger as="ul" key={JSON.stringify(raw)} className="grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
+                {list.data.map((s) => <StaggerItem as="li" key={s.id}><SystemCard system={s} /></StaggerItem>)}
+              </Stagger>
+            )}
+            {!(list instanceof Error) && (
+              <Pagination page={list.meta.page} totalPages={list.meta.total_pages} total={list.meta.total_items} pageSize={PAGE_SIZE} href={(n) => hrefWith('/systems', raw, { page: n })} />
+            )}
+          </Results>
+        </div>
+      </div>
+    </FilterRoot>
+  )
 }

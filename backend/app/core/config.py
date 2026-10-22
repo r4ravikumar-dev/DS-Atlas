@@ -49,6 +49,9 @@ class Settings(BaseSettings):
     scheduler_tick_seconds: float = 30.0
     public_rate_limit_per_minute: int = 240
     cron_secret: SecretStr | None = Field(None, description="Vercel Cron bearer secret for /api/v1/internal/cron/sync (set CRON_SECRET)")
+    render_api_key: SecretStr | None = Field(None, description="Shared with the frontend's RENDER_API_KEY: exempts its server-side rendering from the anonymous rate limit (no extra permissions)")
+    frontend_revalidate_url: str | None = Field(None, description="Public site's /revalidate endpoint, called after a build that changed content")
+    revalidate_secret: SecretStr | None = Field(None, description="Bearer secret shared with the frontend's REVALIDATE_SECRET")
     job_heartbeat_timeout_seconds: int = 300
 
     github_token: SecretStr | None = Field(None, description="Optional GitHub token (read-only public metadata). Never logged or returned.")

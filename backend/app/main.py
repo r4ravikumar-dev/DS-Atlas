@@ -1,13 +1,17 @@
 """FastAPI application factory: `uvicorn app.main:app`."""
 from __future__ import annotations
 
+import json
 import logging
+import hmac
 import time
 import uuid
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
+
+from .api import public_projection
 
 from .api.v1.routes import (administration, auth, comparisons, components, crawl_jobs, dashboard, documents, exports, guidelines, health,
                             public, quality, reports, search, sources, storybook, sync, systems, tokens, verification)
@@ -63,6 +67,10 @@ def create_app() -> FastAPI:
         """Anonymous clients: sliding window per IP (per instance; put a CDN/firewall rule in front for global limits)."""
         if request.headers.get("authorization") or request.cookies.get("dsrp_session") or not request.url.path.startswith(s.api_prefix):
             return False
+        # the site's own server-side rendering shares a few egress IPs; it identifies itself with RENDER_API_KEY
+        key = s.render_api_key.get_secret_value() if s.render_api_key else ""
+        if key and hmac.compare_digest(request.headers.get("x-render-key", "").encode(), key.encode()):
+            return False
         ip = (request.headers.get("x-forwarded-for") or (request.client.host if request.client else "?")).split(",")[0].strip()
         t = time.time()
         w = [x for x in hits.get(ip, []) if t - x < 60]
@@ -89,6 +97,18 @@ def create_app() -> FastAPI:
             request_id_var.reset(token)
             raise
         dur = int((time.perf_counter() - t0) * 1000)
+        public_view = getattr(request.state, "public_view", None)
+        if public_view and response.status_code == 200 and response.headers.get("content-type", "").startswith("application/json"):
+            body = b"".join([chunk async for chunk in response.body_iterator])
+            try:
+                data = public_projection.project(request.url.path, json.loads(body))
+                headers = {k: v for k, v in response.headers.items() if k.lower() not in ("content-length", "content-type")}
+                response = JSONResponse(data, status_code=200, headers=headers)
+            except ValueError:
+                response = Response(body, status_code=200, headers=dict(response.headers))
+        if public_view is False:
+            # an administrator's full view of a public URL must never be stored by a shared cache
+            response.headers["Cache-Control"] = "private, no-store"
         response.headers["X-Request-ID"] = rid
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
@@ -98,7 +118,7 @@ def create_app() -> FastAPI:
                 and "set-cookie" not in response.headers):
             # published data: shared caches may keep it briefly; the daily sync changes it at most once a day
             response.headers.setdefault("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=600")
-            response.headers.setdefault("Vary", "Accept-Encoding")
+            response.headers.setdefault("Vary", "Accept-Encoding, Cookie, Authorization")
         elif not request.url.path.endswith(("/docs", "/redoc")):
             response.headers.setdefault("Cache-Control", "no-store")
         log.info("request", extra={"method": request.method, "path": request.url.path, "status": response.status_code, "duration_ms": dur})

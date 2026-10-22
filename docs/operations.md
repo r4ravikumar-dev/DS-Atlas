@@ -159,8 +159,13 @@ Import the repository; `vercel.json` defines the services, routing and daemon. P
 | `SUPABASE_SERVICE_ROLE_KEY` | the secret key, marked **Sensitive**. Never prefix it with `NEXT_PUBLIC_`. |
 | `SUPABASE_STORAGE_BUCKET` | `dsrp-private` (default) |
 | `GITHUB_TOKEN` | optional |
+| `NEXT_PUBLIC_SITE_URL` | the public site URL (canonical links, Open Graph, sitemap). Defaults to the Vercel production domain. |
+| `RENDER_API_KEY` | random string, **Sensitive**. Read by both services: the frontend sends it on server-side API reads, and the backend exempts those from the anonymous rate limit. Grants no extra permissions. |
+| `REVALIDATE_SECRET` | random string, **Sensitive**. The frontend's `/revalidate` route accepts only this bearer. |
+| `FRONTEND_REVALIDATE_URL` | `https://<production domain>/revalidate`. After a build that changed content, the backend posts the affected cache tags; a no-change sync posts nothing. |
+| `VERCEL_AUTOMATION_BYPASS_SECRET` | only if Deployment Protection is on for previews: lets preview server rendering read its own `/api/*` |
 
-Do **not** set `BACKEND_URL` on Vercel. That `next.config.ts` rewrite is for local `next dev` only; the top-level rewrite already routes `/api/*` to `backend`.
+Do **not** set `BACKEND_URL` on Vercel. That `next.config.ts` rewrite is for local `next dev` only; the top-level rewrite already routes `/api/*` to `backend`. Server Components read the API from the production domain in production builds (so prerendered pages get real data from the live backend while a new deployment builds) and from the deployment URL on previews; set `API_INTERNAL_URL` to override.
 
 Set the Functions region (Project Settings → Functions) and the worker's `instances` region in `vercel.json` to match the Supabase region.
 

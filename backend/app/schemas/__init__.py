@@ -273,9 +273,22 @@ class ResourceUpdate(BaseModel):
     _v = field_validator("url")(classmethod(lambda cls, v: v if v is None else _http_url(v)))
 
 
+class AssetOut(Model):
+    """A visual asset the system's owner publishes (referenced at its original URL, with provenance)."""
+    url: str
+    alt: str | None = None
+    width: int | None = None
+    height: int | None = None
+    page_url: str | None = None
+    source_host: str | None = None
+    attribution: str | None = None
+    license: str | None = None
+
+
 class SystemOut(Model):
     id: int
     key: str
+    slug: str | None = None
     name: str
     organization: str | None
     description: str | None
@@ -302,9 +315,11 @@ class SystemOut(Model):
     content_updated_at: datetime | None = None
     links: list[ResourceLink] = []
     resource_count: int = 0
+    logo: AssetOut | None = None
 
 
 class SystemDetail(SystemOut):
+    cover: AssetOut | None = None
     design_resource_url: str | None
     governance: str | None
     ai_readiness: float | None
@@ -391,6 +406,11 @@ class PropOut(Model):
 class ComponentOut(Model):
     id: int
     name: str
+    slug: str | None = None
+    system_slug: str | None = None
+    system_name: str | None = None
+    family_category: str | None = None
+    playground: Literal["live", "adapter", "docs"] = "docs"
     family: str | None
     library: str | None
     system_id: int | None
@@ -428,6 +448,10 @@ class TokenOut(Model):
     id: int
     name: str
     path: str
+    slug: str | None = None
+    system_slug: str | None = None
+    category: str | None = None
+    tier: str | None = None
     group: str | None
     type: str | None
     type_inferred: bool
@@ -446,8 +470,20 @@ class TokenOut(Model):
     source_version: str | None
 
 
+class TokenDetailOut(TokenOut):
+    record_key: str
+    source_url: str | None = None
+    source_section: str | None = None
+    evidence: list[dict[str, Any]] = []
+    value_note: str | None = None
+    extra: dict[str, Any] | None = None
+
+
 class GuidelineOut(Model):
     id: int
+    slug: str | None = None
+    system_id: int | None = None
+    system_slug: str | None = None
     record_type: str
     kind: str | None
     title: str

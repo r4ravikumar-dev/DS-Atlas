@@ -1,0 +1,32 @@
+/*
+ * Neutral styles for headless libraries (React Aria Components, Base UI, Radix Primitives). These libraries ship no visual
+ * styling by design; the rules below only make their states visible and are scoped to .pg-headless inside the preview frame.
+ */
+.pg-headless { --fg: #111; --muted: #666; --line: #c9c9c9; --surface: #fff; --accent: #2563eb; --accent-fg: #fff; font: 14px/1.4 system-ui, sans-serif; color: var(--fg); }
+.pg-headless[data-theme='dark'] { --fg: #f2f2f2; --muted: #a3a3a3; --line: #4a4a4a; --surface: #1c1c1c; --accent: #60a5fa; --accent-fg: #0b0b0b; }
+.pg-headless button, .pg-headless .pg-btn { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+.pg-headless :is(button, input, [role='slider'], [role='switch'], [role='checkbox']):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pg-headless :is([data-disabled], [disabled], [aria-disabled='true']) { opacity: 0.5; cursor: not-allowed; }
+.pg-headless :is([data-pressed], [data-selected][data-rac], [data-state='on']) { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+/* switches */
+.pg-switch-track { position: relative; display: inline-block; width: 40px; height: 22px; border-radius: 999px; background: var(--line); transition: background 0.15s; vertical-align: middle; border: 0; padding: 0; }
+.pg-switch-thumb { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform 0.15s; }
+:is([data-selected], [data-state='checked'], [data-checked]) > .pg-switch-track, .pg-switch-track:is([data-state='checked'], [data-checked]) { background: var(--accent); }
+:is([data-selected], [data-state='checked'], [data-checked]) > .pg-switch-track > .pg-switch-thumb, .pg-switch-track:is([data-state='checked'], [data-checked]) > .pg-switch-thumb { transform: translateX(18px); }
+/* checkboxes */
+.pg-box { display: inline-grid; place-items: center; width: 18px; height: 18px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); padding: 0; vertical-align: middle; }
+:is([data-selected], [data-indeterminate]) > .pg-box, .pg-box:is([data-state='checked'], [data-state='indeterminate'], [data-checked], [data-indeterminate]) { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.pg-row { display: inline-flex; align-items: center; gap: 8px; }
+/* sliders and progress */
+.pg-track { position: relative; height: 4px; width: 280px; background: var(--line); border-radius: 999px; }
+.pg-range, .pg-fill { position: absolute; height: 100%; background: var(--accent); border-radius: inherit; }
+.pg-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent); top: 50%; }
+.pg-tabs-list { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+.pg-tabs-list :is(button, [role='tab']) { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; }
+.pg-tabs-list :is([data-selected], [data-state='active'], [aria-selected='true']) { border-bottom-color: var(--accent); color: var(--fg); background: none; }
+.pg-panel { padding: 8px 0; color: var(--muted); }
+.pg-dialog-backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.45); }
+.pg-dialog { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(360px, 90vw); background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 10px; padding: 20px; }
+.pg-field { display: flex; flex-direction: column; gap: 4px; width: 260px; }
+.pg-field input { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; }
+.pg-field [data-invalid], .pg-field input[aria-invalid='true'] { border-color: #dc2626; }

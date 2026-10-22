@@ -77,23 +77,35 @@ def _search(db, tq, q, types, category, source, technology, page, page_size):
     hits = []
     # map record ids to their projection ids for deep links
     rec_ids = [int(r["id"]) for r in rows if r["type"] not in ("system", "source")]
-    comp = dict(db.execute(select(Component.record_id, Component.id).where(Component.record_id.in_(rec_ids))).all()) if rec_ids else {}
-    tok = dict(db.execute(select(DesignToken.record_id, DesignToken.id).where(DesignToken.record_id.in_(rec_ids))).all()) if rec_ids else {}
-    gl = dict(db.execute(select(Guideline.record_id, Guideline.id).where(Guideline.record_id.in_(rec_ids))).all()) if rec_ids else {}
+    from ..models import DesignSystem as _DS
+    sys_slug = dict(db.execute(select(_DS.id, _DS.slug)).all())
+    def rows_for(model, extra):
+        return {r[0]: r[1:] for r in db.execute(select(model.record_id, model.id, model.slug, model.system_id, *extra).where(model.record_id.in_(rec_ids)))} if rec_ids else {}
+    comp = rows_for(Component, [Component.family])
+    tok = rows_for(DesignToken, [])
+    gl = rows_for(Guideline, [])
+    sys_ids = [int(r["id"]) for r in rows if r["type"] == "system"]
+    sys_rows = {i: s for i, s in sys_slug.items() if i in sys_ids}
     for r in rows:
         t, rid = r["type"], int(r["id"])
+        subtitle = r["subtitle"]
         if t == "system":
-            url, out_id = f"/platform/systems/{rid}", rid
+            url, out_id = f"/systems/{sys_rows.get(rid) or rid}", rid
         elif t == "source":
-            url, out_id = f"/platform/sources/{rid}", rid
+            url, out_id = f"/admin/sources/{rid}", rid
         elif t == "component" and rid in comp:
-            url, out_id = f"/platform/components/{comp[rid]}", comp[rid]
+            cid, slug, sid, fam = comp[rid]
+            url, out_id = (f"/systems/{sys_slug[sid]}/components/{slug}" if sid in sys_slug and slug else f"/components/{cid}"), cid
+            subtitle = " · ".join(x for x in (subtitle, fam) if x) or None
         elif t == "token" and rid in tok:
-            url, out_id = f"/platform/tokens?focus={tok[rid]}", tok[rid]
+            tid, slug, sid = tok[rid]
+            url, out_id = (f"/systems/{sys_slug[sid]}/tokens/{slug}" if sid in sys_slug and slug else f"/tokens/{tid}"), tid
         elif rid in gl:
-            url, out_id = f"/platform/guidelines/{gl[rid]}", gl[rid]
+            gid, slug, sid = gl[rid]
+            url = f"/systems/{sys_slug[sid]}/patterns/{slug}" if sid in sys_slug and slug else f"/{'patterns' if t == 'pattern' else 'guidelines'}/{gid}"
+            out_id = gid
         else:
-            url, out_id = f"/platform/records/{rid}", rid
-        hits.append({"type": t, "id": str(out_id), "title": r["title"], "subtitle": r["subtitle"], "snippet": r["snippet"], "url": url,
+            url, out_id = f"/admin/records/{rid}", rid
+        hits.append({"type": t, "id": str(out_id), "title": r["title"], "subtitle": subtitle, "snippet": r["snippet"], "url": url,
                      "source_key": r["source_key"], "category": r["category"], "rank": float(r["rank"] or 0)})
     return hits, total, facets

@@ -7,7 +7,7 @@ import { isAdmin, useMe } from '@/features/auth/api'
 import { useComparison, useDeleteComparison, useRegenerate } from '@/features/comparisons/api'
 import { Button, ConfirmDialog, ErrorState, fmtDate, PageHeader, Skeleton } from '@/components/ui'
 import s from '@/components/platform/page.module.scss'
-import { ComparisonMatrix, type ComparisonResult } from '@/components/public/ComparisonMatrix'
+import { ComparisonMatrix, type ComparisonResult } from '@/components/comparison/ComparisonMatrix'
 
 
 export default function ComparisonPage() {

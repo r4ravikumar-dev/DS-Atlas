@@ -1,7 +1,13 @@
-'use client'
+import type { Metadata } from 'next'
+import { loadResearch, ResearchDetail } from '@/components/details/ResearchDetail'
 
-import { GuidelineDetailView } from '../../guidelines/GuidelineDetail'
+type Params = { params: Promise<{ id: string }> }
 
-export default function PatternDetailPage() {
-  return <GuidelineDetailView kind="patterns" />
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const g = await loadResearch('patterns', (await params).id)
+  return { title: g.title, description: (g.summary ?? `${g.category_name} research guidance.`).slice(0, 158), alternates: { canonical: `/patterns/${g.id}` } }
+}
+
+export default async function ResearchPage({ params }: Params) {
+  return <ResearchDetail g={await loadResearch('patterns', (await params).id)} />
 }

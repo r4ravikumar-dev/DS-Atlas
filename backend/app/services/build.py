@@ -256,6 +256,10 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
                             (SELECT count(*) FROM design_tokens t WHERE t.system_id = d2.id) tc FROM design_systems d2) x
         WHERE x.id = d.id AND (d.component_count IS DISTINCT FROM x.cc OR d.token_count IS DISTINCT FROM x.tc)"""))
 
+    # ── navigational structure: stable slugs, token categories, family taxonomy (no content change) ──
+    from . import catalog
+    catalog_summary = catalog.refresh(db)
+
     # ── generated reports (engine analysis over the same canonical dataset) ──
     if progress:
         progress("generating_reports", 0)
@@ -264,7 +268,9 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
                "relationships": len(rels), "token_references": refs, "review_items": len(review), "validation_issues": validation["issue_count"],
                "reports": [str(x) for x in report_ids],
                "changes": {"systems": sys_g.counts, "components": comp_g.counts, "tokens": tok_g.counts, "guidelines": gl_g.counts,
-                           "relationships": {"added": len(add), "removed": len(drop)}}}
+                           "relationships": {"added": len(add), "removed": len(drop)}},
+               "catalog": catalog_summary,
+               "changed_ids": {"systems": sys_g.touched[:500], "components": comp_g.touched[:500], "tokens": tok_g.touched[:500]}}
     log.info("build complete", extra={"job_id": str(job_id)})
     return summary
 
@@ -283,6 +289,7 @@ class _Guarded:
         self.db, self.t, self.key, self.now = db, model.__table__, key, now
         self.existing = {k: (i, fp) for i, k, fp in db.execute(select(self.t.c.id, self.t.c[key], self.t.c.fingerprint))}
         self.counts = {"created": 0, "updated": 0, "unchanged": 0, "baselined": 0, "removed": 0}
+        self.touched: list[int] = []  # ids whose public content was created or changed (for targeted cache refresh)
 
     def upsert(self, key_val: Any, vals: dict[str, Any], *, fp_extra: Any = None, on_change: dict[str, Any] | None = None) -> tuple[int, str]:
         fp = _fp(vals, fp_extra)
@@ -298,12 +305,14 @@ class _Guarded:
         if cur:
             self.db.execute(self.t.update().where(self.t.c.id == cur[0]).values(**vals, **on_change, fingerprint=fp, content_updated_at=self.now))
             self.counts["updated"] += 1
+            self.touched.append(cur[0])
             self.existing[key_val] = (cur[0], fp)
             return cur[0], "updated"
         stmt = insert(self.t).values({self.key: key_val, **vals, **on_change, "fingerprint": fp, "content_updated_at": self.now})
         new_id = self.db.execute(stmt.on_conflict_do_update(index_elements=[self.key], set_={**vals, "fingerprint": fp})
                                  .returning(self.t.c.id)).scalar_one()
         self.counts["created"] += 1
+        self.touched.append(new_id)
         self.existing[key_val] = (new_id, fp)
         return new_id, "created"
 

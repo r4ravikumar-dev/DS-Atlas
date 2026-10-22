@@ -230,6 +230,7 @@ class DesignSystem(TimestampMixin, Base):
     fingerprint: Mapped[str | None] = mapped_column(String(64))  # hash of the stored content fields (change detection)
     content_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # last *content* change, not last check
     key: Mapped[str] = mapped_column(String(300), unique=True, nullable=False)
+    slug: Mapped[str | None] = mapped_column(String(120), unique=True)  # stable public URL segment (services/catalog)
     name: Mapped[str] = mapped_column(String(300), nullable=False, index=True)
     organization: Mapped[str | None] = mapped_column(String(300), index=True)
     description: Mapped[str | None] = mapped_column(Text)
@@ -271,6 +272,7 @@ class Component(Base):
     content_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # last *content* change, not last check
     record_id: Mapped[int] = mapped_column(ForeignKey("records.id", ondelete="CASCADE"), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(300), nullable=False, index=True)
+    slug: Mapped[str | None] = mapped_column(String(160))  # unique within its system
     family: Mapped[str | None] = mapped_column(String(100), index=True)
     library: Mapped[str | None] = mapped_column(String(300), index=True)
     system_id: Mapped[int | None] = mapped_column(ForeignKey("design_systems.id", ondelete="SET NULL"), index=True)
@@ -286,6 +288,7 @@ class Component(Base):
     verification_status: Mapped[str] = mapped_column(String(20), nullable=False)
     source_version: Mapped[str | None] = mapped_column(String(200))
     record = relationship("Record")
+    system = relationship("DesignSystem", viewonly=True)
     __table_args__ = (Index("ix_components_lib_family", "library", "family"),)
 
 
@@ -310,6 +313,9 @@ class DesignToken(Base):
     record_id: Mapped[int] = mapped_column(ForeignKey("records.id", ondelete="CASCADE"), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(300), nullable=False, index=True)
     path: Mapped[str] = mapped_column(String(500), nullable=False, index=True)
+    slug: Mapped[str | None] = mapped_column(String(220))  # unique within its system
+    category: Mapped[str | None] = mapped_column(String(30))  # normalised: color, typography, spacing, … (services/catalog)
+    tier: Mapped[str | None] = mapped_column(String(20))  # primitive | semantic | component
     group: Mapped[str | None] = mapped_column(String(200), index=True)
     type: Mapped[str | None] = mapped_column(String(200), index=True)
     type_inferred: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
@@ -327,6 +333,7 @@ class DesignToken(Base):
     verification_status: Mapped[str] = mapped_column(String(20), nullable=False)
     source_version: Mapped[str | None] = mapped_column(String(200))
     record = relationship("Record")
+    system = relationship("DesignSystem", viewonly=True)
 
 
 class TokenReference(Base):
@@ -347,6 +354,7 @@ class Guideline(Base):
     record_type: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     kind: Mapped[str | None] = mapped_column(String(60), index=True)
     title: Mapped[str] = mapped_column(Text, nullable=False)
+    slug: Mapped[str | None] = mapped_column(String(220))  # unique within its system
     category: Mapped[str] = mapped_column(String(5), nullable=False, index=True)
     summary: Mapped[str | None] = mapped_column(Text)
     section: Mapped[str | None] = mapped_column(Text)
@@ -358,6 +366,7 @@ class Guideline(Base):
     verification_status: Mapped[str] = mapped_column(String(20), nullable=False)
     review_status: Mapped[str] = mapped_column(String(20), nullable=False, default="unreviewed")
     record = relationship("Record")
+    system = relationship("DesignSystem", viewonly=True)
 
 
 class EntityRelationship(Base):
@@ -650,3 +659,45 @@ class SyncRun(Base):
     sources: Mapped[Any] = mapped_column(JSONB, nullable=False, default=list)  # per-source outcome
     errors: Mapped[Any] = mapped_column(JSONB, nullable=False, default=list)
     next_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class ComponentFamily(Base):
+    """Normalised component-family taxonomy (e.g. "Dialog" in "Overlays and floating interfaces"). Components keep their
+    source-native names; `components.family` refers to a family by name. Seeded by services/catalog."""
+    __tablename__ = "component_families"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    slug: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    category: Mapped[str] = mapped_column(String(60), nullable=False, index=True)
+    description: Mapped[str | None] = mapped_column(Text)
+    aliases: Mapped[Any] = mapped_column(JSONB, nullable=False, default=list)
+    position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+
+class SystemAsset(Base):
+    """A visual asset published by a design system's owner (site icon, social image, organisation avatar), referenced at
+    its original URL with provenance. Licence is recorded only when the source states it — never guessed."""
+    __tablename__ = "system_assets"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    system_id: Mapped[int] = mapped_column(ForeignKey("design_systems.id", ondelete="CASCADE"), nullable=False, index=True)
+    kind: Mapped[str] = mapped_column(String(30), nullable=False)
+    url: Mapped[str] = mapped_column(Text, nullable=False)
+    page_url: Mapped[str | None] = mapped_column(Text)
+    source_host: Mapped[str | None] = mapped_column(String(300))
+    source_organization: Mapped[str | None] = mapped_column(String(300))
+    alt: Mapped[str | None] = mapped_column(String(400))
+    mime: Mapped[str | None] = mapped_column(String(100))
+    width: Mapped[int | None] = mapped_column(Integer)
+    height: Mapped[int | None] = mapped_column(Integer)
+    bytes: Mapped[int | None] = mapped_column(Integer)
+    content_sha256: Mapped[str | None] = mapped_column(String(64))
+    attribution: Mapped[str | None] = mapped_column(Text)
+    license: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(20), nullable=False, default="ok")
+    error: Mapped[str | None] = mapped_column(Text)
+    is_primary: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    retrieved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    __table_args__ = (UniqueConstraint("system_id", "kind", "url", name="uq_system_assets_system_kind_url"),)
