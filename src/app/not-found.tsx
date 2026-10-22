@@ -1,13 +1,15 @@
 import Link from 'next/link'
+import { Wordmark } from '@/components/navigation/Wordmark'
+import { BackToSite, RecoveryLink } from '@/components/kit/states'
 
 export default function NotFound() {
   return (
-    <section style={{ minHeight: '80vh', display: 'grid', placeContent: 'center', textAlign: 'center', gap: 16 }}>
-      <p className="mono" style={{ color: 'var(--muted)' }}>404</p>
-      <h1>Page not found</h1>
-      <Link href="/admin" style={{ borderBottom: '1px solid var(--accent)', justifySelf: 'center' }}>
-        Back to the dashboard
-      </Link>
-    </section>
+    <main className="container-page grid min-h-svh content-center gap-8 py-20">
+      <Link href="/" className="focus-ring w-fit"><Wordmark /></Link>
+      <p className="font-mono text-meta text-muted">404</p>
+      <h1 className="text-title font-medium">This page isn&apos;t in the index <span className="font-serif font-normal text-muted italic">— yet.</span></h1>
+      <p className="measure text-lg text-text-2">The record may have been merged into another one, or the address is mistyped.</p>
+      <div className="flex flex-wrap items-center gap-2"><BackToSite /><RecoveryLink href="/systems">Browse design systems</RecoveryLink></div>
+    </main>
   )
 }

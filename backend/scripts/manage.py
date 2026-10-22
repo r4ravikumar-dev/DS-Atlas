@@ -5,6 +5,8 @@
     python scripts/manage.py reset-admin-password <email>  # shell-only recovery; password via ADMIN_PASSWORD or hidden prompt
     python scripts/manage.py setup-storage        # Supabase: create the private storage bucket (idempotent)
     python scripts/manage.py supabase-lockdown    # Supabase: revoke Data API access + enable RLS on all tables (idempotent)
+    python scripts/manage.py refresh-catalog      # assign missing slugs, token categories and the family taxonomy (idempotent)
+    python scripts/manage.py collect-assets [ids] # find official icons/social images/organisation avatars for systems (polite fetcher)
     python scripts/manage.py openapi out.json     # write the OpenAPI document
     python scripts/manage.py import-cache <dir>   # copy an existing engine HTTP cache (e.g. research/data/cache/http)
 """
@@ -84,6 +86,15 @@ def main() -> None:
         from app.database.supabase import lockdown
         with get_engine().begin() as conn:
             print(f"locked down {lockdown(conn)['tables']} table(s)")
+    elif cmd == "refresh-catalog":
+        from app.services import catalog
+        with session_scope() as db:
+            print(catalog.refresh(db))
+    elif cmd == "collect-assets":
+        from app.services import assets
+        ids = [int(x) for x in sys.argv[2].split(",")] if len(sys.argv) > 2 else None
+        with session_scope() as db:
+            print(assets.collect(db, system_ids=ids, progress=lambda i, n, name: print(f"[{i}/{n}] {name}", flush=True)))
     elif cmd == "openapi":
         from app.main import app
         Path(sys.argv[2]).write_text(json.dumps(app.openapi(), indent=2))

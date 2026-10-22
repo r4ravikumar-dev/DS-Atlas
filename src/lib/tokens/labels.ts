@@ -1,0 +1,2 @@
+export const CATEGORY_LABEL: Record<string, string> = { color: 'Colour', typography: 'Typography', spacing: 'Spacing', sizing: 'Sizing', border: 'Borders', radius: 'Radius', shadow: 'Shadows & elevation', motion: 'Motion', breakpoint: 'Breakpoints', 'z-index': 'Z-index', opacity: 'Opacity', other: 'Other' }
+export const TIER_LABEL: Record<string, string> = { primitive: 'Primitive', semantic: 'Semantic / alias', component: 'Component' }

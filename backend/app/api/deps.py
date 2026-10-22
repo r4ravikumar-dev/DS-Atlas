@@ -57,9 +57,12 @@ def get_principal(request: Request, db: Session = Depends(get_db)) -> Principal:
 
 
 def require(permission: str):
-    def dep(p: Principal = Depends(get_principal)) -> Principal:
+    def dep(request: Request, p: Principal = Depends(get_principal)) -> Principal:
         if permission in PUBLIC:
-            return p  # published data: no account needed (rate-limited per client in the HTTP middleware)
+            # published data: no account needed (rate-limited per client in the HTTP middleware). Anyone but an
+            # administrator gets the public presentation model (see api/public_projection.py).
+            request.state.public_view = p.role != "admin"
+            return p
         if p.user is None:
             raise Unauthorized("Authentication required.")
         if not has_permission(p.role, permission):

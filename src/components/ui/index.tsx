@@ -3,7 +3,7 @@
 import { cloneElement, forwardRef, useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { AlertTriangle, Check, ChevronDown, ChevronLeft, ChevronRight, ExternalLink, Inbox, Loader2, Search, X } from 'lucide-react'
 import { ApiError } from '@/lib/api/client'
 import type { Facet, JobStatus, VerificationStatus } from '@/lib/api/types'

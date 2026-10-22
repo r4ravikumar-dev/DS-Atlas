@@ -1,65 +1,89 @@
-'use client'
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { X } from 'lucide-react'
+import { getItem, getPage, optional } from '@/lib/api/server'
+import type { Component, Facet, SystemDetail } from '@/lib/api/types'
+import { hrefWith, parseParams, type RawParams } from '@/lib/validation/params'
+import { PageIntro } from '@/components/layout/PageIntro'
+import { FacetPanel, FilterBar, type FilterGroup, type FilterToggle } from '@/components/catalog/FilterBar'
+import { FilterRoot, Results } from '@/components/catalog/FilterState'
+import { ComponentCard } from '@/components/catalog/ComponentCard'
+import { Stagger, StaggerItem } from '@/components/motion/Reveal'
+import { EmptyState, ErrorNotice, RecoveryLink } from '@/components/kit/states'
+import { Pagination } from '@/components/kit/pagination'
 
-import { Suspense } from 'react'
-import { useRouter } from 'next/navigation'
-import { useComponentFacets, useComponents } from '@/features/components/api'
-import { useUrlState } from '@/hooks/useUrlState'
-import { ErrorState, FacetFilter, Missing, PageHeader, Pagination, Panel, SearchInput, Select, Tag, Toggle, VerifyBadge } from '@/components/ui'
-import { DataTable } from '@/components/ui/DataTable'
-import s from '@/components/platform/page.module.scss'
-
-const LEVEL: Record<string, string> = { api: 'Structured API', doc: 'Docs page', index: 'Directory link', editorial_highlight: 'Editorial note' }
-
-function ComponentsInner() {
-  const u = useUrlState()
-  const router = useRouter()
-  const page = u.getNum('page', 1)
-  const q = {
-    q: u.get('q'), family: u.getAll('family'), library: u.getAll('library'), detail_level: u.getAll('detail_level'),
-    has_keyboard: u.get('has_keyboard') || undefined, has_props: u.get('has_props') || undefined, sort: u.get('sort'), page, page_size: 25,
-  }
-  const list = useComponents(q)
-  const facets = useComponentFacets()
-  return (
-    <>
-      <PageHeader title="Component explorer" description="One record per documented component. ‘Structured API’ records carry props, keyboard tables and accessibility notes parsed from official docs; ‘Directory link’ records only prove a system documents the component at a URL." />
-      <div className={s.filters}>
-        <SearchInput value={u.get('q')} onChange={(v) => u.set({ q: v })} placeholder="Search name or description…" />
-        <FacetFilter label="Family" facets={facets.data?.families} selected={u.getAll('family')} onChange={(v) => u.set({ family: v })} />
-        <FacetFilter label="Library" facets={facets.data?.libraries} selected={u.getAll('library')} onChange={(v) => u.set({ library: v })} />
-        <FacetFilter label="Detail level" facets={facets.data?.detail_levels} selected={u.getAll('detail_level')} onChange={(v) => u.set({ detail_level: v })} format={(v) => LEVEL[v] ?? v} />
-        <Toggle label="Has props" checked={!!u.get('has_props')} onChange={(v) => u.set({ has_props: v ? 'true' : null })} />
-        <Toggle label="Keyboard documented" checked={!!u.get('has_keyboard')} onChange={(v) => u.set({ has_keyboard: v ? 'true' : null })} />
-        <Select label="Sort" value={u.get('sort')} onChange={(v) => u.set({ sort: v })} options={[{ value: '', label: 'Most documented' }, { value: 'name', label: 'Name A–Z' }, { value: 'library', label: 'Library' }, { value: 'family', label: 'Family' }]} />
-        <span className={s.filterMeta}>{list.data && `${list.data.meta.total_items.toLocaleString()} components`}</span>
-      </div>
-      <Panel>
-        {list.error ? <ErrorState error={list.error} onRetry={() => list.refetch()} /> : (
-          <DataTable
-            caption="Components"
-            loading={list.isFetching}
-            rows={list.data?.data}
-            rowKey={(r) => r.id}
-            onRowClick={(r) => router.push(`/components/${r.id}`)}
-            sort={u.get('sort')}
-            onSort={(k) => u.set({ sort: k })}
-            columns={[
-              { key: 'n', header: 'Component', sortKey: 'name', cell: (r) => <span className={s.cell}><strong>{r.name}</strong><small>{r.description ? r.description.slice(0, 110) + (r.description.length > 110 ? '…' : '') : ''}</small></span> },
-              { key: 'lib', header: 'Library / system', sortKey: 'library', cell: (r) => r.library ?? <Missing /> },
-              { key: 'fam', header: 'Family', sortKey: 'family', cell: (r) => (r.family ? <Tag>{r.family}</Tag> : <Missing label="—" />), hideBelow: 'md' },
-              { key: 'lvl', header: 'Detail', cell: (r) => <Tag tone={r.detail_level === 'api' ? 'accent' : undefined}>{LEVEL[r.detail_level ?? ''] ?? r.detail_level}</Tag>, hideBelow: 'lg' },
-              { key: 'p', header: 'Props', sortKey: 'props', cell: (r) => r.props_count || '—', align: 'right' },
-              { key: 'k', header: 'Keys', cell: (r) => r.keyboard_count || '—', align: 'right', hideBelow: 'md' },
-              { key: 'v', header: 'Verification', cell: (r) => <VerifyBadge status={r.verification_status} />, hideBelow: 'lg' },
-            ]}
-          />
-        )}
-        {list.data && <Pagination page={page} pageSize={25} total={list.data.meta.total_items} totalPages={list.data.meta.total_pages} onPage={(p) => u.set({ page: p }, { resetPage: false })} />}
-      </Panel>
-    </>
-  )
+export const metadata: Metadata = {
+  title: 'Component explorer',
+  description: 'Every documented component across design systems and libraries — props, variants, keyboard behaviour and accessibility notes, each kept with its own library.',
+  alternates: { canonical: '/components' },
 }
 
-export default function ComponentsPage() {
-  return <Suspense><ComponentsInner /></Suspense>
+const SORTS = [
+  { value: '', label: 'Most documented' },
+  { value: 'name', label: 'Name A–Z' },
+  { value: 'library', label: 'Library' },
+  { value: 'family', label: 'Family' },
+  { value: '-props', label: 'Most props' },
+] as const
+const PAGE_SIZE = 30
+
+export default async function ComponentsExplorer({ searchParams }: { searchParams: Promise<RawParams> }) {
+  const raw = await searchParams
+  const p = parseParams(raw, { lists: ['family', 'library'], singles: ['system_id'], flags: ['has_props', 'has_keyboard'], sorts: SORTS.map((s) => s.value).filter(Boolean) })
+  const systemId = Number(p.system_id) || undefined
+  const [list, facets, system] = await Promise.all([
+    getPage<Component>('/components', { query: { ...p, system_id: systemId, page_size: PAGE_SIZE }, tags: ['components'] }).catch((e: Error) => e),
+    optional(getItem<Record<string, Facet[]>>('/components/facets', { tags: ['components'] })),
+    systemId ? optional(getItem<SystemDetail>(`/design-systems/${systemId}`, { tags: [`system:${systemId}`] })) : null,
+  ])
+  const groups: FilterGroup[] = [
+    { param: 'family', label: 'Category', options: (facets?.families ?? []).map((f) => ({ value: f.value, count: f.count })) },
+    { param: 'library', label: 'Design system / library', options: (facets?.libraries ?? []).map((f) => ({ value: f.value, count: f.count })) },
+  ]
+  const toggles: FilterToggle[] = [
+    { param: 'has_props', label: 'Documented props / API' },
+    { param: 'has_keyboard', label: 'Keyboard behaviour documented' },
+  ]
+
+  return (
+    <FilterRoot>
+      <PageIntro
+        eyebrow="Explorer"
+        title="Components"
+        accent="across every library."
+        description="Every documented component across systems. Each result is one system's own implementation — a Button from one system is never merged with another's — and opens inside that system."
+        aside={!(list instanceof Error) && (
+          <p className="shrink-0 font-mono text-meta text-muted" aria-live="polite">
+            <span className="block text-section font-medium text-text tabular-nums">{list.meta.total_items.toLocaleString()}</span>components match
+          </p>
+        )}
+      />
+      <div className="container-page grid gap-10 pt-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
+        <aside className="hidden lg:block" aria-label="Filters">
+          <div className="sticky top-[calc(var(--header-h)+1.5rem)] max-h-[calc(100svh-var(--header-h)-3rem)] overflow-y-auto pr-2 pb-8">
+            <FacetPanel groups={groups} toggles={toggles} />
+          </div>
+        </aside>
+        <div className="flex min-w-0 flex-col gap-8">
+          <FilterBar searchPlaceholder="Search components by name, alias or description" groups={groups} toggles={toggles} sorts={[...SORTS]} />
+          {systemId && (
+            <p className="flex flex-wrap items-center gap-2 text-meta text-text-2">
+              Showing components of <Link href={`/systems/${systemId}`} className="focus-ring text-text underline underline-offset-4">{system?.name ?? `system #${systemId}`}</Link>
+              <Link href={hrefWith('/components', raw, { system_id: null, page: null })} className="focus-ring inline-flex items-center gap-1 rounded-xs border border-line-strong px-2 py-0.5 text-muted hover:text-text"><X className="size-3" aria-hidden />all systems</Link>
+            </p>
+          )}
+          <Results>
+            {list instanceof Error ? <ErrorNotice title="Components could not be loaded" message={list.message} retryHref={hrefWith('/components', raw, {})} />
+              : list.data.length === 0 ? <EmptyState title="No components match these filters" action={<RecoveryLink href="/components">Clear filters</RecoveryLink>}>Try a broader search, or remove a filter.</EmptyState>
+              : (
+                <Stagger as="ul" key={JSON.stringify(raw)} gap={0.03} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {list.data.map((c) => <StaggerItem as="li" key={c.id}><ComponentCard c={c} /></StaggerItem>)}
+                </Stagger>
+              )}
+            {!(list instanceof Error) && <Pagination page={list.meta.page} totalPages={list.meta.total_pages} total={list.meta.total_items} pageSize={PAGE_SIZE} href={(n) => hrefWith('/components', raw, { page: n })} />}
+          </Results>
+        </div>
+      </div>
+    </FilterRoot>
+  )
 }

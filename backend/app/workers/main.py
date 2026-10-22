@@ -56,6 +56,27 @@ def run_build_job(job: Job) -> None:
             raise e
     with SessionLocal() as db:
         jobsvc.finish(db, job.id, "succeeded", result=summary, records_extracted=summary["records"])
+    from ..services.frontend_cache import notify
+    _collect_assets_for_new_systems()
+    notify(summary)
+
+
+def _collect_assets_for_new_systems(limit: int = 50) -> None:
+    """Systems that have never had their official page checked for visual assets (e.g. found by today's sync) get one
+    pass. Systems already checked are left alone — the daily sync never re-downloads unchanged images."""
+    from ..models import DesignSystem, SystemAsset
+    from ..services import assets
+    with SessionLocal() as db:
+        ids = db.scalars(select(DesignSystem.id).where(~select(SystemAsset.id).where(SystemAsset.system_id == DesignSystem.id).exists())
+                         .order_by(DesignSystem.id.desc()).limit(limit)).all()
+        if not ids:
+            return
+        try:
+            log.info("collecting visual assets for new systems", extra={"systems": len(ids)})
+            assets.collect(db, system_ids=list(ids))
+        except Exception as e:  # never fail a build over images
+            db.rollback()
+            log.warning("asset collection after build failed: %s", type(e).__name__)
 
 
 def run_export_job(job: Job) -> None:
@@ -130,6 +151,18 @@ def run_verify_resources_job(job: Job) -> None:
         jobsvc.finish(db, job.id, "succeeded", result=summary, records_extracted=summary["systems_checked"])
 
 
+def run_collect_assets_job(job: Job) -> None:
+    from ..services import assets
+    with SessionLocal() as db:
+        def progress(n: int, total: int, msg: str) -> None:
+            with SessionLocal() as pdb:
+                jobsvc.heartbeat(pdb, job.id, phase="collecting_assets", urls_processed=n, urls_discovered=total)
+        summary = assets.collect(db, system_ids=(job.params or {}).get("system_ids"), progress=progress)
+        summary["approved_domains_added"] = _persist_hosts(db, job.id, "official sites of design systems (visual assets)")
+        db.commit()
+        jobsvc.finish(db, job.id, "succeeded", result=summary, records_extracted=summary["assets_new"] + summary["assets_changed"])
+
+
 def run_sync_finalize_job(job: Job) -> None:
     from ..services import sync
     deps = (job.params or {}).get("after") or []
@@ -163,7 +196,7 @@ def scheduler_tick() -> None:
 
 
 HANDLERS = {"crawl": run_crawl, "build": run_build_job, "export": run_export_job, "review": run_review_job, "storybook": run_storybook_job,
-            "verify_resources": run_verify_resources_job, "sync_finalize": run_sync_finalize_job}
+            "verify_resources": run_verify_resources_job, "collect_assets": run_collect_assets_job, "sync_finalize": run_sync_finalize_job}
 
 
 def execute(job_id) -> None:

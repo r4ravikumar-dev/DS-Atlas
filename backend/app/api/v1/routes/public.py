@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from ....core.exceptions import AppError
 from ....database.session import get_db
-from ....models import Component, DesignSystem, DesignToken, Guideline, StorybookProject, StorybookStory, StorybookVariant, SyncRun, SystemResource
+from ....models import Component, DesignSystem, DesignToken, Guideline, Source, StorybookProject, StorybookStory, StorybookVariant, SyncRun, SystemResource
 from ....services import comparisons as cmp
 from ...deps import require
 from ..common import ERRORS
@@ -27,6 +27,7 @@ def stats(db: Session = Depends(get_db)):
             SystemResource.resource_type == "github_repository", SystemResource.verification_status != "invalid")) or 0,
         "systems_with_figma": db.scalar(select(func.count(func.distinct(SystemResource.system_id))).where(
             SystemResource.resource_type == "figma_file", SystemResource.verification_status != "invalid")) or 0,
+        "sources_indexed": c(Source, Source.records_count > 0),
         "content_updated_at": db.scalar(select(func.max(DesignSystem.content_updated_at))),
         "last_sync_at": last,
     }}

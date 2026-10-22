@@ -126,7 +126,7 @@ def quality_issues(kind: str = Query(..., pattern="^(" + "|".join(ISSUES) + ")$"
         total = db.scalar(select(func.count()).select_from(stmt.subquery())) or 0
         rows = db.scalars(stmt.offset(pp.offset).limit(pp.page_size)).all()
         return page_out([{"kind": "system", "id": s.id, "title": s.name, "subtitle": s.organization, "detail": f"{s.source_count} source(s)",
-                          "href": f"/platform/systems/{s.id}"} for s in rows], total, pp.page, pp.page_size)
+                          "href": f"/admin/systems/{s.id}"} for s in rows], total, pp.page, pp.page_size)
 
     if kind == "missing_official_url":
         return systems(_missing_official())
@@ -139,7 +139,7 @@ def quality_issues(kind: str = Query(..., pattern="^(" + "|".join(ISSUES) + ")$"
         total = db.scalar(select(func.count()).select_from(stmt.subquery())) or 0
         rows = db.scalars(stmt.offset(pp.offset).limit(pp.page_size)).all()
         return page_out([{"kind": "review", "id": g.id, "title": ", ".join(e.get("name", "?") for e in (g.details or {}).get("entities", [])),
-                          "subtitle": g.resolution or "not evaluated", "detail": (g.details or {}).get("reason"), "href": "/platform/review?kind=possible_duplicate_system"}
+                          "subtitle": g.resolution or "not evaluated", "detail": (g.details or {}).get("reason"), "href": "/admin/review?kind=possible_duplicate_system"}
                          for g in rows], total, pp.page, pp.page_size)
     if kind == "invalid_links":
         stmt = (select(SystemResource, DesignSystem.name).join(DesignSystem, DesignSystem.id == SystemResource.system_id)
@@ -147,7 +147,7 @@ def quality_issues(kind: str = Query(..., pattern="^(" + "|".join(ISSUES) + ")$"
         total = db.scalar(select(func.count()).select_from(stmt.subquery())) or 0
         rows = db.execute(stmt.offset(pp.offset).limit(pp.page_size)).all()
         return page_out([{"kind": "resource", "id": r.id, "title": f"{n} — {r.resource_type.replace('_', ' ')}", "subtitle": r.url,
-                          "detail": r.evidence_note or (f"HTTP {r.http_status}" if r.http_status else None), "href": f"/platform/systems/{r.system_id}"}
+                          "detail": r.evidence_note or (f"HTTP {r.http_status}" if r.http_status else None), "href": f"/admin/systems/{r.system_id}"}
                          for r, n in rows], total, pp.page, pp.page_size)
     if kind == "orphaned_records":
         items = [{"kind": "count", "id": i, "title": k.replace("_", " "), "subtitle": None, "detail": str(v), "href": None}
@@ -158,8 +158,8 @@ def quality_issues(kind: str = Query(..., pattern="^(" + "|".join(ISSUES) + ")$"
         jobs = db.scalars(select(Job).where(Job.status == "failed", Job.created_at >= since).order_by(Job.created_at.desc()).limit(100)).all()
         sb = db.execute(text("SELECT id, title, status, limitation FROM storybook_projects WHERE status <> 'indexed' ORDER BY title")).all()
         items = [{"kind": "job", "id": str(j.id), "title": f"{j.kind} job failed", "subtitle": (j.error or "")[:200], "detail": j.created_at.isoformat(),
-                  "href": f"/platform/jobs/{j.id}"} for j in jobs]
-        items += [{"kind": "storybook", "id": i, "title": f"Storybook: {t}", "subtitle": st, "detail": (lim or "")[:240], "href": "/platform/storybook"}
+                  "href": f"/admin/jobs/{j.id}"} for j in jobs]
+        items += [{"kind": "storybook", "id": i, "title": f"Storybook: {t}", "subtitle": st, "detail": (lim or "")[:240], "href": "/admin/storybook"}
                   for i, t, st, lim in sb]
         return page_out(items[pp.offset:pp.offset + pp.page_size], len(items), pp.page, pp.page_size)
     if kind == "needs_recrawl":
@@ -168,7 +168,7 @@ def quality_issues(kind: str = Query(..., pattern="^(" + "|".join(ISSUES) + ")$"
         rows = db.scalars(stmt.offset(pp.offset).limit(pp.page_size)).all()
         return page_out([{"kind": "source", "id": s.id, "title": f"{s.key} · {s.name}", "subtitle": s.status,
                           "detail": f"last success {s.last_success_at:%Y-%m-%d}" if s.last_success_at else "never succeeded",
-                          "href": f"/platform/sources/{s.id}"} for s in rows], total, pp.page, pp.page_size)
+                          "href": f"/admin/sources/{s.id}"} for s in rows], total, pp.page, pp.page_size)
     raise NotFound("Unknown issue type.")
 
 

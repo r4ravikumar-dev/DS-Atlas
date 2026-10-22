@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
+
+from typing import Any
 
 from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy import func, select
@@ -9,14 +12,14 @@ from sqlalchemy.orm import Session
 
 from ....core.exceptions import Conflict, NotFound
 from ....database.session import get_db
-from ....models import (AttributeEvidence, Component, DesignSystem, DesignToken, EntityCuration, Guideline, Record, Source, StorybookProject,
+from ....models import (AttributeEvidence, Component, ComponentFamily, DesignSystem, DesignToken, EntityCuration, Guideline, Record, Source, StorybookProject,
                         StorybookStory, StorybookVariant, SystemAlias, SystemResource)
 from ....repositories import list_components, list_guidelines, list_systems, list_tokens, paginate, system_facets
 from ....schemas import (
-    AttributeEvidenceOut, ComponentOut, GuidelineOut, Item, Page, ResourceCreate, ResourceOut, ResourceUpdate, SourceOut,
-    SystemDetail, SystemOut, SystemUpdate, TokenOut
+    AttributeEvidenceOut, ComponentDetail, ComponentOut, GuidelineOut, Item, Page, ResourceCreate, ResourceOut, ResourceUpdate, SourceOut,
+    SystemDetail, SystemOut, SystemUpdate, TokenDetailOut, TokenOut
 )
-from ....services import resources as ressvc
+from ....services import assets as assetsvc, catalog, playground as pgsvc, resources as ressvc
 from ....services.audit import audit
 from ...deps import PageParams, Principal, page_params, require
 from ..common import ERRORS, csv_list, page_out
@@ -25,8 +28,12 @@ from ..serializers import component_out, guideline_out, token_out
 router = APIRouter(prefix="/design-systems", tags=["design-systems"], responses=ERRORS)
 
 
-def _get(db: Session, system_id: int) -> DesignSystem:
-    s = db.get(DesignSystem, system_id)
+def _get(db: Session, ref: str | int) -> DesignSystem:
+    """A system by id or slug; a merged (alias) id resolves to its canonical system."""
+    s = catalog.resolve_system(db, ref)
+    if not s and str(ref).isdigit():
+        hit = _alias_target(db, int(ref))
+        s = hit[0] if hit else None
     if not s:
         raise NotFound("Design system not found.")
     return s
@@ -61,8 +68,9 @@ def primary_links(db: Session, ids: list[int]) -> tuple[dict[int, list[dict]], d
     return links, counts
 
 
-def system_out(s: DesignSystem, links: dict[int, list[dict]], counts: dict[int, int]) -> dict:
-    return {**SystemOut.model_validate(s).model_dump(), "links": links.get(s.id, []), "resource_count": counts.get(s.id, 0)}
+def system_out(s: DesignSystem, links: dict[int, list[dict]], counts: dict[int, int], assets: dict[int, dict] | None = None) -> dict:
+    return {**SystemOut.model_validate(s).model_dump(), "links": links.get(s.id, []), "resource_count": counts.get(s.id, 0),
+            "logo": (assets or {}).get(s.id, {}).get("icon")}
 
 
 def _detail(db: Session, s: DesignSystem, requested_alias: SystemAlias | None = None) -> dict:
@@ -75,7 +83,9 @@ def _detail(db: Session, s: DesignSystem, requested_alias: SystemAlias | None = 
     stories = db.scalar(select(func.count()).select_from(StorybookStory).where(StorybookStory.project_id.in_(pids))) if pids else 0
     variants = db.scalar(select(func.count()).select_from(StorybookVariant).where(StorybookVariant.project_id.in_(pids))) if pids else 0
     aliases = db.scalars(select(SystemAlias).where(SystemAlias.canonical_key == s.key).order_by(SystemAlias.alias_key)).all()
+    vis = assetsvc.public_assets(db, [s.id]).get(s.id, {})
     return {**SystemDetail.model_validate(s).model_dump(), "links": links.get(s.id, []), "resource_count": counts.get(s.id, 0),
+            "logo": vis.get("icon"), "cover": vis.get("social_image"),
             "resources": [ResourceOut.model_validate(r) for r in res],
             "merged_aliases": [{"key": a.alias_key, "id": a.alias_id, "name": a.alias_name, "reason": a.reason} for a in aliases],
             "requested_alias": {"key": requested_alias.alias_key, "id": requested_alias.alias_id, "name": requested_alias.alias_name} if requested_alias else None,
@@ -91,12 +101,16 @@ def list_(q: str | None = Query(None, max_length=200), framework: list[str] | No
           verified_resource: list[str] | None = Depends(csv_list("verified_resource")),
           missing_resource: str | None = Query(None, pattern="^(official|official_website|official_documentation|github_repository|figma_file|storybook)$"),
           component: str | None = Query(None, max_length=200, description="systems having a component whose name matches"),
+          has_components: bool | None = Query(None, description="only systems with collected component records"),
+          has_tokens: bool | None = Query(None, description="only systems with collected design tokens"),
           sort: str | None = Query(None, max_length=30), pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
     items, total = list_systems(db, q=q, framework=framework, verification=verification, source=source, min_sources=min_sources, has_repo=has_repo,
                                 has_storybook=has_storybook, platform=platform, resource=resource, verified_resource=verified_resource,
-                                missing_resource=missing_resource, component=component, sort=sort, page=pp.page, page_size=pp.page_size)
+                                missing_resource=missing_resource, component=component, has_components=has_components,
+                                has_tokens=has_tokens, sort=sort, page=pp.page, page_size=pp.page_size)
     links, counts = primary_links(db, [s.id for s in items])
-    return page_out([system_out(s, links, counts) for s in items], total, pp.page, pp.page_size)
+    vis = assetsvc.public_assets(db, [s.id for s in items])
+    return page_out([system_out(s, links, counts, vis) for s in items], total, pp.page, pp.page_size)
 
 
 @router.get("/facets", dependencies=[Depends(require("public:read"))], summary="Filter facets with counts")
@@ -104,19 +118,20 @@ def facets(db: Session = Depends(get_db)):
     return {"data": system_facets(db)}
 
 
-@router.get("/{system_id}", response_model=Item[SystemDetail], dependencies=[Depends(require("public:read"))])
-def get(system_id: int, db: Session = Depends(get_db)):
-    s = db.get(DesignSystem, system_id)
+@router.get("/{system_id}", response_model=Item[SystemDetail], dependencies=[Depends(require("public:read"))],
+            summary="One design system by id or slug (a merged id returns its canonical system with requested_alias)")
+def get(system_id: str, db: Session = Depends(get_db)):
+    s = catalog.resolve_system(db, system_id)
     if s:
         return {"data": _detail(db, s)}
-    hit = _alias_target(db, system_id)
+    hit = _alias_target(db, int(system_id)) if system_id.isdigit() else None
     if not hit:
         raise NotFound("Design system not found.")
     return {"data": _detail(db, hit[0], hit[1])}
 
 
 @router.patch("/{system_id}", response_model=Item[SystemDetail], summary="Curator edit of descriptive fields")
-def update(system_id: int, body: SystemUpdate, p: Principal = Depends(require("system:write")), db: Session = Depends(get_db)):
+def update(system_id: str, body: SystemUpdate, p: Principal = Depends(require("system:write")), db: Session = Depends(get_db)):
     s = _get(db, system_id)
     ch = body.model_dump(exclude_unset=True)
     t = datetime.now(timezone.utc)
@@ -137,15 +152,15 @@ def update(system_id: int, body: SystemUpdate, p: Principal = Depends(require("s
 
 
 @router.get("/{system_id}/resources", response_model=Page[ResourceOut], dependencies=[Depends(require("public:read"))])
-def list_resources(system_id: int, pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
-    _get(db, system_id)
-    stmt = select(SystemResource).where(SystemResource.system_id == system_id).order_by(SystemResource.resource_type, SystemResource.is_primary.desc(), SystemResource.id)
+def list_resources(system_id: str, pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
+    sys_ = _get(db, system_id)
+    stmt = select(SystemResource).where(SystemResource.system_id == sys_.id).order_by(SystemResource.resource_type, SystemResource.is_primary.desc(), SystemResource.id)
     rows, total = paginate(db, stmt, pp.page, pp.page_size)
     return page_out([r[0] for r in rows], total, pp.page, pp.page_size)
 
 
 @router.post("/{system_id}/resources", response_model=Item[ResourceOut], status_code=201, summary="Add a resource link (administrator)")
-def add_resource(system_id: int, body: ResourceCreate, p: Principal = Depends(require("system:write")), db: Session = Depends(get_db)):
+def add_resource(system_id: str, body: ResourceCreate, p: Principal = Depends(require("system:write")), db: Session = Depends(get_db)):
     s = _get(db, system_id)
     r = add_manual_resource(db, s.key, s.id, body.resource_type, body.url, label=body.label, verified=body.verification_status == "verified",
                             note=body.evidence_note, user_id=p.id)
@@ -175,33 +190,159 @@ def add_manual_resource(db: Session, key: str, system_id: int | None, rtype: str
     return r
 
 
-@router.get("/{system_id}/components", response_model=Page[ComponentOut], dependencies=[Depends(require("public:read"))])
-def components(system_id: int, q: str | None = None, pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
-    _get(db, system_id)
-    rows, total = list_components(db, q=q, system_id=system_id, page=pp.page, page_size=pp.page_size)
+COMPONENT_SORTS = {"name", "family", "-props", "props"}
+
+
+@router.get("/{system_id}/components", response_model=Page[ComponentOut], dependencies=[Depends(require("public:read"))],
+            summary="This system's components (filter by family, playground availability, documented API)")
+def components(system_id: str, q: str | None = Query(None, max_length=200), family: list[str] | None = Depends(csv_list("family")),
+               has_props: bool | None = None, playground: str | None = Query(None, pattern="^(live|adapter|any)$"),
+               sort: str | None = Query(None, max_length=20), pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
+    sys_ = _get(db, system_id)
+    stmt = select(Component, Source.key).join(Source, Source.id == Component.source_id).where(Component.system_id == sys_.id)
+    if q:
+        stmt = stmt.where(Component.name.ilike(f"%{q.replace('%', '')}%") | Component.description.ilike(f"%{q.replace('%', '')}%"))
+    if family:
+        stmt = stmt.where(Component.family.in_([f for f in family if f != catalog.UNCLASSIFIED]) |
+                          (Component.family.is_(None) if catalog.UNCLASSIFIED in family else False))
+    if has_props:
+        stmt = stmt.where(Component.props_count > 0)
+    if playground:
+        names = [(r["library"], r["component"]) for r in pgsvc.registry()["components"]
+                 if playground == "any" or pgsvc.registry()["libraries"][r["library"]]["tier"] == playground]
+        stmt = stmt.where(func.concat(Component.library, "||", Component.name).in_([f"{a}||{b}" for a, b in names] or ["-"]),
+                          Component.detail_level.in_(pgsvc.PREVIEWABLE_LEVELS))
+    order = {"name": [Component.name], "family": [Component.family.nulls_last(), Component.name], "-props": [Component.props_count.desc(), Component.name],
+             "props": [Component.props_count, Component.name]}.get(sort or "", [Component.family.nulls_last(), Component.name])
+    rows, total = paginate(db, stmt.order_by(*order), pp.page, pp.page_size)
     return page_out([component_out(c, k) for c, k in rows], total, pp.page, pp.page_size)
 
 
-@router.get("/{system_id}/tokens", response_model=Page[TokenOut], dependencies=[Depends(require("public:read"))])
-def tokens(system_id: int, pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
-    _get(db, system_id)
-    stmt = select(DesignToken, Source.key).join(Source, Source.id == DesignToken.source_id).where(DesignToken.system_id == system_id).order_by(DesignToken.path)
-    rows, total = paginate(db, stmt, pp.page, pp.page_size)
+@router.get("/{system_id}/components/{component_ref}", response_model=Item[ComponentDetail], dependencies=[Depends(require("public:read"))],
+            summary="One of this system's components, by id or slug (404 when it belongs to another system)")
+def component(system_id: str, component_ref: str, db: Session = Depends(get_db)):
+    from .components import detail as component_detail
+    sys_ = _get(db, system_id)
+    col = Component.id if component_ref.isdigit() else Component.slug
+    c = db.scalar(select(Component).where(Component.system_id == sys_.id, col == (int(component_ref) if component_ref.isdigit() else component_ref)))
+    if not c:
+        raise NotFound("Component not found in this design system.")
+    return {"data": component_detail(db, c.id)}
+
+
+@router.get("/{system_id}/component-families", dependencies=[Depends(require("public:read"))],
+            summary="This system's components grouped into taxonomy categories and families, with counts")
+def component_families(system_id: str, db: Session = Depends(get_db)):
+    sys_ = _get(db, system_id)
+    rows = db.execute(select(Component.family, Component.library, Component.name, Component.detail_level).where(Component.system_id == sys_.id)).all()
+    meta = {f.name: f for f in db.scalars(select(ComponentFamily))}
+    fams: dict[str, dict[str, Any]] = {}
+    for fam, lib, name, level in rows:
+        key = fam or catalog.UNCLASSIFIED
+        f = fams.setdefault(key, {"name": key, "slug": catalog.slugify(key), "count": 0, "with_playground": 0,
+                                   "category": catalog.category_of(fam), "position": meta[fam].position if fam in meta else 10_000})
+        f["count"] += 1
+        f["with_playground"] += pgsvc.tier_for(lib, name, level) != "docs"
+    cats: dict[str, dict[str, Any]] = {}
+    order = {n: i for i, (n, _) in enumerate(catalog.CATEGORIES)}
+    for f in sorted(fams.values(), key=lambda x: (x["position"], x["name"])):
+        c = cats.setdefault(f["category"], {"name": f["category"], "description": dict(catalog.CATEGORIES).get(f["category"]), "count": 0, "families": []})
+        c["count"] += f["count"]
+        c["families"].append({k: f[k] for k in ("name", "slug", "count", "with_playground")})
+    return {"data": sorted(cats.values(), key=lambda c: order.get(c["name"], 99))}
+
+
+@router.get("/{system_id}/tokens", response_model=Page[TokenOut], dependencies=[Depends(require("public:read"))],
+            summary="This system's tokens (filter by category, tier, theme; search names and values)")
+def tokens(system_id: str, q: str | None = Query(None, max_length=200), category: list[str] | None = Depends(csv_list("category")),
+           tier: list[str] | None = Depends(csv_list("tier")), theme: list[str] | None = Depends(csv_list("theme")),
+           pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
+    sys_ = _get(db, system_id)
+    stmt = select(DesignToken, Source.key).join(Source, Source.id == DesignToken.source_id).where(DesignToken.system_id == sys_.id)
+    if q:
+        like = f"%{q.replace('%', '')}%"
+        stmt = stmt.where(DesignToken.path.ilike(like) | DesignToken.raw_value.ilike(like) | DesignToken.description.ilike(like))
+    for col, vals in ((DesignToken.category, category), (DesignToken.tier, tier), (DesignToken.theme, theme)):
+        if vals:
+            stmt = stmt.where(col.in_(vals))
+    rows, total = paginate(db, stmt.order_by(DesignToken.category, DesignToken.path, DesignToken.theme), pp.page, pp.page_size)
     return page_out([token_out(t, k) for t, k in rows], total, pp.page, pp.page_size)
 
 
+@router.get("/{system_id}/token-groups", dependencies=[Depends(require("public:read"))], summary="Counts of this system's tokens by category, tier and theme")
+def token_groups(system_id: str, db: Session = Depends(get_db)):
+    sys_ = _get(db, system_id)
+    def count(col):
+        return [{"value": v, "count": n} for v, n in db.execute(select(col, func.count()).where(DesignToken.system_id == sys_.id, col.is_not(None))
+                                                                .group_by(col).order_by(func.count().desc())).all()]
+    cats = {c["value"]: c["count"] for c in count(DesignToken.category)}
+    return {"data": {"categories": [{"value": c, "count": cats[c]} for c in catalog.TOKEN_CATEGORIES if c in cats],
+                     "tiers": count(DesignToken.tier), "themes": count(DesignToken.theme)}}
+
+
+@router.get("/{system_id}/tokens/{token_ref}", response_model=Item[TokenDetailOut], dependencies=[Depends(require("public:read"))],
+            summary="One of this system's tokens, by id or slug")
+def token(system_id: str, token_ref: str, db: Session = Depends(get_db)):
+    from .tokens import _get as token_get, detail_out
+    sys_ = _get(db, system_id)
+    col = DesignToken.id if token_ref.isdigit() else DesignToken.slug
+    t = db.scalar(select(DesignToken).where(DesignToken.system_id == sys_.id, col == (int(token_ref) if token_ref.isdigit() else token_ref)))
+    if not t:
+        raise NotFound("Token not found in this design system.")
+    return {"data": detail_out(db, *token_get(db, t.id))}
+
+
 @router.get("/{system_id}/guidelines", response_model=Page[GuidelineOut], dependencies=[Depends(require("public:read"))])
-def guidelines(system_id: int, pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
-    _get(db, system_id)
-    stmt = (select(Guideline, Source.key).join(Source, Source.id == Guideline.source_id).where(Guideline.system_id == system_id)
-            .order_by(Guideline.category, Guideline.title))
-    rows, total = paginate(db, stmt, pp.page, pp.page_size)
+@router.get("/{system_id}/patterns", response_model=Page[GuidelineOut], dependencies=[Depends(require("public:read"))],
+            summary="This system's documented patterns and guidance (filter by taxonomy category)")
+def guidelines(system_id: str, q: str | None = Query(None, max_length=200), category: list[str] | None = Depends(csv_list("category")),
+               pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
+    sys_ = _get(db, system_id)
+    stmt = select(Guideline, Source.key).join(Source, Source.id == Guideline.source_id).where(Guideline.system_id == sys_.id)
+    if q:
+        stmt = stmt.where(Guideline.title.ilike(f"%{q.replace('%', '')}%"))
+    if category:
+        stmt = stmt.where(Guideline.category.in_(category))
+    rows, total = paginate(db, stmt.order_by(Guideline.category, Guideline.title), pp.page, pp.page_size)
     return page_out([guideline_out(g, k) for g, k in rows], total, pp.page, pp.page_size)
 
 
+@router.get("/{system_id}/pattern-groups", dependencies=[Depends(require("public:read"))], summary="Counts of this system's guidance by taxonomy category")
+def pattern_groups(system_id: str, db: Session = Depends(get_db)):
+    from ....scrapers.dskb.sources import TAXONOMY
+    sys_ = _get(db, system_id)
+    rows = db.execute(select(Guideline.category, func.count()).where(Guideline.system_id == sys_.id).group_by(Guideline.category).order_by(Guideline.category)).all()
+    return {"data": [{"value": c, "name": TAXONOMY.get(c, {}).get("name", c), "count": n} for c, n in rows]}
+
+
+@router.get("/{system_id}/patterns/{pattern_ref}", dependencies=[Depends(require("public:read"))],
+            summary="One of this system's patterns/guidance by id or slug, with the system components it mentions")
+def pattern(system_id: str, pattern_ref: str, db: Session = Depends(get_db)):
+    from .guidelines import _detail as guideline_detail
+    sys_ = _get(db, system_id)
+    col = Guideline.id if pattern_ref.isdigit() else Guideline.slug
+    g = db.scalar(select(Guideline).where(Guideline.system_id == sys_.id, col == (int(pattern_ref) if pattern_ref.isdigit() else pattern_ref)))
+    if not g:
+        raise NotFound("Pattern not found in this design system.")
+    data = guideline_detail(db, g.id, [g.record_type])["data"]
+    text_ = f" {g.title} {g.summary or ''} ".lower()
+    comps = db.execute(select(Component.id, Component.name, Component.slug, Component.family).where(Component.system_id == sys_.id)).all()
+    mentioned = [{"id": i, "name": n, "slug": sl, "family": f} for i, n, sl, f in comps
+                 if len(n) > 2 and re.search(rf"(?<![a-z]){re.escape(n.lower())}(?![a-z])", text_)]
+    return {"data": {**(data.model_dump() if hasattr(data, "model_dump") else data), "slug": g.slug, "system_slug": sys_.slug,
+                     "mentioned_components": mentioned[:20]}}
+
+
+@router.get("/{system_id}/playgrounds", response_model=Page[ComponentOut], dependencies=[Depends(require("public:read"))],
+            summary="This system's components that have an interactive preview")
+def playgrounds(system_id: str, pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
+    return components(system_id, None, None, None, "any", "family", pp, db)
+
+
 @router.get("/{system_id}/sources", dependencies=[Depends(require("public:read"))], summary="Source records that resolved to this system")
-def sources(system_id: int, db: Session = Depends(get_db)):
-    _get(db, system_id)
+def sources(system_id: str, db: Session = Depends(get_db)):
+    sys_ = _get(db, system_id)
+    system_id = sys_.id
     rows = db.execute(select(Record.id, Record.record_key, Record.title, Record.source_url, Record.verification_status, Source.id, Source.key, Source.name)
                       .join(Source, Source.id == Record.source_id).where(Record.system_id == system_id, Record.record_type.in_(["system", "tool"]))
                       .order_by(Source.key).limit(100)).all()
@@ -210,17 +351,17 @@ def sources(system_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/{system_id}/evidence", response_model=Page[AttributeEvidenceOut], dependencies=[Depends(require("public:read"))], summary="Field-level attribute evidence for this system")
-def system_evidence(system_id: int, pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
+def system_evidence(system_id: str, pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
     sys = _get(db, system_id)
     stmt = select(AttributeEvidence).where(
-        (AttributeEvidence.system_id == system_id) | (AttributeEvidence.system_key == sys.key)
+        (AttributeEvidence.system_id == sys.id) | (AttributeEvidence.system_key == sys.key)
     ).order_by(AttributeEvidence.attribute_path, AttributeEvidence.id)
     rows, total = paginate(db, stmt, pp.page, pp.page_size)
     return page_out([r[0] for r in rows], total, pp.page, pp.page_size)
 
 
 @router.get("/{system_id}/storybook", dependencies=[Depends(require("public:read"))], summary="Storybook showcase project for this system")
-def system_storybook(system_id: int, db: Session = Depends(get_db)):
+def system_storybook(system_id: str, db: Session = Depends(get_db)):
     sys = _get(db, system_id)
     proj = db.scalar(select(StorybookProject).where(StorybookProject.system_key == sys.key))
     if not proj and sys.storybook_url:
@@ -296,3 +437,23 @@ def delete_resource(resource_id: int, p: Principal = Depends(require("system:wri
     ressvc._choose_primary(db)
     db.commit()
     return Response(status_code=204)
+
+
+@router.get("/{system_id}/assets", summary="All visual assets recorded for this system, with provenance and retrieval diagnostics (administrator)")
+def system_assets(system_id: str, p: Principal = Depends(require("read")), db: Session = Depends(get_db)):
+    from ....models import SystemAsset
+    sys_ = _get(db, system_id)
+    rows = db.scalars(select(SystemAsset).where(SystemAsset.system_id == sys_.id).order_by(SystemAsset.kind, SystemAsset.is_primary.desc(), SystemAsset.id)).all()
+    cols = ("id", "kind", "url", "page_url", "source_host", "source_organization", "alt", "mime", "width", "height", "bytes", "attribution", "license",
+            "status", "error", "is_primary", "retrieved_at", "checked_at")
+    return {"data": [{c: getattr(r, c) for c in cols} for r in rows]}
+
+
+@router.post("/{system_id}/assets/collect", status_code=202, summary="Queue re-collection of this system's official visual assets (administrator)")
+def collect_system_assets(system_id: str, p: Principal = Depends(require("crawl:start")), db: Session = Depends(get_db)):
+    from ....services import jobs as jobsvc
+    sys_ = _get(db, system_id)
+    job = jobsvc.enqueue(db, "collect_assets", params={"system_ids": [sys_.id]}, created_by=p.id, priority=150)
+    audit(db, p.id, "assets.collect", "job", job.id, system_id=sys_.id)
+    db.commit()
+    return {"data": {"job_ids": [job.id]}}

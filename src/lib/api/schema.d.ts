@@ -439,7 +439,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get */
+        /** One design system by id or slug (a merged id returns its canonical system with requested_alias) */
         get: operations["get_api_v1_design_systems__system_id__get"];
         put?: never;
         post?: never;
@@ -475,8 +475,42 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Components */
+        /** This system's components (filter by family, playground availability, documented API) */
         get: operations["components_api_v1_design_systems__system_id__components_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/design-systems/{system_id}/components/{component_ref}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One of this system's components, by id or slug (404 when it belongs to another system) */
+        get: operations["component_api_v1_design_systems__system_id__components__component_ref__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/design-systems/{system_id}/component-families": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** This system's components grouped into taxonomy categories and families, with counts */
+        get: operations["component_families_api_v1_design_systems__system_id__component_families_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -492,8 +526,59 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Tokens */
+        /** This system's tokens (filter by category, tier, theme; search names and values) */
         get: operations["tokens_api_v1_design_systems__system_id__tokens_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/design-systems/{system_id}/token-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Counts of this system's tokens by category, tier and theme */
+        get: operations["token_groups_api_v1_design_systems__system_id__token_groups_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/design-systems/{system_id}/tokens/{token_ref}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One of this system's tokens, by id or slug */
+        get: operations["token_api_v1_design_systems__system_id__tokens__token_ref__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/design-systems/{system_id}/patterns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** This system's documented patterns and guidance (filter by taxonomy category) */
+        get: operations["guidelines_api_v1_design_systems__system_id__patterns_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -511,6 +596,57 @@ export interface paths {
         };
         /** Guidelines */
         get: operations["guidelines_api_v1_design_systems__system_id__guidelines_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/design-systems/{system_id}/pattern-groups": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Counts of this system's guidance by taxonomy category */
+        get: operations["pattern_groups_api_v1_design_systems__system_id__pattern_groups_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/design-systems/{system_id}/patterns/{pattern_ref}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One of this system's patterns/guidance by id or slug, with the system components it mentions */
+        get: operations["pattern_api_v1_design_systems__system_id__patterns__pattern_ref__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/design-systems/{system_id}/playgrounds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** This system's components that have an interactive preview */
+        get: operations["playgrounds_api_v1_design_systems__system_id__playgrounds_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -570,6 +706,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/design-systems/{system_id}/assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All visual assets recorded for this system, with provenance and retrieval diagnostics (administrator) */
+        get: operations["system_assets_api_v1_design_systems__system_id__assets_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/design-systems/{system_id}/assets/collect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Queue re-collection of this system's official visual assets (administrator) */
+        post: operations["collect_system_assets_api_v1_design_systems__system_id__assets_collect_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/components": {
         parameters: {
             query?: never;
@@ -613,6 +783,23 @@ export interface paths {
         };
         /** Get */
         get: operations["get_api_v1_components__component_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/components/{component_id}/playground-schema": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Interactive preview tier, property controls (with default provenance) and limitations */
+        get: operations["playground_schema_api_v1_components__component_id__playground_schema_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -868,6 +1055,57 @@ export interface paths {
         };
         /** Get Pattern */
         get: operations["get_pattern_api_v1_patterns__pattern_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pattern-library/systems": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Design systems that publish their own patterns/guidance, with counts */
+        get: operations["pattern_library_systems_api_v1_pattern_library_systems_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pattern-library/research": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cross-system research patterns, specifications and checklists (not owned by one system) */
+        get: operations["pattern_library_research_api_v1_pattern_library_research_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/pattern-library/facets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Topics and kinds of cross-system research guidance */
+        get: operations["pattern_library_facets_api_v1_pattern_library_facets_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1685,6 +1923,28 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AssetOut
+         * @description A visual asset the system's owner publishes (referenced at its original URL, with provenance).
+         */
+        AssetOut: {
+            /** Url */
+            url: string;
+            /** Alt */
+            alt?: string | null;
+            /** Width */
+            width?: number | null;
+            /** Height */
+            height?: number | null;
+            /** Page Url */
+            page_url?: string | null;
+            /** Source Host */
+            source_host?: string | null;
+            /** Attribution */
+            attribution?: string | null;
+            /** License */
+            license?: string | null;
+        };
         /** AttributeEvidenceOut */
         AttributeEvidenceOut: {
             /** Id */
@@ -1805,6 +2065,20 @@ export interface components {
             id: number;
             /** Name */
             name: string;
+            /** Slug */
+            slug?: string | null;
+            /** System Slug */
+            system_slug?: string | null;
+            /** System Name */
+            system_name?: string | null;
+            /** Family Category */
+            family_category?: string | null;
+            /**
+             * Playground
+             * @default docs
+             * @enum {string}
+             */
+            playground: "live" | "adapter" | "docs";
             /** Family */
             family: string | null;
             /** Library */
@@ -1886,6 +2160,20 @@ export interface components {
             id: number;
             /** Name */
             name: string;
+            /** Slug */
+            slug?: string | null;
+            /** System Slug */
+            system_slug?: string | null;
+            /** System Name */
+            system_name?: string | null;
+            /** Family Category */
+            family_category?: string | null;
+            /**
+             * Playground
+             * @default docs
+             * @enum {string}
+             */
+            playground: "live" | "adapter" | "docs";
             /** Family */
             family: string | null;
             /** Library */
@@ -2281,6 +2569,12 @@ export interface components {
         GuidelineDetail: {
             /** Id */
             id: number;
+            /** Slug */
+            slug?: string | null;
+            /** System Id */
+            system_id?: number | null;
+            /** System Slug */
+            system_slug?: string | null;
             /** Record Type */
             record_type: string;
             /** Kind */
@@ -2325,6 +2619,12 @@ export interface components {
         GuidelineOut: {
             /** Id */
             id: number;
+            /** Slug */
+            slug?: string | null;
+            /** System Id */
+            system_id?: number | null;
+            /** System Slug */
+            system_slug?: string | null;
             /** Record Type */
             record_type: string;
             /** Kind */
@@ -2517,6 +2817,10 @@ export interface components {
         /** Item[SystemDetail] */
         Item_SystemDetail_: {
             data: components["schemas"]["SystemDetail"];
+        };
+        /** Item[TokenDetailOut] */
+        Item_TokenDetailOut_: {
+            data: components["schemas"]["TokenDetailOut"];
         };
         /** Item[UserOut] */
         Item_UserOut_: {
@@ -3115,6 +3419,8 @@ export interface components {
             id: number;
             /** Key */
             key: string;
+            /** Slug */
+            slug?: string | null;
             /** Name */
             name: string;
             /** Organization */
@@ -3184,6 +3490,8 @@ export interface components {
              * @default 0
              */
             resource_count: number;
+            logo?: components["schemas"]["AssetOut"] | null;
+            cover?: components["schemas"]["AssetOut"] | null;
             /** Design Resource Url */
             design_resource_url: string | null;
             /** Governance */
@@ -3247,6 +3555,8 @@ export interface components {
             id: number;
             /** Key */
             key: string;
+            /** Slug */
+            slug?: string | null;
             /** Name */
             name: string;
             /** Organization */
@@ -3316,6 +3626,7 @@ export interface components {
              * @default 0
              */
             resource_count: number;
+            logo?: components["schemas"]["AssetOut"] | null;
         };
         /**
          * SystemUpdate
@@ -3335,6 +3646,77 @@ export interface components {
             /** Styling Strategy */
             styling_strategy?: string | null;
         };
+        /** TokenDetailOut */
+        TokenDetailOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Path */
+            path: string;
+            /** Slug */
+            slug?: string | null;
+            /** System Slug */
+            system_slug?: string | null;
+            /** Category */
+            category?: string | null;
+            /** Tier */
+            tier?: string | null;
+            /** Group */
+            group: string | null;
+            /** Type */
+            type: string | null;
+            /** Type Inferred */
+            type_inferred: boolean;
+            /** Raw Value */
+            raw_value: string | null;
+            /** Resolved Value */
+            resolved_value: string | null;
+            /** Alias Of */
+            alias_of: string | null;
+            /** Theme */
+            theme: string | null;
+            /** Platform */
+            platform: string | null;
+            /** Component */
+            component: string | null;
+            /** Description */
+            description: string | null;
+            /** Source Format */
+            source_format: string | null;
+            /** Design System Name */
+            design_system_name: string | null;
+            /** System Id */
+            system_id: number | null;
+            /** Source Key */
+            source_key: string;
+            /**
+             * Verification Status
+             * @enum {string}
+             */
+            verification_status: "verified" | "partially_verified" | "unverified";
+            /** Source Version */
+            source_version: string | null;
+            /** Record Key */
+            record_key: string;
+            /** Source Url */
+            source_url?: string | null;
+            /** Source Section */
+            source_section?: string | null;
+            /**
+             * Evidence
+             * @default []
+             */
+            evidence: {
+                [key: string]: unknown;
+            }[];
+            /** Value Note */
+            value_note?: string | null;
+            /** Extra */
+            extra?: {
+                [key: string]: unknown;
+            } | null;
+        };
         /** TokenOut */
         TokenOut: {
             /** Id */
@@ -3343,6 +3725,14 @@ export interface components {
             name: string;
             /** Path */
             path: string;
+            /** Slug */
+            slug?: string | null;
+            /** System Slug */
+            system_slug?: string | null;
+            /** Category */
+            category?: string | null;
+            /** Tier */
+            tier?: string | null;
             /** Group */
             group: string | null;
             /** Type */
@@ -4844,6 +5234,10 @@ export interface operations {
                 missing_resource?: string | null;
                 /** @description systems having a component whose name matches */
                 component?: string | null;
+                /** @description only systems with collected component records */
+                has_components?: boolean | null;
+                /** @description only systems with collected design tokens */
+                has_tokens?: boolean | null;
                 sort?: string | null;
                 /** @description Filter by framework (repeatable or comma-separated) */
                 framework?: string[] | null;
@@ -4972,7 +5366,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                system_id: number;
+                system_id: string;
             };
             cookie?: never;
         };
@@ -5030,7 +5424,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                system_id: number;
+                system_id: string;
             };
             cookie?: never;
         };
@@ -5095,7 +5489,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                system_id: number;
+                system_id: string;
             };
             cookie?: never;
         };
@@ -5153,7 +5547,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                system_id: number;
+                system_id: string;
             };
             cookie?: never;
         };
@@ -5214,12 +5608,17 @@ export interface operations {
         parameters: {
             query?: {
                 q?: string | null;
+                has_props?: boolean | null;
+                playground?: string | null;
+                sort?: string | null;
+                /** @description Filter by family (repeatable or comma-separated) */
+                family?: string[] | null;
                 page?: number;
                 page_size?: number;
             };
             header?: never;
             path: {
-                system_id: number;
+                system_id: string;
             };
             cookie?: never;
         };
@@ -5272,15 +5671,139 @@ export interface operations {
             };
         };
     };
+    component_api_v1_design_systems__system_id__components__component_ref__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                system_id: string;
+                component_ref: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item_ComponentDetail_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    component_families_api_v1_design_systems__system_id__component_families_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                system_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     tokens_api_v1_design_systems__system_id__tokens_get: {
         parameters: {
             query?: {
+                q?: string | null;
+                /** @description Filter by category (repeatable or comma-separated) */
+                category?: string[] | null;
+                /** @description Filter by tier (repeatable or comma-separated) */
+                tier?: string[] | null;
+                /** @description Filter by theme (repeatable or comma-separated) */
+                theme?: string[] | null;
                 page?: number;
                 page_size?: number;
             };
             header?: never;
             path: {
-                system_id: number;
+                system_id: string;
             };
             cookie?: never;
         };
@@ -5333,15 +5856,135 @@ export interface operations {
             };
         };
     };
-    guidelines_api_v1_design_systems__system_id__guidelines_get: {
+    token_groups_api_v1_design_systems__system_id__token_groups_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                system_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    token_api_v1_design_systems__system_id__tokens__token_ref__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                system_id: string;
+                token_ref: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item_TokenDetailOut_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    guidelines_api_v1_design_systems__system_id__patterns_get: {
         parameters: {
             query?: {
+                q?: string | null;
+                /** @description Filter by category (repeatable or comma-separated) */
+                category?: string[] | null;
                 page?: number;
                 page_size?: number;
             };
             header?: never;
             path: {
-                system_id: number;
+                system_id: string;
             };
             cookie?: never;
         };
@@ -5394,12 +6037,254 @@ export interface operations {
             };
         };
     };
+    guidelines_api_v1_design_systems__system_id__guidelines_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                /** @description Filter by category (repeatable or comma-separated) */
+                category?: string[] | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                system_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_GuidelineOut_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    pattern_groups_api_v1_design_systems__system_id__pattern_groups_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                system_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    pattern_api_v1_design_systems__system_id__patterns__pattern_ref__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                system_id: string;
+                pattern_ref: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    playgrounds_api_v1_design_systems__system_id__playgrounds_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                system_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ComponentOut_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     sources_api_v1_design_systems__system_id__sources_get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                system_id: number;
+                system_id: string;
             };
             cookie?: never;
         };
@@ -5460,7 +6345,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                system_id: number;
+                system_id: string;
             };
             cookie?: never;
         };
@@ -5518,7 +6403,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                system_id: number;
+                system_id: string;
             };
             cookie?: never;
         };
@@ -5526,6 +6411,122 @@ export interface operations {
         responses: {
             /** @description Successful Response */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    system_assets_api_v1_design_systems__system_id__assets_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                system_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    collect_system_assets_api_v1_design_systems__system_id__assets_collect_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                system_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -5579,6 +6580,8 @@ export interface operations {
                 has_props?: boolean | null;
                 system_id?: number | null;
                 sort?: string | null;
+                /** @description only components with an interactive preview */
+                playground?: string | null;
                 /** @description Filter by family (repeatable or comma-separated) */
                 family?: string[] | null;
                 /** @description Filter by library (repeatable or comma-separated) */
@@ -5719,6 +6722,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Item_ComponentDetail_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    playground_schema_api_v1_components__component_id__playground_schema_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                component_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Unauthorized */
@@ -6205,7 +7266,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["Item_TokenDetailOut_"];
                 };
             };
             /** @description Unauthorized */
@@ -6637,6 +7698,182 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Item_GuidelineDetail_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    pattern_library_systems_api_v1_pattern_library_systems_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    pattern_library_research_api_v1_pattern_library_research_get: {
+        parameters: {
+            query?: {
+                q?: string | null;
+                /** @description Filter by category (repeatable or comma-separated) */
+                category?: string[] | null;
+                /** @description Filter by kind (repeatable or comma-separated) */
+                kind?: string[] | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_GuidelineOut_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    pattern_library_facets_api_v1_pattern_library_facets_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Unauthorized */

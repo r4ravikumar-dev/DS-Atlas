@@ -29,7 +29,7 @@ def _fresh_user(role: str = "admin") -> tuple[str, str]:
 
 PUBLIC_READ_PREFIXES = ("/api/v1/design-systems", "/api/v1/components", "/api/v1/tokens", "/api/v1/guidelines", "/api/v1/patterns",
                         "/api/v1/search", "/api/v1/storybook/projects", "/api/v1/storybook/stories", "/api/v1/storybook/variants",
-                        "/api/v1/compare", "/api/v1/stats", "/api/v1/meta", "/api/v1/resources")
+                        "/api/v1/compare", "/api/v1/stats", "/api/v1/meta", "/api/v1/resources", "/api/v1/pattern-library")
 
 
 def _all_routes():
@@ -42,7 +42,8 @@ def _all_routes():
 
 
 def _is_public_read(method: str, path: str) -> bool:
-    return method == "GET" and path.startswith(PUBLIC_READ_PREFIXES) and not path.startswith("/api/v1/resources/verify")
+    # asset provenance and retrieval diagnostics are administrator-only, even though they hang off a system URL
+    return method == "GET" and path.startswith(PUBLIC_READ_PREFIXES) and not path.startswith("/api/v1/resources/verify") and not path.endswith("/assets")
 
 
 def _routes():

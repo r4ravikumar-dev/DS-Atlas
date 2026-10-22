@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ....core.exceptions import NotFound
@@ -66,3 +66,38 @@ def list_patterns(q: str | None = Query(None, max_length=200), category: list[st
 @router.get("/patterns/{pattern_id}", response_model=Item[GuidelineDetail])
 def get_pattern(pattern_id: int, db: Session = Depends(get_db)):
     return _detail(db, pattern_id, PATTERN_TYPES)
+
+
+@router.get("/pattern-library/systems", summary="Design systems that publish their own patterns/guidance, with counts")
+def pattern_library_systems(db: Session = Depends(get_db)):
+    from ....models import DesignSystem
+    from ....services.assets import public_assets
+    rows = db.execute(select(DesignSystem.id, DesignSystem.slug, DesignSystem.name, DesignSystem.organization, func.count(Guideline.id))
+                      .join(Guideline, Guideline.system_id == DesignSystem.id).group_by(DesignSystem.id)
+                      .order_by(func.count(Guideline.id).desc(), DesignSystem.name)).all()
+    vis = public_assets(db, [r[0] for r in rows])
+    return {"data": [{"id": i, "slug": s, "name": n, "organization": o, "count": c, "logo": vis.get(i, {}).get("icon")} for i, s, n, o, c in rows]}
+
+
+@router.get("/pattern-library/research", response_model=Page[GuidelineOut], summary="Cross-system research patterns, specifications and checklists (not owned by one system)")
+def pattern_library_research(q: str | None = Query(None, max_length=200), category: list[str] | None = Depends(csv_list("category")),
+                             kind: list[str] | None = Depends(csv_list("kind")), pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
+    from ....repositories import paginate
+    stmt = select(Guideline, Source.key).join(Source, Source.id == Guideline.source_id).where(Guideline.system_id.is_(None))
+    if q:
+        stmt = stmt.where(Guideline.title.ilike(f"%{q.replace('%', '')}%") | Guideline.summary.ilike(f"%{q.replace('%', '')}%"))
+    if category:
+        stmt = stmt.where(Guideline.category.in_(category))
+    if kind:
+        stmt = stmt.where(Guideline.kind.in_(kind))
+    rows, total = paginate(db, stmt.order_by(Guideline.category, Guideline.title), pp.page, pp.page_size)
+    return page_out([guideline_out(g, k) for g, k in rows], total, pp.page, pp.page_size)
+
+
+@router.get("/pattern-library/facets", summary="Topics and kinds of cross-system research guidance")
+def pattern_library_facets(db: Session = Depends(get_db)):
+    from ....scrapers.dskb.sources import TAXONOMY
+    def count(col):
+        return db.execute(select(col, func.count()).where(Guideline.system_id.is_(None), col.is_not(None)).group_by(col).order_by(func.count().desc())).all()
+    return {"data": {"categories": [{"value": c, "label": TAXONOMY.get(c, {}).get("name", c), "count": n} for c, n in count(Guideline.category)],
+                     "kinds": [{"value": k, "count": n} for k, n in count(Guideline.kind)]}}

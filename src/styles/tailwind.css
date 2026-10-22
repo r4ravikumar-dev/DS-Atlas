@@ -1,0 +1,160 @@
+/*
+ * Tailwind v4 for the public directory. Preflight is intentionally not imported: the element reset lives in
+ * globals.scss (inside @layer base) and is shared with the admin area's SCSS modules.
+ * Utilities only read semantic tokens from tokens.css — the default palette is removed so components can't
+ * reach for arbitrary colours.
+ */
+@layer theme, base, components, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities) source(none);
+
+@source '../app';
+@source '../components';
+@source '../features';
+
+@theme {
+  --color-*: initial;
+  --font-*: initial;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-text: var(--accent-text);
+  --color-accent-soft: var(--accent-soft);
+  --color-violet: var(--violet);
+  --color-sky: var(--sky);
+  --color-mint: var(--mint);
+  --color-amber: var(--amber);
+  --color-coral: var(--coral);
+  --color-pink: var(--pink);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-overlay: var(--overlay);
+  --color-glass: var(--glass);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+
+  --text-display: var(--type-display);
+  --text-display--line-height: 0.94;
+  --text-display--letter-spacing: -0.045em;
+  --text-title: var(--type-title);
+  --text-title--line-height: 1;
+  --text-title--letter-spacing: -0.035em;
+  --text-section: var(--type-section);
+  --text-section--line-height: 1.08;
+  --text-section--letter-spacing: -0.03em;
+  --text-card: var(--type-card);
+  --text-card--line-height: 1.25;
+  --text-card--letter-spacing: -0.015em;
+  --text-meta: var(--type-meta);
+  --text-meta--line-height: 1.45;
+  --text-code: var(--type-code);
+  --text-caption: var(--type-caption);
+  --text-caption--line-height: 1.3;
+  --text-caption--letter-spacing: 0.08em;
+
+  --radius-xs: var(--radius-xs);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius-lg);
+
+  --shadow-1: var(--shadow-1);
+  --shadow-2: var(--shadow-2);
+
+  --ease-out: var(--ease-out);
+  --ease-in-out: var(--ease-in-out);
+  --ease-emphasized: var(--ease-emphasized);
+}
+
+@utility container-page {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--type-caption);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+@utility measure {
+  max-width: var(--measure);
+}
+
+@utility hairline-grid {
+  background-image:
+    linear-gradient(to right, var(--line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Hero illustration panels: a single, short rise on first paint (neutralised by reduced motion). */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Duration / easing token samples: a dot travels the track using the token's own value. Off when motion is reduced. */
+@keyframes token-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(5.5rem);
+  }
+}

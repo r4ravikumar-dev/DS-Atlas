@@ -8,7 +8,7 @@ from ....core.exceptions import NotFound
 from ....database.session import get_db
 from ....models import DesignToken, Evidence, Record, Source, TokenReference
 from ....repositories import list_tokens, token_facets
-from ....schemas import Item, Page, TokenOut
+from ....schemas import Item, Page, TokenDetailOut, TokenOut
 from ...deps import PageParams, page_params, require
 from ..common import ERRORS, csv_list, page_out
 from ..serializers import token_out
@@ -40,9 +40,12 @@ def _get(db: Session, token_id: int):
     return row
 
 
-@router.get("/{token_id}")
+@router.get("/{token_id}", response_model=Item[TokenDetailOut])
 def get(token_id: int, db: Session = Depends(get_db)):
-    t, key, rec = _get(db, token_id)
+    return {"data": detail_out(db, *_get(db, token_id))}
+
+
+def detail_out(db: Session, t: DesignToken, key: str, rec: Record) -> dict:
     ev = db.scalars(select(Evidence).where(Evidence.record_id == rec.id).limit(10)).all()
     d = token_out(t, key)
     d.update(record_key=rec.record_key, source_url=rec.source_url, source_section=(rec.extra or {}).get("source_section"),
@@ -50,7 +53,7 @@ def get(token_id: int, db: Session = Depends(get_db)):
              value_note=("raw_value is the source value; resolved_value is computed by following documented aliases within the same source."
                          + (" Type was inferred from the name/value (not source-declared)." if t.type_inferred else "")),
              extra=rec.content)
-    return {"data": d}
+    return d
 
 
 @router.get("/{token_id}/references", response_model=Page[TokenOut], summary="Tokens this token aliases")
