@@ -73,13 +73,6 @@ class SessionOut(Model):
     expires_in_seconds: int
 
 
-class UserCreate(BaseModel):
-    email: EmailStr
-    name: str = Field("", max_length=200)
-    password: str = Field(min_length=12, max_length=500)
-    role: Role = "viewer"
-
-
 class UserUpdate(BaseModel):
     name: str | None = Field(None, max_length=200)
     role: Role | None = None

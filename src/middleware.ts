@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
   // Skip static assets and internal Next.js requests
   if (
     pathname.startsWith('/_next') ||
-    pathname.startsWith('/api/v1/auth') ||
+    pathname.startsWith('/api/') || // the backend authorizes every API call itself and returns JSON 401/403
     pathname.includes('.')
   ) {
     const response = NextResponse.next()

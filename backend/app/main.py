@@ -40,8 +40,9 @@ TAGS = [
 def create_app() -> FastAPI:
     s = get_settings()
     configure_logging()
-    app = FastAPI(title=s.app_name, version="1.0.0", openapi_url=f"{s.api_prefix}/openapi.json", docs_url=f"{s.api_prefix}/docs",
-                  redoc_url=f"{s.api_prefix}/redoc", openapi_tags=TAGS,
+    public_docs = s.environment != "production"  # the schema is published as backend/openapi.json; no live endpoint map in production
+    app = FastAPI(title=s.app_name, version="1.0.0", openapi_url=f"{s.api_prefix}/openapi.json" if public_docs else None,
+                  docs_url=f"{s.api_prefix}/docs" if public_docs else None, redoc_url=f"{s.api_prefix}/redoc" if public_docs else None, openapi_tags=TAGS,
                   description="Versioned REST API of the Design Systems Research Platform. Collection responses use `{data, meta}`; errors use `{error}`.")
     install_handlers(app)
     from .services import github_integration
@@ -66,6 +67,7 @@ def create_app() -> FastAPI:
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
         response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("X-Robots-Tag", "noindex, nofollow, noarchive")  # private research platform: never indexed
         if not request.url.path.endswith(("/docs", "/redoc")):
             response.headers.setdefault("Cache-Control", "no-store")
         log.info("request", extra={"method": request.method, "path": request.url.path, "status": response.status_code, "duration_ms": dur})

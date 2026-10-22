@@ -61,7 +61,7 @@ def users(_database):
             u = User(email=f"{role}@fixture.example", name=f"FIXTURE {role}", password_hash=hash_password(FIXTURE_PW), role=role)
             s.add(u)
             s.flush()
-            out[role] = {"id": str(u.id), "email": u.email, "token": create_session_token(str(u.id), role)}
+            out[role] = {"id": str(u.id), "email": u.email, "token": create_session_token(str(u.id), role, u.session_version)}
         s.commit()
     return out
 
@@ -159,3 +159,12 @@ def built_kb(fixture_source):
 
 def new_uuid() -> str:
     return str(uuid.uuid4())
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limits():
+    """In-process rate-limit windows would otherwise leak between tests."""
+    from app.api.v1.routes import auth as auth_routes
+    auth_routes._HITS.clear()
+    auth_routes._FAILS.clear()
+    yield

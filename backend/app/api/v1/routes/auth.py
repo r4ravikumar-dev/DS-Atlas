@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -32,9 +32,25 @@ def _rate_limit(key: str) -> None:
         raise AppError("Too many failed sign-in attempts. Try again in a few minutes.", code="RATE_LIMITED", status_code=429)
 
 
-@router.post("/login", response_model=Item[SessionOut], summary="Sign in (sets httpOnly session + CSRF cookies)")
-def login(body: LoginRequest, response: Response, db: Session = Depends(get_db)):
+_HITS: dict[str, list[float]] = {}
+
+
+def _ip_limit(request: Request, bucket: str, limit: int, window: float = 600) -> None:
+    """Per-client sliding-window limit for unauthenticated endpoints (single-process; use a shared store when scaling out)."""
     import time
+    now = time.time()
+    key = f"{bucket}:{request.client.host if request.client else 'unknown'}"
+    hits = [t for t in _HITS.get(key, []) if now - t < window]
+    if len(hits) >= limit:
+        raise AppError("Too many requests. Try again later.", code="RATE_LIMITED", status_code=429)
+    hits.append(now)
+    _HITS[key] = hits
+
+
+@router.post("/login", response_model=Item[SessionOut], summary="Sign in (sets httpOnly session + CSRF cookies)")
+def login(body: LoginRequest, request: Request, response: Response, db: Session = Depends(get_db)):
+    import time
+    _ip_limit(request, "login", 30)
     key = body.email.lower()
     _rate_limit(key)
     user = db.scalar(select(User).where(func.lower(User.email) == key))
@@ -42,7 +58,7 @@ def login(body: LoginRequest, response: Response, db: Session = Depends(get_db))
         _FAILS.setdefault(key, []).append(time.time())
         raise Unauthorized("Invalid email or password.")
     s = get_settings()
-    token = create_session_token(str(user.id), user.role)
+    token = create_session_token(str(user.id), user.role, user.session_version)
     csrf = new_csrf_token()
     max_age = s.session_ttl_minutes * 60
     response.set_cookie(SESSION_COOKIE, token, httponly=True, secure=s.cookie_secure, samesite="lax", max_age=max_age, path="/", domain=s.cookie_domain)
@@ -70,14 +86,16 @@ def me(p: Principal = Depends(get_principal)):
 
 
 @router.post("/invitations/validate", response_model=Item[InvitationValidateOut], summary="Validate invitation token without consuming it")
-def validate_invitation(body: InvitationValidateRequest, db: Session = Depends(get_db)):
+def validate_invitation(body: InvitationValidateRequest, request: Request, db: Session = Depends(get_db)):
+    _ip_limit(request, "invite-validate", 30)
     from ....services import invitations as invsvc
     res = invsvc.validate(db, body.token)
     return {"data": res}
 
 
 @router.post("/invitations/send-code", summary="Send 6-digit email verification code for invitation")
-def send_invitation_code(body: InvitationSendCodeRequest, db: Session = Depends(get_db)):
+def send_invitation_code(body: InvitationSendCodeRequest, request: Request, db: Session = Depends(get_db)):
+    _ip_limit(request, "invite-code", 10)
     from ....services import invitations as invsvc
     res = invsvc.send_code(db, body.token)
     db.commit()
@@ -85,11 +103,12 @@ def send_invitation_code(body: InvitationSendCodeRequest, db: Session = Depends(
 
 
 @router.post("/invitations/accept", response_model=Item[SessionOut], summary="Atomically accept invitation, set password and sign in")
-def accept_invitation(body: InvitationAcceptRequest, response: Response, db: Session = Depends(get_db)):
+def accept_invitation(body: InvitationAcceptRequest, request: Request, response: Response, db: Session = Depends(get_db)):
+    _ip_limit(request, "invite-accept", 20)
     from ....services import invitations as invsvc
     user = invsvc.accept(db, token=body.token, code=body.code, name=body.name, password=body.password)
     s = get_settings()
-    token = create_session_token(str(user.id), user.role)
+    token = create_session_token(str(user.id), user.role, user.session_version)
     csrf = new_csrf_token()
     max_age = s.session_ttl_minutes * 60
     response.set_cookie(SESSION_COOKIE, token, httponly=True, secure=s.cookie_secure, samesite="lax", max_age=max_age, path="/", domain=s.cookie_domain)

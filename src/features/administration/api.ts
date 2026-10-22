@@ -3,7 +3,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, type Query } from '@/lib/api/client'
 import { qk } from '@/lib/api/keys'
-import type { AuditEvent, Config, ConfigUpdate, Item, Page, ReviewItem, User, UserCreate, UserUpdate } from '@/lib/api/types'
+import type { AuditEvent, Config, ConfigUpdate, Item, Page, ReviewItem, User, UserUpdate } from '@/lib/api/types'
 
 export const useUsers = () => useQuery({ queryKey: qk.admin('users'), queryFn: ({ signal }) => api<Page<User>>('/admin/users', { query: { page_size: 100 }, signal }) })
 export const useAudit = (page: number) =>
@@ -14,9 +14,12 @@ export const useJobHealth = () =>
 export const useReview = (q: Query) =>
   useQuery({ queryKey: qk.review(q), queryFn: ({ signal }) => api<Page<ReviewItem>>('/review-queue', { query: q, signal }), placeholderData: keepPreviousData })
 
-export function useCreateUser() {
+export function useUserAction() {
   const qc = useQueryClient()
-  return useMutation({ mutationFn: (body: UserCreate) => api<Item<User>>('/admin/users', { method: 'POST', body }), onSuccess: () => qc.invalidateQueries({ queryKey: qk.admin('users') }) })
+  return useMutation({
+    mutationFn: ({ id, action }: { id: string; action: 'revoke-sessions' | 'password-reset' }) => api<Item<unknown>>(`/admin/users/${id}/${action}`, { method: 'POST' }),
+    onSuccess: () => (qc.invalidateQueries({ queryKey: qk.admin('users') }), qc.invalidateQueries({ queryKey: ['invitations'] })),
+  })
 }
 export function useUpdateUser() {
   const qc = useQueryClient()

@@ -68,11 +68,11 @@ def link(export_job_id: uuid.UUID, p: Principal = Depends(require("export:create
 @router.get("/{export_job_id}/download", summary="Download a generated export (session or signed token)")
 def download(export_job_id: uuid.UUID, request: Request, token: str | None = Query(None, max_length=2000), db: Session = Depends(get_db)):
     from ...deps import get_principal
-    j = _get(db, export_job_id)
+    # Authorize before looking the job up, so unauthenticated callers cannot probe which export IDs exist.
     user_id = None
     if token:
         data = decode_download_token(token)
-        if not data or data.get("job") != str(j.id):
+        if not data or data.get("job") != str(export_job_id):
             raise Unauthorized("Invalid or expired download token.")
         user_id = data["sub"]
     else:
@@ -83,6 +83,7 @@ def download(export_job_id: uuid.UUID, request: Request, token: str | None = Que
     u = db.get(User, uuid.UUID(user_id))
     if not u or not u.is_active or not has_permission(u.role, "export:create"):
         raise Forbidden("Not allowed.")
+    j = _get(db, export_job_id)
     res = j.result or {}
     if j.status != "succeeded" or not res.get("storage_key"):
         raise AppError("Export is not ready.", code="EXPORT_NOT_READY", status_code=409)

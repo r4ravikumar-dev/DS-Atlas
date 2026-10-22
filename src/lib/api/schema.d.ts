@@ -1196,8 +1196,7 @@ export interface paths {
         /** Users */
         get: operations["users_api_v1_admin_users_get"];
         put?: never;
-        /** Create User */
-        post: operations["create_user_api_v1_admin_users_post"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1219,6 +1218,40 @@ export interface paths {
         head?: never;
         /** Update User */
         patch: operations["update_user_api_v1_admin_users__user_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/admin/users/{user_id}/revoke-sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign a user out of every session */
+        post: operations["revoke_sessions_api_v1_admin_users__user_id__revoke_sessions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/users/{user_id}/password-reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Email the user a single-use password-reset link */
+        post: operations["password_reset_api_v1_admin_users__user_id__password_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/admin/audit-events": {
@@ -2973,27 +3006,6 @@ export interface components {
             verification_status: "verified" | "partially_verified" | "unverified";
             /** Source Version */
             source_version: string | null;
-        };
-        /** UserCreate */
-        UserCreate: {
-            /**
-             * Email
-             * Format: email
-             */
-            email: string;
-            /**
-             * Name
-             * @default
-             */
-            name: string;
-            /** Password */
-            password: string;
-            /**
-             * Role
-             * @default viewer
-             * @enum {string}
-             */
-            role: "admin" | "researcher" | "viewer";
         };
         /** UserOut */
         UserOut: {
@@ -7651,21 +7663,23 @@ export interface operations {
             };
         };
     };
-    create_user_api_v1_admin_users_post: {
+    update_user_api_v1_admin_users__user_id__patch: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                user_id: string;
+            };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UserCreate"];
+                "application/json": components["schemas"]["UserUpdate"];
             };
         };
         responses: {
             /** @description Successful Response */
-            201: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -7711,7 +7725,7 @@ export interface operations {
             };
         };
     };
-    update_user_api_v1_admin_users__user_id__patch: {
+    revoke_sessions_api_v1_admin_users__user_id__revoke_sessions_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -7720,11 +7734,7 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UserUpdate"];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -7733,6 +7743,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Item_UserOut_"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    password_reset_api_v1_admin_users__user_id__password_reset_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                user_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Item_InvitationOut_"];
                 };
             };
             /** @description Unauthorized */

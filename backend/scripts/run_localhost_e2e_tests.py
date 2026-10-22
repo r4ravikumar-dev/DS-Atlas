@@ -8,6 +8,8 @@ import re
 import urllib.request
 import urllib.error
 import http.cookiejar
+import os
+import secrets
 from pathlib import Path
 
 BASE_FE = "http://localhost:3000"
@@ -15,6 +17,23 @@ BASE_BE = "http://localhost:8000"
 STORAGE_OUTBOX = Path("backend/storage/outbox")
 
 results = []
+
+
+def admin_credentials() -> tuple[str, str]:
+    """Read from E2E_ADMIN_EMAIL/E2E_ADMIN_PASSWORD, else ADMIN_EMAIL/ADMIN_PASSWORD in backend/.env. Never printed."""
+    email, pw = os.environ.get("E2E_ADMIN_EMAIL"), os.environ.get("E2E_ADMIN_PASSWORD")
+    if not (email and pw):
+        env_file = Path(__file__).resolve().parents[1] / ".env"
+        env = {}
+        if env_file.exists():
+            for line in env_file.read_text().splitlines():
+                k, sep, v = line.partition("=")
+                if sep and not k.strip().startswith("#"):
+                    env[k.strip()] = v.split(" #")[0].strip().strip('"').strip("'")
+        email, pw = email or env.get("ADMIN_EMAIL"), pw or env.get("ADMIN_PASSWORD")
+    if not (email and pw):
+        sys.exit("Set E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD (or ADMIN_EMAIL/ADMIN_PASSWORD in backend/.env).")
+    return email, pw
 
 def record(name: str, passed: bool, detail: str = ""):
     status = "PASS" if passed else "FAIL"
@@ -80,7 +99,8 @@ def test_admin_authentication():
     cj = http.cookiejar.CookieJar()
     opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
 
-    login_data = json.dumps({"email": "ravi.kumar@graphikx.in", "password": "Ravi@4681"}).encode("utf-8")
+    email, password = admin_credentials()
+    login_data = json.dumps({"email": email, "password": password}).encode("utf-8")
     req = urllib.request.Request(
         f"{BASE_FE}/api/v1/auth/login",
         data=login_data,
@@ -95,9 +115,9 @@ def test_admin_authentication():
         has_session = "dsrp_session" in cookies
         has_csrf = "dsrp_csrf" in cookies
 
-        record("Admin login (ravi.kumar@graphikx.in)", passed, f"User: {body.get('data', {}).get('user', {}).get('email')}, Role: {body.get('data', {}).get('user', {}).get('role')}")
+        record("Admin login", passed, f"User: {body.get('data', {}).get('user', {}).get('email')}, Role: {body.get('data', {}).get('user', {}).get('role')}")
         record("Session cookie (dsrp_session) issued", has_session, f"Length: {len(cookies.get('dsrp_session', ''))}")
-        record("CSRF cookie (dsrp_csrf) issued", has_csrf, f"Value: {cookies.get('dsrp_csrf', '')}")
+        record("CSRF cookie (dsrp_csrf) issued", has_csrf, f"Length: {len(cookies.get('dsrp_csrf', ''))}")
 
         # Verify /api/v1/auth/me
         me_req = urllib.request.Request(f"{BASE_FE}/api/v1/auth/me", headers={"User-Agent": "DSRP-Tester"})
@@ -251,7 +271,7 @@ def test_invitation_lifecycle(admin_opener, admin_cookies):
                 continue
 
         vcode = code_msg.get("code") if code_msg else None
-        record("Extracted 6-digit verification code from outbox", vcode is not None and len(vcode) == 6, f"Code: {vcode}")
+        record("Extracted 6-digit verification code from outbox", vcode is not None and len(vcode) == 6, "code received (not printed)")
 
         if not vcode:
             return
@@ -263,7 +283,7 @@ def test_invitation_lifecycle(admin_opener, admin_cookies):
             "token": token,
             "code": vcode,
             "name": "Dr. Researcher",
-            "password": "ResearcherPassword2026!"
+            "password": secrets.token_urlsafe(24)
         }).encode("utf-8")
         accept_req = urllib.request.Request(
             f"{BASE_FE}/api/v1/auth/invitations/accept",
