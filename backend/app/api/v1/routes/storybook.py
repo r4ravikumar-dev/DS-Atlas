@@ -40,7 +40,7 @@ def _system_projects(db: Session, system_id: int):
     return select(StorybookProject.id).join(DesignSystem, DesignSystem.key == StorybookProject.system_key).where(DesignSystem.id == system_id)
 
 
-@router.get("/projects", dependencies=[Depends(require("read"))])
+@router.get("/projects", dependencies=[Depends(require("public:read"))])
 def projects(q: str | None = Query(None, max_length=200), status_: str | None = Query(None, alias="status"), sort: str = Query("title", pattern="^-?(title|stories|variants)$"),
              pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
     stmt = select(StorybookProject)
@@ -54,7 +54,7 @@ def projects(q: str | None = Query(None, max_length=200), status_: str | None = 
     return page_out([_d(r, P_FIELDS) for (r,) in rows], total, pp.page, pp.page_size)
 
 
-@router.get("/projects/{project_id}", dependencies=[Depends(require("read"))])
+@router.get("/projects/{project_id}", dependencies=[Depends(require("public:read"))])
 def project(project_id: int, db: Session = Depends(get_db)):
     p = db.get(StorybookProject, project_id)
     if not p:
@@ -62,7 +62,7 @@ def project(project_id: int, db: Session = Depends(get_db)):
     return {"data": _d(p, P_FIELDS)}
 
 
-@router.get("/stories", dependencies=[Depends(require("read"))])
+@router.get("/stories", dependencies=[Depends(require("public:read"))])
 def stories(project_id: int | None = None, system_id: int | None = None, q: str | None = Query(None, max_length=200), entry_type: list[str] | None = Depends(csv_list("entry_type")),
             resolution: str | None = Query(None, pattern="^(linked|unresolved|not_applicable)$"), component_id: int | None = None,
             has_args: bool | None = None, pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
@@ -85,7 +85,7 @@ def stories(project_id: int | None = None, system_id: int | None = None, q: str 
     return page_out([_d(r, S_FIELDS) for (r,) in rows], total, pp.page, pp.page_size)
 
 
-@router.get("/stories/{story_id}", dependencies=[Depends(require("read"))])
+@router.get("/stories/{story_id}", dependencies=[Depends(require("public:read"))])
 def story(story_id: int, db: Session = Depends(get_db)):
     s = db.get(StorybookStory, story_id)
     if not s:
@@ -94,7 +94,7 @@ def story(story_id: int, db: Session = Depends(get_db)):
     return {"data": {**_d(s, S_FIELDS), "variants": [_d(v, V_FIELDS) for v in vs]}}
 
 
-@router.get("/variants", dependencies=[Depends(require("read"))])
+@router.get("/variants", dependencies=[Depends(require("public:read"))])
 def variants(project_id: int | None = None, system_id: int | None = None, component_id: int | None = None, method: list[str] | None = Depends(csv_list("method")),
              q: str | None = Query(None, max_length=200), pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
     stmt = select(StorybookVariant)

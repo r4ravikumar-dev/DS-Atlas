@@ -12,7 +12,7 @@ from ..common import ERRORS, csv_list, page_out
 router = APIRouter(tags=["search"], responses=ERRORS)
 
 
-@router.get("/search", response_model=Page[SearchHit], dependencies=[Depends(require("search"))],
+@router.get("/search", response_model=Page[SearchHit], dependencies=[Depends(require("public:read"))],
             summary="Global full-text search across systems, sources, components, tokens, guidelines, patterns and resources")
 def global_search(q: str = Query(..., min_length=1, max_length=200), type_: list[str] | None = Depends(csv_list("type", f"One of: {', '.join(ALL_TYPES)}")),
                   category: list[str] | None = Depends(csv_list("category")), source: list[str] | None = Depends(csv_list("source")),

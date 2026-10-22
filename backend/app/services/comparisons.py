@@ -118,6 +118,16 @@ def _components(db: Session, ids: list[int], dims: list[str]) -> dict[str, Any]:
             "shared_props": sorted(common), "prop_matrix": {str(i): sorted(prop_sets[i])[:200] for i in ids}}
 
 
+def compute(db: Session, kind: str, ids: list[int], dims: list[str] | None = None) -> dict[str, Any]:
+    """Read-only comparison (nothing persisted) — used by the public compare view."""
+    allowed = SYSTEM_DIMENSIONS if kind == "systems" else COMPONENT_DIMENSIONS
+    dims = dims or allowed
+    bad = [d for d in dims if d not in allowed]
+    if bad:
+        raise AppError(f"Unsupported dimensions: {bad}", code="VALIDATION_ERROR", status_code=422, details=[{"field": "dimensions", "reason": f"allowed: {allowed}"}])
+    return {"kind": kind, "dimensions": dims, "result": (_systems if kind == "systems" else _components)(db, ids, dims)}
+
+
 def generate(db: Session, comp: Comparison) -> Comparison:
     dims = comp.dimensions or (SYSTEM_DIMENSIONS if comp.kind == "systems" else COMPONENT_DIMENSIONS)
     allowed = SYSTEM_DIMENSIONS if comp.kind == "systems" else COMPONENT_DIMENSIONS

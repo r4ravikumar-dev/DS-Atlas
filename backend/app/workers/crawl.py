@@ -128,8 +128,18 @@ def run_crawl(job: Job) -> None:
         with SessionLocal() as db:
             jobsvc.finish(db, job.id, "cancelled", error="cancelled by user", urls_discovered=len(rec.urls), urls_processed=rec.ok, error_count=rec.err)
         return
+    except Exception as e:  # noqa: BLE001 — outage, timeout, parser break: record it, keep every existing record untouched
+        with SessionLocal() as db:
+            src = db.get(Source, src_id)
+            src.last_attempted_at = datetime.now(timezone.utc)
+            src.consecutive_failures = (src.consecutive_failures or 0) + 1
+            src.last_change_summary = {"error": f"{type(e).__name__}: {str(e)[:300]}", "content_changed": False, "records_preserved": src.records_count,
+                                       "checked_at": src.last_attempted_at.isoformat(), "job_id": str(job.id)}
+            db.commit()
+        raise
     finally:
         engine_core.FETCHER.listeners.pop(key, None)
+    result["context"] = {"sync_run_id": (job.params or {}).get("sync_run_id")}
 
     cov = result.get("coverage", {})
     cov["duration_s"] = round(time.time() - t0, 1)
@@ -139,7 +149,10 @@ def run_crawl(job: Job) -> None:
         summary = ingest.ingest(db, src, job.id, result)
         if result.get("attributes"):
             summary["attributes_recorded"] = persist_attributes(db, src, job.id, result["attributes"])
-        jobsvc.add_event(db, job.id, f"Ingested {summary['records_upserted']} records ({summary['records_marked_stale']} marked stale)", phase="ingesting", data=summary)
+        jobsvc.add_event(db, job.id, f"Checked {summary['records_seen']} records: {summary['records_created']} new, {summary['records_updated']} changed, "
+                                     f"{summary['records_unchanged']} unchanged, {summary['records_marked_stale']} marked stale"
+                                     + (f", {summary['stale_suppressed']} kept ({summary['stale_note']})" if summary["stale_suppressed"] else ""),
+                         phase="ingesting", data=summary)
         db.commit()
         status = cov.get("crawl_status")
         if status == "inspected" and not cov.get("errors"):
@@ -150,7 +163,7 @@ def run_crawl(job: Job) -> None:
             final = "failed"
         jobsvc.finish(db, job.id, final, error=None if final != "failed" else "; ".join((cov.get("errors") or ["no records extracted"])[:3])[:2000],
                       result={**summary, "limitations": cov.get("limitations", []), "coverage_notes": cov.get("coverage_notes", [])},
-                      urls_discovered=len(rec.urls), urls_processed=rec.ok, error_count=rec.err, records_extracted=summary["records_upserted"])
+                      urls_discovered=len(rec.urls), urls_processed=rec.ok, error_count=rec.err, records_extracted=summary["records_seen"])
 
 
 def persist_attributes(db, src: Source, job_id, attrs: list[dict[str, Any]]) -> int:

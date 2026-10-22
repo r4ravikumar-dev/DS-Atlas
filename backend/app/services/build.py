@@ -78,7 +78,8 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
     # ── design systems (stable ids by key) ──
     if progress:
         progress("projecting_systems", len(entities))
-    existing = dict(db.execute(select(DesignSystem.key, DesignSystem.id)).all())
+    sys_g = _Guarded(db, DesignSystem, "key", now)
+    existing = {k: v[0] for k, v in sys_g.existing.items()}
     keep = set()
     for e in entities:
         desc = e.get("description") or next((by_key[k]["summary"] for k in e["source_record_ids"]
@@ -97,22 +98,27 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
                                 "ai_ready_signals": e.get("ai_ready_signals"), "evidence_urls": e.get("evidence_urls", [])[:20],
                                 "source_record_keys": e["source_record_ids"][:200], "related_systems": e.get("related_systems") or [],
                                 "merged_from": e.get("merged_from") or [], "curated_fields": e.get("curated_fields") or {},
-                                "organization_aliases": e.get("organization_aliases") or []},
-                    last_verified_at=now)
-        stmt = insert(DesignSystem).values(key=e["system_id"], **vals)
-        db.execute(stmt.on_conflict_do_update(index_elements=["key"], set_={**vals, "updated_at": now}))
+                                "organization_aliases": e.get("organization_aliases") or []})
+        sys_g.upsert(e["system_id"], vals, on_change={"last_verified_at": now, "updated_at": now})
         keep.add(e["system_id"])
     stale_keys = [k for k in existing if k not in keep]
     if stale_keys:
         _record_aliases(db, stale_keys, merged, entities)
         db.execute(delete(DesignSystem).where(DesignSystem.key.in_(stale_keys)))
     sys_ids = dict(db.execute(select(DesignSystem.key, DesignSystem.id)).all())
-    # attach field-level evidence to (possibly merged) canonical systems
-    db.execute(text("UPDATE attribute_evidence SET system_id = NULL"))
-    db.execute(text("""UPDATE attribute_evidence a SET system_id = d.id FROM design_systems d WHERE d.key = a.system_key"""))
-    for frm, to in merged.items():
-        if sys_ids.get(to):
-            db.execute(text("UPDATE attribute_evidence SET system_id = :sid WHERE system_key = :k"), {"sid": sys_ids[to], "k": frm})
+    # attach field-level evidence to (possibly merged) canonical systems — only rows whose target changed are written
+    def _resolve(k: str) -> str:
+        seen = set()
+        while k in merged and k not in seen:
+            seen.add(k)
+            k = merged[k]
+        return k
+    ev_target = [{"k": k, "sid": sys_ids.get(k) or sys_ids.get(_resolve(k))}
+                 for k in db.scalars(select(text("DISTINCT system_key")).select_from(text("attribute_evidence")))]
+    if ev_target:
+        db.execute(text("""UPDATE attribute_evidence a SET system_id = v.sid
+                           FROM jsonb_to_recordset(CAST(:rows AS jsonb)) AS v(k text, sid int)
+                           WHERE a.system_key = v.k AND a.system_id IS DISTINCT FROM v.sid"""), {"rows": __import__("json").dumps(ev_target)})
 
     # ── record → system / duplicate group ──
     rec_sys: dict[int, int | None] = {}
@@ -120,7 +126,6 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
         for k in e["source_record_ids"]:
             if k in rid:
                 rec_sys[rid[k]] = sys_ids.get(e["system_id"])
-    db.execute(update(Record).values(system_id=None, duplicate_group_key=None))
     lib_entity = {}  # official library sources (S11–S16): every record of the source belongs to the library entity
     for r in records:
         if r["record_type"] == "tool" and (r["normalized_content"] or {}).get("kind") == "component_library" and rec_sys.get(r["_db_id"]):
@@ -141,7 +146,7 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
     # ── components ──
     if progress:
         progress("projecting_components", sum(1 for r in records if r["record_type"] == "component"))
-    db.execute(delete(ComponentProp))
+    comp_g = _Guarded(db, Component, "record_id", now)
     comp_keep = []
     for r in records:
         if r["record_type"] != "component":
@@ -152,23 +157,26 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
                     description=r.get("summary"), documentation_url=nc.get("documentation_url"), props_count=int(nc.get("props_count") or 0),
                     keyboard_count=len(nc.get("keyboard") or []), a11y_count=len(nc.get("accessibility_notes") or []), frameworks=r.get("frameworks") or [],
                     verification_status=r["verification_status"], source_version=_s(r.get("source_version"), 200))
-        stmt = insert(Component).values(record_id=r["_db_id"], **vals)
-        cid = db.execute(stmt.on_conflict_do_update(index_elements=["record_id"], set_=vals).returning(Component.id)).scalar_one()
-        comp_keep.append(r["_db_id"])
         props = []
         pos = 0
         for sub in nc.get("subcomponents") or []:
-            for p in sub.get("props") or []:
-                if not p.get("name"):
+            for pr in sub.get("props") or []:
+                if not pr.get("name"):
                     continue
-                props.append(dict(component_id=cid, subcomponent=_s(sub.get("name"), 300), name=_s(p.get("name"), 300), type=_s(p.get("type")),
-                                  default_value=_s(p.get("default")), description=_s(p.get("description")), required=_s(p.get("required"), 50), position=pos))
+                props.append(dict(subcomponent=_s(sub.get("name"), 300), name=_s(pr.get("name"), 300), type=_s(pr.get("type")),
+                                  default_value=_s(pr.get("default")), description=_s(pr.get("description")), required=_s(pr.get("required"), 50), position=pos))
                 pos += 1
-        if props:
-            db.execute(insert(ComponentProp), props)
-    db.execute(delete(Component).where(Component.record_id.not_in(comp_keep or [-1])))
+        cid, outcome = comp_g.upsert(r["_db_id"], vals, fp_extra=props)
+        comp_keep.append(r["_db_id"])
+        if outcome in ("created", "updated") or (outcome == "baselined" and props and not db.scalar(
+                select(ComponentProp.id).where(ComponentProp.component_id == cid).limit(1))):
+            db.execute(delete(ComponentProp).where(ComponentProp.component_id == cid))
+            if props:
+                db.execute(insert(ComponentProp), [{**x, "component_id": cid} for x in props])
+    comp_g.remove_missing(set(comp_keep))
 
     # ── tokens ──
+    tok_g = _Guarded(db, DesignToken, "record_id", now)
     tok_keep = []
     for r in records:
         if r["record_type"] != "token":
@@ -182,13 +190,13 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
                     description=_s(nc.get("description")), source_format=_s(nc.get("source_format"), 200), design_system_name=_s(r.get("design_system"), 300),
                     system_id=r["_system_db_id"], source_id=_source_id(db, r["source_id"]), verification_status=r["verification_status"],
                     source_version=_s(r.get("source_version"), 200))
-        stmt = insert(DesignToken).values(record_id=r["_db_id"], **vals)
-        db.execute(stmt.on_conflict_do_update(index_elements=["record_id"], set_=vals))
+        tok_g.upsert(r["_db_id"], vals)
         tok_keep.append(r["_db_id"])
-    db.execute(delete(DesignToken).where(DesignToken.record_id.not_in(tok_keep or [-1])))
+    tok_g.remove_missing(set(tok_keep))
     refs = _token_references(db)
 
     # ── guidelines / patterns / specifications ──
+    gl_g = _Guarded(db, Guideline, "record_id", now)
     g_keep = []
     for r in records:
         if r["record_type"] not in ("guideline", "pattern", "specification"):
@@ -197,13 +205,11 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
         vals = dict(record_type=r["record_type"], kind=_s(nc.get("kind"), 60), title=r["title"], category=r["primary_category"], summary=r.get("summary"),
                     section=r.get("source_section"), priority=_s(nc.get("priority"), 20), design_system_name=_s(r.get("design_system"), 300),
                     system_id=r["_system_db_id"], source_id=_source_id(db, r["source_id"]), confidence=r["confidence"], verification_status=r["verification_status"])
-        stmt = insert(Guideline).values(record_id=r["_db_id"], **vals)
-        db.execute(stmt.on_conflict_do_update(index_elements=["record_id"], set_=vals))
+        gl_g.upsert(r["_db_id"], vals)
         g_keep.append(r["_db_id"])
-    db.execute(delete(Guideline).where(Guideline.record_id.not_in(g_keep or [-1])))
+    gl_g.remove_missing(set(g_keep))
 
-    # ── relationships ──
-    db.execute(delete(EntityRelationship))
+    # ── relationships (diffed: only added/removed edges are written) ──
     rels = []
     for r in records:
         for rel in r.get("relationships") or []:
@@ -213,8 +219,15 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
                     rels.append(dict(from_record_id=r["_db_id"], type="canonical_entity", to_record_id=None, to_system_id=sys_ids[t]))
             elif t in rid:
                 rels.append(dict(from_record_id=r["_db_id"], type=rel["type"], to_record_id=rid[t], to_system_id=None))
-    for i in range(0, len(rels), 2000):
-        db.execute(insert(EntityRelationship), rels[i:i + 2000])
+    want = {(x["from_record_id"], x["type"], x["to_record_id"], x["to_system_id"]) for x in rels}
+    have = {(a, b, c, d): i for i, a, b, c, d in db.execute(select(EntityRelationship.id, EntityRelationship.from_record_id, EntityRelationship.type,
+                                                                   EntityRelationship.to_record_id, EntityRelationship.to_system_id))}
+    drop = [i for k, i in have.items() if k not in want]
+    add = [dict(from_record_id=a, type=b, to_record_id=c, to_system_id=d) for (a, b, c, d) in want if (a, b, c, d) not in have]
+    for i in range(0, len(drop), 2000):
+        db.execute(delete(EntityRelationship).where(EntityRelationship.id.in_(drop[i:i + 2000])))
+    for i in range(0, len(add), 2000):
+        db.execute(insert(EntityRelationship), add[i:i + 2000])
 
     # ── review queue (preserve human decisions) ──
     open_keys = set()
@@ -222,7 +235,9 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
         key = item["type"] + ":" + (item.get("entity") or item.get("group") or item.get("organization") or "")
         members = len(item.get("entities") or item.get("records") or []) or 1
         stmt = insert(DuplicateGroup).values(key=key[:400], kind=item["type"], member_count=members, details=item)
-        db.execute(stmt.on_conflict_do_update(index_elements=["key"], set_={"details": item, "member_count": members, "updated_at": now}))
+        db.execute(stmt.on_conflict_do_update(index_elements=["key"], set_={"details": item, "member_count": members, "updated_at": now},
+                                              where=(DuplicateGroup.details.is_distinct_from(stmt.excluded.details)
+                                                     | DuplicateGroup.member_count.is_distinct_from(stmt.excluded.member_count))))
         open_keys.add(key[:400])
     db.execute(delete(DuplicateGroup).where(DuplicateGroup.key.not_in(open_keys or {"-"}), DuplicateGroup.review_status == "open"))
 
@@ -236,9 +251,10 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
     resources.sync(db)
 
     # ── counts on systems ──
-    db.execute(text("""UPDATE design_systems d SET
-        component_count = (SELECT count(*) FROM components c WHERE c.system_id = d.id),
-        token_count = (SELECT count(*) FROM design_tokens t WHERE t.system_id = d.id)"""))
+    db.execute(text("""UPDATE design_systems d SET component_count = x.cc, token_count = x.tc
+        FROM (SELECT d2.id, (SELECT count(*) FROM components c WHERE c.system_id = d2.id) cc,
+                            (SELECT count(*) FROM design_tokens t WHERE t.system_id = d2.id) tc FROM design_systems d2) x
+        WHERE x.id = d.id AND (d.component_count IS DISTINCT FROM x.cc OR d.token_count IS DISTINCT FROM x.tc)"""))
 
     # ── generated reports (engine analysis over the same canonical dataset) ──
     if progress:
@@ -246,9 +262,57 @@ def run_build(db: Session, job_id=None, progress=None) -> dict[str, Any]:
     report_ids = _generate_reports(db, records, entities, review, validation, job_id)
     summary = {"records": len(records), "systems": len(entities), "components": len(comp_keep), "tokens": len(tok_keep), "guidelines": len(g_keep),
                "relationships": len(rels), "token_references": refs, "review_items": len(review), "validation_issues": validation["issue_count"],
-               "reports": [str(x) for x in report_ids]}
+               "reports": [str(x) for x in report_ids],
+               "changes": {"systems": sys_g.counts, "components": comp_g.counts, "tokens": tok_g.counts, "guidelines": gl_g.counts,
+                           "relationships": {"added": len(add), "removed": len(drop)}}}
     log.info("build complete", extra={"job_id": str(job_id)})
     return summary
+
+
+def _fp(*parts: Any) -> str:
+    import hashlib
+    import json
+    return hashlib.sha256(json.dumps(parts, sort_keys=True, default=str, ensure_ascii=False).encode()).hexdigest()
+
+
+class _Guarded:
+    """Upsert keyed rows, writing only when the content fingerprint differs. A NULL stored fingerprint (rows from before
+    change tracking) is adopted as a baseline without bumping `content_updated_at`."""
+
+    def __init__(self, db: Session, model, key: str, now: datetime):
+        self.db, self.t, self.key, self.now = db, model.__table__, key, now
+        self.existing = {k: (i, fp) for i, k, fp in db.execute(select(self.t.c.id, self.t.c[key], self.t.c.fingerprint))}
+        self.counts = {"created": 0, "updated": 0, "unchanged": 0, "baselined": 0, "removed": 0}
+
+    def upsert(self, key_val: Any, vals: dict[str, Any], *, fp_extra: Any = None, on_change: dict[str, Any] | None = None) -> tuple[int, str]:
+        fp = _fp(vals, fp_extra)
+        cur = self.existing.get(key_val)
+        if cur and cur[1] == fp:
+            self.counts["unchanged"] += 1
+            return cur[0], "unchanged"
+        on_change = on_change or {}
+        if cur and cur[1] is None:  # baseline
+            self.db.execute(self.t.update().where(self.t.c.id == cur[0]).values(fingerprint=fp))
+            self.counts["baselined"] += 1
+            return cur[0], "baselined"
+        if cur:
+            self.db.execute(self.t.update().where(self.t.c.id == cur[0]).values(**vals, **on_change, fingerprint=fp, content_updated_at=self.now))
+            self.counts["updated"] += 1
+            self.existing[key_val] = (cur[0], fp)
+            return cur[0], "updated"
+        stmt = insert(self.t).values({self.key: key_val, **vals, **on_change, "fingerprint": fp, "content_updated_at": self.now})
+        new_id = self.db.execute(stmt.on_conflict_do_update(index_elements=[self.key], set_={**vals, "fingerprint": fp})
+                                 .returning(self.t.c.id)).scalar_one()
+        self.counts["created"] += 1
+        self.existing[key_val] = (new_id, fp)
+        return new_id, "created"
+
+    def remove_missing(self, keep: set[Any]) -> list[Any]:
+        gone = [k for k in self.existing if k not in keep]
+        for i in range(0, len(gone), 1000):
+            self.db.execute(self.t.delete().where(self.t.c[self.key].in_(gone[i:i + 1000])))
+        self.counts["removed"] += len(gone)
+        return gone
 
 
 _SRC_CACHE: dict[str, int] = {}
@@ -261,7 +325,10 @@ def _source_id(db: Session, key: str) -> int:
 
 
 def _bulk_update_records(db: Session, rows: list[dict[str, Any]]) -> None:
-    rows = [r for r in rows if r["system_id"] or r["dup"]]
+    current = {i: (s, d) for i, s, d in db.execute(select(Record.id, Record.system_id, Record.duplicate_group_key))}
+    desired = {r["id"]: (r["system_id"], r["dup"]) for r in rows}
+    desired.update({i: (None, None) for i, v in current.items() if i not in desired and v != (None, None)})  # stale records lose links
+    rows = [{"id": i, "system_id": s, "dup": d} for i, (s, d) in desired.items() if current.get(i) != (s, d)]
     for i in range(0, len(rows), 1000):
         chunk = rows[i:i + 1000]
         db.execute(text("""UPDATE records AS r SET system_id = v.system_id, duplicate_group_key = v.dup
@@ -271,7 +338,6 @@ def _bulk_update_records(db: Session, rows: list[dict[str, Any]]) -> None:
 
 def _token_references(db: Session) -> int:
     """Resolve aliases (var(--x) / {group.token}) to tokens of the same system/source, preferring the same theme."""
-    db.execute(delete(TokenReference))
     toks = db.execute(select(DesignToken.id, DesignToken.name, DesignToken.path, DesignToken.alias_of, DesignToken.theme, DesignToken.source_id,
                              DesignToken.design_system_name)).all()
     index = defaultdict(list)
@@ -289,10 +355,15 @@ def _token_references(db: Session) -> int:
         best = next((c for c in cands if c.theme == t.theme), cands[0])
         refs.append({"token_id": t.id, "references_token_id": best.id})
     uniq = {(r["token_id"], r["references_token_id"]): r for r in refs}
-    if uniq:
-        db.execute(insert(TokenReference), list(uniq.values()))
-        db.execute(text("""UPDATE design_tokens t SET resolved_value = r.raw_value FROM token_references x JOIN design_tokens r ON r.id = x.references_token_id
-                           WHERE x.token_id = t.id AND r.alias_of IS NULL"""))
+    have = {(a, b): i for i, a, b in db.execute(select(TokenReference.id, TokenReference.token_id, TokenReference.references_token_id))}
+    gone = [i for k, i in have.items() if k not in uniq]
+    if gone:
+        db.execute(delete(TokenReference).where(TokenReference.id.in_(gone)))
+    new = [v for k, v in uniq.items() if k not in have]
+    if new:
+        db.execute(insert(TokenReference), new)
+    db.execute(text("""UPDATE design_tokens t SET resolved_value = r.raw_value FROM token_references x JOIN design_tokens r ON r.id = x.references_token_id
+                       WHERE x.token_id = t.id AND r.alias_of IS NULL AND t.resolved_value IS DISTINCT FROM r.raw_value"""))
     return len(uniq)
 
 

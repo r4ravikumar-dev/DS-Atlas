@@ -61,20 +61,20 @@ The frontend never imports research data: platform pages hold no datasets, and a
 
 | Section (route) | Endpoints |
 |---|---|
-| Dashboard `/platform` | `GET /dashboard/summary`, `/dashboard/activity`, `/dashboard/source-coverage`, `/dashboard/category-distribution` |
-| Sources `/platform/sources[/id]` | `GET/POST /sources`, `GET/PATCH /sources/{id}`, `GET /sources/{id}/coverage`, `/documents`, `/jobs`, `POST /sources/{id}/crawl`, `GET /documents/{id}[/content]` |
-| Crawl jobs `/platform/jobs[/id]` | `GET/POST /crawl-jobs`, `POST /crawl-jobs/build`, `GET /crawl-jobs/{id}`, `/events`, `POST /cancel`, `/retry` |
-| Design systems `/platform/systems[/id]` | `GET /design-systems`, `/facets`, `GET/PATCH /design-systems/{id}`, `/components`, `/tokens`, `/guidelines`, `/sources` |
-| Components `/platform/components[/id]` | `GET /components`, `/facets`, `/components/{id}`, `/evidence`, `/related-tokens`, `/related-guidelines`, `/related-components` |
-| Tokens `/platform/tokens` | `GET /tokens`, `/facets`, `/tokens/{id}`, `/references`, `/dependents` |
+| Dashboard `/admin` | `GET /dashboard/summary`, `/dashboard/activity`, `/dashboard/source-coverage`, `/dashboard/category-distribution` |
+| Sources `/admin/sources[/id]` | `GET/POST /sources`, `GET/PATCH /sources/{id}`, `GET /sources/{id}/coverage`, `/documents`, `/jobs`, `POST /sources/{id}/crawl`, `GET /documents/{id}[/content]` |
+| Crawl jobs `/admin/jobs[/id]` | `GET/POST /crawl-jobs`, `POST /crawl-jobs/build`, `GET /crawl-jobs/{id}`, `/events`, `POST /cancel`, `/retry` |
+| Design systems `/systems[/id]` | `GET /design-systems`, `/facets`, `GET/PATCH /design-systems/{id}`, `/components`, `/tokens`, `/guidelines`, `/sources` |
+| Components `/components[/id]` | `GET /components`, `/facets`, `/components/{id}`, `/evidence`, `/related-tokens`, `/related-guidelines`, `/related-components` |
+| Tokens `/tokens` | `GET /tokens`, `/facets`, `/tokens/{id}`, `/references`, `/dependents` |
 | Guidelines & patterns | `GET /guidelines`, `/guidelines/facets`, `/guidelines/{id}`, `GET /patterns`, `/patterns/{id}`, `GET /records/{id}` |
-| Search `/platform/search` + top bar | `GET /search` |
-| Compare `/platform/compare[/id]` | `GET/POST /comparisons`, `GET/PATCH/DELETE /comparisons/{id}`, `POST /comparisons/{id}/generate`, `GET /comparisons/dimensions` |
-| Reports & exports `/platform/reports` | `GET /reports`, `/reports/{id}`, `GET/POST /export-jobs`, `GET /export-jobs/{id}`, `POST /download-link`, `GET /download` |
-| Review queue `/platform/review` | `GET /review-queue`, `PATCH /review-queue/{id}` |
-| Administration `/platform/admin` | `POST /auth/password`, `GET /admin/audit-events`, `GET/PATCH /admin/configuration`, `GET /admin/job-health` |
-| Add source `/platform/add` | `POST /intake/check`, `POST /intake` |
-| Data quality `/platform/quality` | `GET /quality`, `GET /quality/issues`, `POST /resources/verify` |
+| Search `/search` + top bar | `GET /search` |
+| Compare `/compare` (public) · saved `/admin/comparisons/[id]` | `GET /compare` (public, read-only), `GET/POST /comparisons` (admin), `GET/PATCH/DELETE /comparisons/{id}`, `POST /comparisons/{id}/generate`, `GET /comparisons/dimensions` |
+| Reports & exports `/admin/reports` | `GET /reports`, `/reports/{id}`, `GET/POST /export-jobs`, `GET /export-jobs/{id}`, `POST /download-link`, `GET /download` |
+| Review queue `/admin/review` | `GET /review-queue`, `PATCH /review-queue/{id}` |
+| Administration `/admin/admin` | `POST /auth/password`, `GET /admin/audit-events`, `GET/PATCH /admin/configuration`, `GET /admin/job-health` |
+| Add source `/admin/add` | `POST /intake/check`, `POST /intake` |
+| Data quality `/admin/quality` | `GET /quality`, `GET /quality/issues`, `POST /resources/verify` |
 | System resources | `GET/POST /design-systems/{id}/resources`, `GET /resources`, `PATCH/DELETE /resources/{id}` |
 | Review decisions | `POST /review-queue/{id}/decide` (merge / keep separate) |
 | Auth | `POST /auth/login`, `POST /auth/logout`, `GET /auth/me` |
@@ -130,3 +130,19 @@ Full contract: `backend/openapi.json` (served at `/api/v1/openapi.json`, docs at
 * URLs are never constructed.
 
 **Intake.** `POST /intake/check` returns likely existing systems: same URL, same docs site, same host, same repository owner, same name. `POST /intake` attaches the URL to one of them, or creates a separate system. Creating one requires `separate_from` (recorded as `distinct_from` links) and is refused outright when the docs site already belongs to a system. Official URLs are registered as a bound source, then crawl → build → verify jobs are queued.
+
+
+## Public directory vs administration
+
+* **Permissions.** `public:read` (published systems, components, tokens, guidelines, patterns, Storybook, resources, search, compare, stats and meta) is open to anonymous visitors. Every other route requires an administrator session.
+  * `tests/test_access_control.py` sweeps every endpoint in the OpenAPI document, both anonymously and as a non-admin.
+  * Public responses carry `Cache-Control: public, s-maxage=300` so a CDN can absorb traffic; admin responses are `no-store`.
+  * Anonymous API traffic is rate-limited per client.
+* **Frontend.** `src/app/(public)` holds the directory; `src/app/admin` holds the administration area.
+  * The shared detail pages show editing controls only to a signed-in administrator. This is a UI hint; the API refuses writes from anyone else.
+  * `proxy.ts` redirects anonymous `/admin/*` visits to `/admin/login`, and marks the admin area `noindex`.
+  * `robots.txt` disallows `/admin` and `/api/`.
+* **Daily synchronization.** See `docs/operations.md` → *Daily synchronization*.
+  * `services/sync.py` handles the schedule, run orchestration and finalize step.
+  * `services/ingest.py` handles record fingerprints, the change log and safe staling.
+  * `services/build.py` provides the `_Guarded` fingerprint upserts, plus diff-based relationship and token-reference updates.

@@ -83,7 +83,7 @@ def _detail(db: Session, s: DesignSystem, requested_alias: SystemAlias | None = 
             "guideline_count": db.scalar(select(func.count()).select_from(Guideline).where(Guideline.system_id == s.id)) or 0}
 
 
-@router.get("", response_model=Page[SystemOut], dependencies=[Depends(require("read"))])
+@router.get("", response_model=Page[SystemOut], dependencies=[Depends(require("public:read"))])
 def list_(q: str | None = Query(None, max_length=200), framework: list[str] | None = Depends(csv_list("framework")),
           source: list[str] | None = Depends(csv_list("source")), verification: str | None = Query(None, pattern="^(verified|partially_verified|unverified)$"),
           min_sources: int | None = Query(None, ge=1, le=20), has_repo: bool | None = None, has_storybook: bool | None = None,
@@ -99,12 +99,12 @@ def list_(q: str | None = Query(None, max_length=200), framework: list[str] | No
     return page_out([system_out(s, links, counts) for s in items], total, pp.page, pp.page_size)
 
 
-@router.get("/facets", dependencies=[Depends(require("read"))], summary="Filter facets with counts")
+@router.get("/facets", dependencies=[Depends(require("public:read"))], summary="Filter facets with counts")
 def facets(db: Session = Depends(get_db)):
     return {"data": system_facets(db)}
 
 
-@router.get("/{system_id}", response_model=Item[SystemDetail], dependencies=[Depends(require("read"))])
+@router.get("/{system_id}", response_model=Item[SystemDetail], dependencies=[Depends(require("public:read"))])
 def get(system_id: int, db: Session = Depends(get_db)):
     s = db.get(DesignSystem, system_id)
     if s:
@@ -136,7 +136,7 @@ def update(system_id: int, body: SystemUpdate, p: Principal = Depends(require("s
     return {"data": _detail(db, s)}
 
 
-@router.get("/{system_id}/resources", response_model=Page[ResourceOut], dependencies=[Depends(require("read"))])
+@router.get("/{system_id}/resources", response_model=Page[ResourceOut], dependencies=[Depends(require("public:read"))])
 def list_resources(system_id: int, pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
     _get(db, system_id)
     stmt = select(SystemResource).where(SystemResource.system_id == system_id).order_by(SystemResource.resource_type, SystemResource.is_primary.desc(), SystemResource.id)
@@ -175,14 +175,14 @@ def add_manual_resource(db: Session, key: str, system_id: int | None, rtype: str
     return r
 
 
-@router.get("/{system_id}/components", response_model=Page[ComponentOut], dependencies=[Depends(require("read"))])
+@router.get("/{system_id}/components", response_model=Page[ComponentOut], dependencies=[Depends(require("public:read"))])
 def components(system_id: int, q: str | None = None, pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
     _get(db, system_id)
     rows, total = list_components(db, q=q, system_id=system_id, page=pp.page, page_size=pp.page_size)
     return page_out([component_out(c, k) for c, k in rows], total, pp.page, pp.page_size)
 
 
-@router.get("/{system_id}/tokens", response_model=Page[TokenOut], dependencies=[Depends(require("read"))])
+@router.get("/{system_id}/tokens", response_model=Page[TokenOut], dependencies=[Depends(require("public:read"))])
 def tokens(system_id: int, pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
     _get(db, system_id)
     stmt = select(DesignToken, Source.key).join(Source, Source.id == DesignToken.source_id).where(DesignToken.system_id == system_id).order_by(DesignToken.path)
@@ -190,7 +190,7 @@ def tokens(system_id: int, pp: PageParams = Depends(page_params), db: Session = 
     return page_out([token_out(t, k) for t, k in rows], total, pp.page, pp.page_size)
 
 
-@router.get("/{system_id}/guidelines", response_model=Page[GuidelineOut], dependencies=[Depends(require("read"))])
+@router.get("/{system_id}/guidelines", response_model=Page[GuidelineOut], dependencies=[Depends(require("public:read"))])
 def guidelines(system_id: int, pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
     _get(db, system_id)
     stmt = (select(Guideline, Source.key).join(Source, Source.id == Guideline.source_id).where(Guideline.system_id == system_id)
@@ -199,7 +199,7 @@ def guidelines(system_id: int, pp: PageParams = Depends(page_params), db: Sessio
     return page_out([guideline_out(g, k) for g, k in rows], total, pp.page, pp.page_size)
 
 
-@router.get("/{system_id}/sources", dependencies=[Depends(require("read"))], summary="Source records that resolved to this system")
+@router.get("/{system_id}/sources", dependencies=[Depends(require("public:read"))], summary="Source records that resolved to this system")
 def sources(system_id: int, db: Session = Depends(get_db)):
     _get(db, system_id)
     rows = db.execute(select(Record.id, Record.record_key, Record.title, Record.source_url, Record.verification_status, Source.id, Source.key, Source.name)
@@ -209,7 +209,7 @@ def sources(system_id: int, db: Session = Depends(get_db)):
                      for a, b, c, d, e, f, g, h in rows]}
 
 
-@router.get("/{system_id}/evidence", response_model=Page[AttributeEvidenceOut], dependencies=[Depends(require("read"))], summary="Field-level attribute evidence for this system")
+@router.get("/{system_id}/evidence", response_model=Page[AttributeEvidenceOut], dependencies=[Depends(require("public:read"))], summary="Field-level attribute evidence for this system")
 def system_evidence(system_id: int, pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):
     sys = _get(db, system_id)
     stmt = select(AttributeEvidence).where(
@@ -219,7 +219,7 @@ def system_evidence(system_id: int, pp: PageParams = Depends(page_params), db: S
     return page_out([r[0] for r in rows], total, pp.page, pp.page_size)
 
 
-@router.get("/{system_id}/storybook", dependencies=[Depends(require("read"))], summary="Storybook showcase project for this system")
+@router.get("/{system_id}/storybook", dependencies=[Depends(require("public:read"))], summary="Storybook showcase project for this system")
 def system_storybook(system_id: int, db: Session = Depends(get_db)):
     sys = _get(db, system_id)
     proj = db.scalar(select(StorybookProject).where(StorybookProject.system_key == sys.key))
@@ -235,7 +235,7 @@ def system_storybook(system_id: int, db: Session = Depends(get_db)):
 resource_router = APIRouter(prefix="/resources", tags=["design-systems"], responses=ERRORS)
 
 
-@resource_router.get("", response_model=Page[ResourceOut], dependencies=[Depends(require("read"))], summary="All resource links (filterable)")
+@resource_router.get("", response_model=Page[ResourceOut], dependencies=[Depends(require("public:read"))], summary="All resource links (filterable)")
 def all_resources(resource_type: list[str] | None = Depends(csv_list("resource_type")),
                   status: str | None = Query(None, pattern="^(verified|unverified|invalid)$"), origin: str | None = Query(None, max_length=30),
                   q: str | None = Query(None, max_length=200), pp: PageParams = Depends(page_params), db: Session = Depends(get_db)):

@@ -130,8 +130,40 @@ def run_verify_resources_job(job: Job) -> None:
         jobsvc.finish(db, job.id, "succeeded", result=summary, records_extracted=summary["systems_checked"])
 
 
+def run_sync_finalize_job(job: Job) -> None:
+    from ..services import sync
+    deps = (job.params or {}).get("after") or []
+    with SessionLocal() as db:
+        if deps and db.scalar(select(Job.id).where(Job.id.in_(deps), Job.status.in_(jobsvc.ACTIVE)).limit(1)):
+            j = db.get(Job, job.id)  # wait for this run's crawls without consuming an attempt
+            j.status, j.locked_by, j.phase, j.attempts = "queued", None, "waiting_for_crawls", max(0, j.attempts - 1)
+            j.run_after = datetime.now(timezone.utc) + timedelta(seconds=15)
+            db.commit()
+            return
+    with SessionLocal() as db:
+        def progress(phase: str) -> None:
+            with SessionLocal() as pdb:
+                jobsvc.heartbeat(pdb, job.id, phase=phase)
+        out = sync.finalize(db, job.params["sync_run_id"], int(job.params.get("attempt", 1)), progress)
+        db.commit()
+        jobsvc.finish(db, job.id, "succeeded", result=out or {"retrying": True})
+
+
+def scheduler_tick() -> None:
+    """Advance the persisted daily schedule (safe on every worker instance: claiming is atomic in the database)."""
+    from ..services import sync
+    try:
+        with SessionLocal() as db:
+            run = sync.tick(db)
+            db.commit()
+            if run:
+                log.info("scheduled sync run started", extra={"sync_run_id": str(run.id)})
+    except Exception:  # noqa: BLE001 — the scheduler must never take the worker down
+        log.exception("scheduler tick failed")
+
+
 HANDLERS = {"crawl": run_crawl, "build": run_build_job, "export": run_export_job, "review": run_review_job, "storybook": run_storybook_job,
-            "verify_resources": run_verify_resources_job}
+            "verify_resources": run_verify_resources_job, "sync_finalize": run_sync_finalize_job}
 
 
 def execute(job_id) -> None:
@@ -181,7 +213,11 @@ def main(argv=None) -> None:
         stopping.set()
 
     signal.signal(signal.SIGTERM, _on_sigterm)
+    last_tick = 0.0
     while not stopping.is_set():
+        if not a.once and time.time() - last_tick >= s.scheduler_tick_seconds:
+            scheduler_tick()
+            last_tick = time.time()
         with lock:
             free = s.worker_concurrency - len(running)
         claimed = False
